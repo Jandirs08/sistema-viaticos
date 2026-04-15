@@ -322,9 +322,11 @@ function viaticos_acf_group_gasto() {
                 'instructions'  => 'Seleccione el tipo de documento contable que sustenta el gasto.',
                 'required'      => 0,
                 'choices'       => array(
-                    'vale_caja'         => 'Vale de Caja',
-                    'vale_movilidad'    => 'Vale de Movilidad',
-                    'modelo_liquidacion'=> 'Modelo Liquidación',
+                    'movilidad' => 'Movilidad',
+                    'vale_caja' => 'Vale de Caja',
+                    'factura'   => 'Factura',
+                    'boleta'    => 'Boleta',
+                    'rxh'       => 'RxH',
                 ),
                 'default_value' => '',
                 'allow_null'    => 1,               // Permite no seleccionar ninguna opción.
@@ -393,6 +395,15 @@ function viaticos_acf_group_gasto() {
                 'required'      => 0,
                 'maxlength'     => 11,
                 'placeholder'   => 'Ej: 20123456789',
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => 'field_gas_tipo_plantilla',
+                            'operator' => '!=',
+                            'value'    => 'movilidad',
+                        ),
+                    ),
+                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -412,6 +423,15 @@ function viaticos_acf_group_gasto() {
                 'required'      => 0,
                 'maxlength'     => '',
                 'placeholder'   => 'Ej: TRANSPORTES RÁPIDOS SAC',
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => 'field_gas_tipo_plantilla',
+                            'operator' => '!=',
+                            'value'    => 'movilidad',
+                        ),
+                    ),
+                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -431,6 +451,15 @@ function viaticos_acf_group_gasto() {
                 'required'      => 0,
                 'maxlength'     => '',
                 'placeholder'   => 'Ej: F001-00123456',
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => 'field_gas_tipo_plantilla',
+                            'operator' => '!=',
+                            'value'    => 'movilidad',
+                        ),
+                    ),
+                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -439,7 +468,117 @@ function viaticos_acf_group_gasto() {
             ),
 
             // ------------------------------------------------------------------
-            // Campo 8: Cuenta Contable
+            // Campo 8: Descripción / Concepto
+            // ------------------------------------------------------------------
+            array(
+                'key'           => 'field_gas_descripcion_concepto',
+                'label'         => 'Descripción / Concepto',
+                'name'          => 'descripcion_concepto',
+                'type'          => 'textarea',
+                'instructions'  => 'Describa brevemente el concepto del gasto o comprobante.',
+                'required'      => 0,
+                'rows'          => 3,
+                'new_lines'     => 'br',
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => 'field_gas_tipo_plantilla',
+                            'operator' => '!=',
+                            'value'    => 'movilidad',
+                        ),
+                    ),
+                ),
+                'wrapper'       => array(
+                    'width' => '100',
+                    'class' => '',
+                    'id'    => '',
+                ),
+            ),
+
+            // ------------------------------------------------------------------
+            // Campo 9: Motivo de Movilidad
+            // ------------------------------------------------------------------
+            array(
+                'key'           => 'field_gas_motivo_movilidad',
+                'label'         => 'Motivo de Movilidad',
+                'name'          => 'motivo_movilidad',
+                'type'          => 'textarea',
+                'instructions'  => 'Indique el motivo del traslado o movilidad.',
+                'required'      => 0,
+                'rows'          => 3,
+                'new_lines'     => 'br',
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => 'field_gas_tipo_plantilla',
+                            'operator' => '==',
+                            'value'    => 'movilidad',
+                        ),
+                    ),
+                ),
+                'wrapper'       => array(
+                    'width' => '50',
+                    'class' => '',
+                    'id'    => '',
+                ),
+            ),
+
+            // ------------------------------------------------------------------
+            // Campo 10: Destino de Movilidad
+            // ------------------------------------------------------------------
+            array(
+                'key'           => 'field_gas_destino_movilidad',
+                'label'         => 'Destino de Movilidad',
+                'name'          => 'destino_movilidad',
+                'type'          => 'text',
+                'instructions'  => 'Indique el destino o ruta principal del traslado.',
+                'required'      => 0,
+                'placeholder'   => 'Ej: Oficina central / cliente / sede',
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => 'field_gas_tipo_plantilla',
+                            'operator' => '==',
+                            'value'    => 'movilidad',
+                        ),
+                    ),
+                ),
+                'wrapper'       => array(
+                    'width' => '50',
+                    'class' => '',
+                    'id'    => '',
+                ),
+            ),
+
+            // ------------------------------------------------------------------
+            // Campo 11: CECO / OI
+            // ------------------------------------------------------------------
+            array(
+                'key'           => 'field_gas_ceco_oi',
+                'label'         => 'CECO / OI',
+                'name'          => 'ceco_oi',
+                'type'          => 'text',
+                'instructions'  => 'Ingrese el CECO u orden interna asociada al gasto.',
+                'required'      => 0,
+                'placeholder'   => 'Ej: CC-001 / OI-123',
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => 'field_gas_tipo_plantilla',
+                            'operator' => '==',
+                            'value'    => 'movilidad',
+                        ),
+                    ),
+                ),
+                'wrapper'       => array(
+                    'width' => '50',
+                    'class' => '',
+                    'id'    => '',
+                ),
+            ),
+
+            // ------------------------------------------------------------------
+            // Campo 12: Cuenta Contable
             // ------------------------------------------------------------------
             array(
                 'key'           => 'field_gas_cuenta_contable',
@@ -458,7 +597,7 @@ function viaticos_acf_group_gasto() {
             ),
 
             // ------------------------------------------------------------------
-            // Campo 9: Archivos Adjuntos (File)
+            // Campo 13: Archivos Adjuntos (File)
             // ------------------------------------------------------------------
             array(
                 'key'           => 'field_gas_archivos_adjuntos',

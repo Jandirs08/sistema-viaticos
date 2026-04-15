@@ -2,8 +2,8 @@
 /**
  * Template Part: Dashboard — Vista Administrador
  *
- * Renders the full Admin SPA: sidebar nav links, view-resumen,
- * view-solicitudes, the evaluation modal, and the AdminApp JS module.
+ * Renders the full Admin SPA: sidebar nav links, main views,
+ * the evaluation modal, and the AdminApp JS module.
  *
  * Expected args (injected by page-dashboard.php):
  *   $args['rest_nonce']  string  WP REST nonce.
@@ -40,11 +40,421 @@ $args = wp_parse_args(
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
                     Solicitudes Equipo
                 </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link" data-view="view-rendiciones" id="nav-rendiciones">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14H7v-2h4v2zm6-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    Rendiciones
+                </a>
             </li>`;
     }
     // Set initial breadcrumb
     var bc = document.getElementById('topbar-section-name');
     if (bc) bc.textContent = 'Resumen';
+})();
+</script>
+<script>
+(function () {
+    'use strict';
+
+    const CFG = {
+        nonce: '<?php echo esc_js( $args['rest_nonce'] ); ?>',
+        apiBase: '<?php echo esc_js( $args['api_base'] ); ?>',
+    };
+
+    const previousNavigate = window.AdminApp && typeof window.AdminApp.navigate === 'function'
+        ? window.AdminApp.navigate.bind(window.AdminApp)
+        : null;
+
+    async function apiFetch(endpoint, options = {}) {
+        const merged = Object.assign({ headers: {} }, options);
+        merged.headers = Object.assign({
+            'Content-Type': 'application/json',
+            'X-WP-Nonce': CFG.nonce,
+        }, options.headers || {});
+
+        const res = await fetch(CFG.apiBase + endpoint, merged);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || `Error ${res.status}`);
+        return data;
+    }
+
+    function escHtml(value) {
+        return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function fmt(num) {
+        const n = parseFloat(num);
+        return isNaN(n) ? '—' : 'S/. ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function fmtFecha(iso) {
+        if (!iso) return '—';
+        const p = String(iso).split('-');
+        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+    }
+
+    function badgeHTML(estado) {
+        const labels = {
+            pendiente: 'Pendiente',
+            aprobada: 'Aprobada',
+            observada: 'Observada',
+            rechazada: 'Rechazada',
+            rendida: 'Rendida',
+        };
+        const key = String(estado || '').toLowerCase();
+        return `<span class="badge badge-${key}">${labels[key] || escHtml(estado)}</span>`;
+    }
+
+    function renderRendicionBadge(finalizada) {
+        return finalizada
+            ? '<span class="badge badge-aprobada">Finalizada</span>'
+            : '<span class="badge badge-pendiente">Pendiente</span>';
+    }
+
+    function estadoRendicionBadge(estado) {
+        const map = {
+            finalizada: { cls: 'badge-pendiente', label: 'Finalizada — En revisión' },
+            aprobada:   { cls: 'badge-aprobada',  label: 'Rendición Aprobada' },
+            observada:  { cls: 'badge-observada', label: 'Rendición Observada' },
+            rechazada:  { cls: 'badge-rechazada', label: 'Rendición Rechazada' },
+        };
+        const k = String(estado || '').toLowerCase();
+        const info = map[k];
+        if (!info) return '<span class="badge" style="background:#E5E7EB;color:#6B7280;">—</span>';
+        return `<span class="badge ${info.cls}">${info.label}</span>`;
+    }
+
+    function setAdminView(viewId) {
+        document.querySelectorAll('.erp-view').forEach(view => view.classList.remove('active'));
+        const target = document.getElementById(viewId);
+        if (target) target.classList.add('active');
+
+        const activeNav = viewId === 'view-rendicion-detalle' ? 'view-rendiciones' : viewId;
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.toggle('active', link.dataset.view === activeNav);
+        });
+
+        const breadcrumb = document.getElementById('topbar-section-name');
+        if (breadcrumb) {
+            const names = {
+                'view-rendiciones': 'Rendiciones',
+                'view-rendicion-detalle': 'Detalle de Rendicion',
+            };
+            if (names[viewId]) breadcrumb.textContent = names[viewId];
+        }
+    }
+
+    async function fetchRendicionesFinalizadas() {
+        const solicitudes = await apiFetch('/todas-solicitudes');
+        return solicitudes.filter(item =>
+            String(item.estado || '').toLowerCase() === 'aprobada' &&
+            !!item.rendicion_finalizada
+        );
+    }
+
+    function renderRendicionesTable(rows) {
+        const tbody = document.getElementById('rendiciones-tbody');
+        const counter = document.getElementById('tbl-rendiciones-counter');
+        if (!tbody || !counter) return;
+
+        counter.textContent = `${rows.length} registros`;
+
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="6"><div class="tbl-empty"><p>No hay rendiciones finalizadas para revisar.</p></div></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = rows.map(row => `
+            <tr>
+                <td class="muted">#${row.id}</td>
+                <td><strong>${escHtml(row.colaborador)}</strong></td>
+                <td><strong>${fmt(row.monto)}</strong></td>
+                <td><strong>${fmt(row.total_rendido)}</strong></td>
+                <td>${estadoRendicionBadge(row.estado_rendicion)}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm js-ver-rendicion" data-id="${row.id}">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6a9.77 9.77 0 0 1 8.82 6A9.77 9.77 0 0 1 12 18a9.77 9.77 0 0 1-8.82-6A9.77 9.77 0 0 1 12 6zm0 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0-2.2a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/></svg>
+                        Ver rendicion
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+        tbody.querySelectorAll('.js-ver-rendicion').forEach(btn => {
+            btn.addEventListener('click', () => openDetalleRendicion(btn.dataset.id));
+        });
+    }
+
+    function gastoDetalle(gasto) {
+        const parts = [];
+        if (gasto.concepto) parts.push(gasto.concepto);
+        if (gasto.razon) parts.push(gasto.razon);
+        if (gasto.nro) parts.push(`Nro: ${gasto.nro}`);
+        if (gasto.destino_movilidad) parts.push(`Destino: ${gasto.destino_movilidad}`);
+        if (gasto.motivo_movilidad) parts.push(`Motivo: ${gasto.motivo_movilidad}`);
+        return parts.length ? escHtml(parts.join(' | ')) : 'Sin detalle';
+    }
+
+    function renderDetalle(detalle) {
+        const container = document.getElementById('rendicion-detalle-content');
+        if (!container) return;
+
+        // Guardar id para usarlo en las decisiones.
+        container.dataset.idSolicitud = detalle.id;
+
+        const gastos = Array.isArray(detalle.gastos) ? detalle.gastos : [];
+        const colaborador = detalle.colaborador || {};
+        const gastosHtml = gastos.length
+            ? gastos.map(gasto => `
+                <tr>
+                    <td>${fmtFecha(gasto.fecha)}</td>
+                    <td>${escHtml(gasto.tipo || '—')}</td>
+                    <td>${gastoDetalle(gasto)}</td>
+                    <td><strong>${fmt(gasto.importe)}</strong></td>
+                </tr>
+            `).join('')
+            : `<tr><td colspan="4"><div class="tbl-empty"><p>No hay gastos asociados.</p></div></td></tr>`;
+
+        const estadoRend = detalle.estado_rendicion || '';
+        const puedeDecidir = estadoRend === 'finalizada' || estadoRend === '';
+        const decisionBtns = `
+            <div id="rendicion-decision-area" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:14px 20px; border-top:1px solid #E5E7EB;">
+                <span style="font-size:13px; color:var(--text-muted); margin-right:4px;">Decisión:</span>
+                <button class="btn btn-success btn-sm js-decidir-rendicion" data-decision="aprobada" ${!puedeDecidir ? 'disabled' : ''}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    Aprobar rendición
+                </button>
+                <button class="btn btn-warning btn-sm js-decidir-rendicion" data-decision="observada" ${!puedeDecidir ? 'disabled' : ''}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                    Observar rendición
+                </button>
+                <button class="btn btn-danger btn-sm js-decidir-rendicion" data-decision="rechazada" ${!puedeDecidir ? 'disabled' : ''}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    Rechazar rendición
+                </button>
+                ${!puedeDecidir ? `<span style="font-size:12px;color:var(--text-muted); margin-left:auto;">Ya se tomó una decisión sobre esta rendición.</span>` : ''}
+            </div>
+        `;
+
+        container.innerHTML = `
+            <div class="card-header">
+                <div>
+                    <div class="card-header-title">Solicitud #${detalle.id}</div>
+                    <div class="card-header-subtitle">Revision administrativa</div>
+                </div>
+            </div>
+            <div style="padding:20px 20px 4px;">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="di-label">Estado Solicitud</div>
+                        <div class="di-value">${badgeHTML(detalle.estado)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">Estado Rendición</div>
+                        <div class="di-value" id="rendicion-estado-badge">${estadoRendicionBadge(estadoRend)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">Colaborador</div>
+                        <div class="di-value">${escHtml(colaborador.display_name || '—')}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">Email</div>
+                        <div class="di-value">${escHtml(colaborador.email || '—')}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">DNI</div>
+                        <div class="di-value">${escHtml(detalle.dni || '—')}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">Fecha Viaje</div>
+                        <div class="di-value">${fmtFecha(detalle.fecha_viaje)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">Monto Solicitado</div>
+                        <div class="di-value">${fmt(detalle.monto)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">Total Rendido</div>
+                        <div class="di-value">${fmt(detalle.total_rendido)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">Saldo Simple</div>
+                        <div class="di-value">${fmt(detalle.saldo)}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="di-label">CECO / Proyecto</div>
+                        <div class="di-value">${escHtml(detalle.ceco || '—')}</div>
+                    </div>
+                    <div class="detail-item col-full">
+                        <div class="di-label">Motivo</div>
+                        <div class="motivo-box">${escHtml(detalle.motivo || '—')}</div>
+                    </div>
+                </div>
+            </div>
+            ${decisionBtns}
+            <div id="rendicion-decision-error" style="display:none; margin:0 20px 12px; padding:10px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
+            <div class="card" style="margin:20px;">
+                <div class="card-header">
+                    <div class="card-header-title">Gastos asociados</div>
+                    <div style="font-size:12px;color:var(--text-muted);">${gastos.length} registros</div>
+                </div>
+                <div class="table-wrap">
+                    <table class="tbl" aria-label="Detalle de gastos de rendicion">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Importe</th>
+                            </tr>
+                        </thead>
+                        <tbody>${gastosHtml}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        // Bind decision buttons.
+        container.querySelectorAll('.js-decidir-rendicion').forEach(btn => {
+            btn.addEventListener('click', () => handleDecisionRendicion(detalle.id, btn.dataset.decision));
+        });
+    }
+
+    async function loadRendiciones() {
+        const tbody = document.getElementById('rendiciones-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = `<tr><td colspan="5"><div class="tbl-loading"><div class="spinner"></div>Cargando rendiciones...</div></td></tr>`;
+
+        try {
+            const rows = await fetchRendicionesFinalizadas();
+            renderRendicionesTable(rows);
+        } catch (error) {
+            tbody.innerHTML = `<tr><td colspan="5"><div class="tbl-empty"><p>Error: ${escHtml(error.message)}</p></div></td></tr>`;
+        }
+    }
+
+    async function openDetalleRendicion(idSolicitud) {
+        const container = document.getElementById('rendicion-detalle-content');
+        if (!container) return;
+
+        setAdminView('view-rendicion-detalle');
+        container.innerHTML = `<div style="padding:20px;"><div class="tbl-loading"><div class="spinner"></div>Cargando detalle...</div></div>`;
+
+        try {
+            const detalle = await apiFetch(`/detalle-rendicion-admin/${idSolicitud}`);
+            renderDetalle(detalle);
+        } catch (error) {
+            container.innerHTML = `<div style="padding:20px;"><div class="tbl-empty"><p>Error: ${escHtml(error.message)}</p></div></div>`;
+        }
+    }
+
+    async function handleDecisionRendicion(idSolicitud, decision) {
+        const errEl = document.getElementById('rendicion-decision-error');
+        if (errEl) errEl.style.display = 'none';
+
+        const allBtns = document.querySelectorAll('.js-decidir-rendicion');
+        allBtns.forEach(b => { b.disabled = true; });
+
+        const activeBtn = [...allBtns].find(b => b.dataset.decision === decision);
+        if (activeBtn) {
+            activeBtn.dataset.orig = activeBtn.innerHTML;
+            activeBtn.innerHTML = `<div class="spinner" style="width:13px;height:13px;border-width:2px;"></div> Procesando...`;
+        }
+
+        try {
+            await apiFetch('/decidir-rendicion', {
+                method: 'POST',
+                body: JSON.stringify({ id_solicitud: parseInt(idSolicitud, 10), decision }),
+            });
+
+            const labels = { aprobada: 'aprobada ✓', observada: 'marcada como observada', rechazada: 'rechazada' };
+
+            // Actualizar badge en la vista, sin recargar todo.
+            const badgeEl = document.getElementById('rendicion-estado-badge');
+            if (badgeEl) badgeEl.innerHTML = estadoRendicionBadge(decision);
+
+            // Deshabilitar todos los botones de decisión.
+            allBtns.forEach(b => {
+                b.disabled = true;
+                if (b === activeBtn) b.innerHTML = activeBtn.dataset.orig || b.innerHTML;
+            });
+
+            const notaEl = document.getElementById('rendicion-decision-area');
+            if (notaEl) {
+                const nota = document.createElement('span');
+                nota.style.cssText = 'font-size:12px;color:var(--text-muted);margin-left:auto;';
+                nota.textContent = 'Decisión registrada.';
+                notaEl.appendChild(nota);
+            }
+
+            // Refrescar tabla de rendiciones en background.
+            loadRendiciones();
+
+            showToast('success', 'Decisión registrada', `Rendición de solicitud #${idSolicitud} ${labels[decision]}.`);
+        } catch (err) {
+            if (errEl) { errEl.textContent = err.message || 'No se pudo registrar la decisión.'; errEl.style.display = 'block'; }
+            allBtns.forEach(b => {
+                b.disabled = false;
+                if (b === activeBtn && b.dataset.orig) b.innerHTML = b.dataset.orig;
+            });
+        }
+    }
+
+    function navigate(viewId) {
+        if (viewId === 'view-rendiciones') {
+            setAdminView(viewId);
+            loadRendiciones();
+            return;
+        }
+
+        if (viewId === 'view-rendicion-detalle') {
+            setAdminView(viewId);
+            return;
+        }
+
+        const baseNavigate = window.AdminBaseNavigate || previousNavigate;
+        if (baseNavigate) baseNavigate(viewId);
+    }
+
+    function bindExtraEvents() {
+        const navRendiciones = document.getElementById('nav-rendiciones');
+        const refreshRendiciones = document.getElementById('btn-refrescar-rendiciones');
+        const volverRendiciones = document.getElementById('btn-volver-rendiciones');
+
+        if (navRendiciones) {
+            navRendiciones.addEventListener('click', event => {
+                event.preventDefault();
+                navigate('view-rendiciones');
+            });
+        }
+
+        if (refreshRendiciones) {
+            refreshRendiciones.addEventListener('click', event => {
+                event.preventDefault();
+                loadRendiciones();
+            });
+        }
+
+        if (volverRendiciones) {
+            volverRendiciones.addEventListener('click', event => {
+                event.preventDefault();
+                navigate('view-rendiciones');
+            });
+        }
+    }
+
+    function initExtra() {
+        bindExtraEvents();
+        window.AdminRendicionesExt = {
+            navigate,
+            openDetalleRendicion,
+        };
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initExtra);
+    } else {
+        initExtra();
+    }
 })();
 </script>
 
@@ -180,6 +590,70 @@ $args = wp_parse_args(
     </div>
 
 </section><!-- /#view-solicitudes -->
+
+
+<!-- ================================================
+     VISTA: RENDICIONES FINALIZADAS
+     ================================================ -->
+<section id="view-rendiciones" class="erp-view">
+
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1>Rendiciones Finalizadas</h1>
+            <p>Revisa solicitudes aprobadas con rendici&oacute;n enviada por el colaborador.</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-refrescar-rendiciones" title="Actualizar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42.0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73.0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31.0-6-2.69-6-6s2.69-6 6-6c1.66.0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            Actualizar
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-title">Solicitudes con rendici&oacute;n finalizada</div>
+            <div id="tbl-rendiciones-counter" style="font-size:12px;color:var(--text-muted);"></div>
+        </div>
+        <div class="table-wrap">
+            <table class="tbl" aria-label="Rendiciones finalizadas">
+                <thead>
+                    <tr>
+                        <th>ID Solicitud</th><th>Colaborador</th><th>Monto Solicitado</th>
+                        <th>Total Rendido</th><th>Estado Rendición</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="rendiciones-tbody">
+                    <tr><td colspan="6"><div class="tbl-loading"><div class="spinner"></div>Cargando rendiciones...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section><!-- /#view-rendiciones -->
+
+
+<!-- ================================================
+     VISTA: DETALLE RENDICION
+     ================================================ -->
+<section id="view-rendicion-detalle" class="erp-view">
+
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1>Detalle de Rendici&oacute;n</h1>
+            <p>Revisi&oacute;n administrativa en solo lectura.</p>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btn-volver-rendiciones">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.58-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            Volver
+        </button>
+    </div>
+
+    <div id="rendicion-detalle-content" class="card">
+        <div style="padding:20px;">
+            <div class="tbl-loading"><div class="spinner"></div>Cargando detalle...</div>
+        </div>
+    </div>
+
+</section><!-- /#view-rendicion-detalle -->
 
 
 <!-- ================================================
@@ -533,6 +1007,23 @@ $args = wp_parse_args(
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
+    }
+})();
+</script>
+<script>
+(function () {
+    function mergeAdminRendicionesFinal() {
+        if (!window.AdminRendicionesExt) return;
+        if (!window.AdminBaseNavigate && window.AdminApp && typeof window.AdminApp.navigate === 'function') {
+            window.AdminBaseNavigate = window.AdminApp.navigate;
+        }
+        window.AdminApp = Object.assign({}, window.AdminApp || {}, window.AdminRendicionesExt);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', mergeAdminRendicionesFinal);
+    } else {
+        mergeAdminRendicionesFinal();
     }
 })();
 </script>

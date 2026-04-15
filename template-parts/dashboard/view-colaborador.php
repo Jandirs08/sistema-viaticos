@@ -45,12 +45,6 @@ $args = wp_parse_args(
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
                     Mis Solicitudes
                 </a>
-            </li>
-            <li>
-                <a href="#" id="nav-rendiciones" class="nav-link" data-view="view-rendiciones">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78.0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61.0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41.0.97-.79 2.03-2.5 2.03-2.08.0-2.98-.93-3.1-2.1H7.3c.13 2.15 1.73 3.56 3.7 3.97V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55.0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                    Mis Rendiciones
-                </a>
             </li>`;
     }
     var bc = document.getElementById('topbar-section-name');
@@ -180,6 +174,44 @@ $args = wp_parse_args(
     </div>
 
 </section><!-- /#view-solicitudes -->
+
+
+<!-- ============================================================
+     VISTA: DETALLE DE SOLICITUD / RENDICION
+     ============================================================ -->
+<section id="view-detalle-solicitud" class="erp-view" aria-label="Detalle de Solicitud">
+
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1 id="detalle-view-title">Detalle de Solicitud</h1>
+            <p id="detalle-view-subtitle">Revisa la solicitud y gestiona su rendicion desde esta vista.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btn-volver-detalle-solicitud">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Volver
+            </button>
+            <button class="btn btn-primary" id="btn-detalle-view-agregar-gasto">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Agregar gasto
+            </button>
+            <button class="btn btn-success" id="btn-detalle-view-finalizar-rendicion">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                Finalizar rendicion
+            </button>
+        </div>
+    </div>
+
+    <div id="detalle-view-content">
+        <div class="card">
+            <div class="modal-body">
+                <div class="table-loading"><div class="spinner"></div> Cargando detalle...</div>
+            </div>
+        </div>
+    </div>
+    <div id="detalle-view-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
+
+</section><!-- /#view-detalle-solicitud -->
 
 
 <!-- ============================================================
@@ -338,6 +370,41 @@ $args = wp_parse_args(
 
 
 <!-- ============================================================
+     MODAL: DETALLE DE SOLICITUD / RENDICIÓN
+     ============================================================ -->
+<div class="modal-overlay" id="modal-detalle-solicitud" role="dialog" aria-modal="true" aria-labelledby="modal-detalle-titulo">
+    <div class="modal modal-lg">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <h2 id="modal-detalle-titulo">Solicitud <span id="detalle-sol-id" style="color:var(--text-muted); font-weight:400;"></span></h2>
+                <p id="detalle-sol-subtitulo">Revisa el detalle de la solicitud y gestiona su rendición.</p>
+            </div>
+            <button class="modal-close" id="btn-cerrar-modal-detalle" aria-label="Cerrar modal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="detalle-solicitud-content">
+                <div class="table-loading"><div class="spinner"></div> Cargando detalle...</div>
+            </div>
+            <div id="detalle-solicitud-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-modal-detalle">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="btn-detalle-agregar-gasto">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Agregar gasto
+            </button>
+            <button type="button" class="btn btn-success" id="btn-detalle-finalizar-rendicion">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                Finalizar rendición
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
      MODAL: RENDIR GASTO
      ============================================================ -->
 <div class="modal-overlay" id="modal-rendir-gasto" role="dialog" aria-modal="true" aria-labelledby="modal-rendir-titulo">
@@ -356,13 +423,16 @@ $args = wp_parse_args(
                 <input type="hidden" id="rg-id-solicitud" name="id_solicitud">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label" for="rg-tipo">Tipo de Documento</label>
-                        <select id="rg-tipo" name="tipo" class="form-control">
+                        <label class="form-label" for="rg-tipo">Tipo de Documento <span class="required">*</span></label>
+                        <select id="rg-tipo" name="tipo" class="form-control" required>
                             <option value="">— Seleccione —</option>
+                            <option value="movilidad">Movilidad</option>
                             <option value="vale_caja">Vale de Caja</option>
-                            <option value="vale_movilidad">Vale de Movilidad</option>
-                            <option value="modelo_liquidacion">Modelo Liquidación</option>
+                            <option value="factura">Factura</option>
+                            <option value="boleta">Boleta</option>
+                            <option value="rxh">RxH</option>
                         </select>
+                        <span class="form-error" id="err-rg-tipo">Seleccione un tipo de rendiciÃ³n.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rg-fecha">Fecha de Emisión <span class="required">*</span></label>
@@ -377,21 +447,44 @@ $args = wp_parse_args(
                         </div>
                         <span class="form-error" id="err-rg-importe">Ingrese un importe mayor a S/. 0.00.</span>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="rg-ruc">RUC del Proveedor</label>
+                    <div class="form-group" data-rendir-group="documento">
+                        <label class="form-label" for="rg-ruc">RUC del Proveedor <span class="required">*</span></label>
                         <input type="text" id="rg-ruc" name="ruc" class="form-control" maxlength="11" placeholder="Ej: 20123456789" inputmode="numeric">
+                        <span class="form-error" id="err-rg-ruc">Ingrese el RUC del proveedor.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rg-razon">Razón Social</label>
                         <input type="text" id="rg-razon" name="razon_social" class="form-control" placeholder="Ej: EMPRESA S.A.C.">
+                        <span class="form-error" id="err-rg-razon">Ingrese la razÃ³n social.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rg-nro-comprobante">N° Comprobante</label>
                         <input type="text" id="rg-nro-comprobante" name="nro_comprobante" class="form-control" placeholder="Ej: F001-00123456">
+                        <span class="form-error" id="err-rg-nro-comprobante">Ingrese el nÃºmero de comprobante.</span>
                     </div>
                     <div class="form-group col-full">
                         <label class="form-label" for="rg-cuenta">Cuenta Contable</label>
-                        <input type="text" id="rg-cuenta" name="cuenta_contable" class="form-control" placeholder="Ej: 63.1.1">
+                        <input type="text" id="rg-cuenta" name="cuenta_contable" class="form-control" placeholder="Ej: 63.1.1" required>
+                        <span class="form-error" id="err-rg-cuenta">Ingrese la cuenta contable.</span>
+                    </div>
+                    <div class="form-group col-full" id="rg-group-concepto">
+                        <label class="form-label" for="rg-concepto">DescripciÃ³n / Concepto</label>
+                        <textarea id="rg-concepto" name="descripcion_concepto" class="form-control" placeholder="Describa el concepto del gasto..." rows="3"></textarea>
+                    </div>
+                    <div class="form-group" id="rg-group-motivo">
+                        <label class="form-label" for="rg-motivo">Motivo de Movilidad</label>
+                        <textarea id="rg-motivo" name="motivo_movilidad" class="form-control" placeholder="Indique el motivo del traslado..." rows="3"></textarea>
+                        <span class="form-error" id="err-rg-motivo">Ingrese el motivo de movilidad.</span>
+                    </div>
+                    <div class="form-group" id="rg-group-destino">
+                        <label class="form-label" for="rg-destino">Destino de Movilidad</label>
+                        <input type="text" id="rg-destino" name="destino_movilidad" class="form-control" placeholder="Ej: Oficina central / cliente / sede">
+                        <span class="form-error" id="err-rg-destino">Ingrese el destino de movilidad.</span>
+                    </div>
+                    <div class="form-group col-full" id="rg-group-ceco-oi">
+                        <label class="form-label" for="rg-ceco-oi">CECO / OI</label>
+                        <input type="text" id="rg-ceco-oi" name="ceco_oi" class="form-control" placeholder="Ej: CC-001 / OI-123">
+                        <span class="form-error" id="err-rg-ceco-oi">Ingrese el CECO / OI.</span>
                     </div>
                 </div>
                 <div id="rendir-gasto-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
@@ -450,6 +543,28 @@ $args = wp_parse_args(
     function badgeHTML(estado) {
         const key = (estado || '').toLowerCase();
         return `<span class="badge badge-${key}">${estadoLabel[key] || estado}</span>`;
+    }
+
+    function getRendicionBadgeHTML(finalizada) {
+        return finalizada
+            ? '<span class="badge badge-aprobada">Rendición finalizada</span>'
+            : '<span class="badge badge-pendiente">Rendición en proceso</span>';
+    }
+
+    function getEstadoRendicionBadge(estadoRend, rendicionFinalizada) {
+        if (!rendicionFinalizada) {
+            return '<span class="badge badge-pendiente">En proceso</span>';
+        }
+        const map = {
+            finalizada: { cls: 'badge-pendiente', label: 'Enviada — En revisión' },
+            aprobada:   { cls: 'badge-aprobada',  label: 'Rendición aprobada' },
+            observada:  { cls: 'badge-observada', label: 'Rendición observada' },
+            rechazada:  { cls: 'badge-rechazada', label: 'Rendición rechazada' },
+        };
+        const k = String(estadoRend || '').toLowerCase();
+        const info = map[k];
+        if (!info) return '<span class="badge badge-pendiente">Enviada — En revisión</span>';
+        return `<span class="badge ${info.cls}">${info.label}</span>`;
     }
 
     function escHtml(str) {
@@ -514,6 +629,29 @@ $args = wp_parse_args(
         formEl.querySelectorAll('.form-control').forEach(el => (el.style.borderColor = ''));
     }
 
+    function getRendicionTipo() {
+        return (document.getElementById('rg-tipo').value || '').trim();
+    }
+
+    function updateRendirTipoUI() {
+        const tipo = getRendicionTipo();
+        const isMovilidad = tipo === 'movilidad';
+        const documentoIds = ['rg-ruc', 'rg-razon', 'rg-nro-comprobante', 'rg-group-concepto'];
+        const movilidadIds = ['rg-group-motivo', 'rg-group-destino', 'rg-group-ceco-oi'];
+
+        documentoIds.forEach(id => {
+            const el = document.getElementById(id);
+            const group = el ? (el.classList.contains('form-group') ? el : el.closest('.form-group')) : null;
+            if (group) group.style.display = tipo && !isMovilidad ? '' : 'none';
+        });
+
+        movilidadIds.forEach(id => {
+            const el = document.getElementById(id);
+            const group = el ? (el.classList.contains('form-group') ? el : el.closest('.form-group')) : null;
+            if (group) group.style.display = isMovilidad ? '' : 'none';
+        });
+    }
+
     function prefillNuevaSolicitudForm() {
         const dniEl = document.getElementById('ns-dni');
 
@@ -524,9 +662,13 @@ $args = wp_parse_args(
 
     /* ── Data ─────────────────────────────────────────────── */
     let solicitudesCache = [];
+    let gastosCache = [];
+    let detalleSolicitudId = null;
 
     async function fetchSolicitudes() { return await apiFetch('/mis-solicitudes'); }
     async function fetchGastos()      { return await apiFetch('/mis-rendiciones'); }
+    async function refreshSolicitudesCache() { solicitudesCache = await fetchSolicitudes(); return solicitudesCache; }
+    async function refreshGastosCache() { gastosCache = await fetchGastos(); return gastosCache; }
 
     /* ── Render helpers ───────────────────────────────────── */
     function renderTableEmpty(tbody, colSpan, message = 'No se encontraron registros.') {
@@ -559,18 +701,34 @@ $args = wp_parse_args(
     }
 
     function buildAcciones(sol) {
-        const estado = (sol.estado || '').toLowerCase();
+        const estado      = (sol.estado || '').toLowerCase();
+        const estadoRend  = (sol.estado_rendicion || '').toLowerCase();
+        const finalizada  = !!sol.rendicion_finalizada;
         let btns = '';
+
+        // Botón Editar — solo si la solicitud fue observada por el admin
         if (estado === 'observada') {
             btns += `<button class="btn btn-secondary btn-sm action-editar" data-id="${sol.id}" title="Editar solicitud observada">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02.0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41.0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                 Editar</button>`;
         }
+
+        // Botón contextual para solicitudes aprobadas
         if (estado === 'aprobada') {
-            btns += `<button class="btn btn-success btn-sm action-rendir" data-id="${sol.id}" title="Rendir gasto">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78.0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61.0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41.0.97-.79 2.03-2.5 2.03-2.08.0-2.98-.93-3.1-2.1H7.3c.13 2.15 1.73 3.56 3.7 3.97V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55.0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                Rendir Gasto</button>`;
+            // caso 1: rendición ya cerrada/evaluada → solo Ver
+            const verSolo = finalizada || estadoRend === 'aprobada' || estadoRend === 'observada' || estadoRend === 'rechazada';
+            if (verSolo) {
+                btns += `<button class="btn btn-secondary btn-sm action-ver-rendir" data-id="${sol.id}" title="Ver detalle de la rendición">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76.0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66.0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                    Ver</button>`;
+            } else {
+                // caso 2: pendiente de rendir → Rendir
+                btns += `<button class="btn btn-success btn-sm action-ver-rendir" data-id="${sol.id}" title="Rendir gastos de la solicitud">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78.0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61.0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41.0.97-.79 2.03-2.5 2.03-2.08.0-2.98-.93-3.1-2.1H7.3c.13 2.15 1.73 3.56 3.7 3.97V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55.0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                    Rendir</button>`;
+            }
         }
+
         return btns || `<span style="color:var(--text-light);font-size:12px;">Sin acciones</span>`;
     }
 
@@ -581,9 +739,222 @@ $args = wp_parse_args(
                 if (sol) openEditarModal(sol);
             });
         });
-        tbody.querySelectorAll('.action-rendir').forEach(btn => {
-            btn.addEventListener('click', () => openRendirModal(parseInt(btn.dataset.id, 10)));
+        tbody.querySelectorAll('.action-ver-rendir').forEach(btn => {
+            btn.addEventListener('click', () => openDetalleSolicitudView(parseInt(btn.dataset.id, 10)));
         });
+    }
+
+    function getSolicitudById(id) {
+        return solicitudesCache.find(sol => sol.id === parseInt(id, 10)) || null;
+    }
+
+    function getGastosBySolicitud(id) {
+        return gastosCache
+            .filter(gasto => parseInt(gasto.id_solicitud, 10) === parseInt(id, 10))
+            .sort((a, b) => Number(b.id) - Number(a.id));
+    }
+
+    // getRendicionBadgeHTML ya definida arriba (línea ~554) — no se duplica.
+
+    function buildDetalleGasto(gasto) {
+        const tipoLabel = { movilidad:'Movilidad', vale_caja:'Vale de Caja', factura:'Factura', boleta:'Boleta', rxh:'RxH' };
+        if (gasto.tipo === 'movilidad') {
+            const detalleMovilidad = [gasto.destino_movilidad, gasto.motivo_movilidad, gasto.ceco_oi].filter(Boolean).map(escHtml).join(' | ');
+            return {
+                titulo: tipoLabel[gasto.tipo] || 'Movilidad',
+                detalle: detalleMovilidad || 'Movilidad registrada',
+            };
+        }
+
+        const detalleDocumento = [gasto.razon, gasto.nro].filter(Boolean).map(escHtml).join(' | ');
+
+        return {
+            titulo: tipoLabel[gasto.tipo] || gasto.tipo || 'Documento',
+            detalle: detalleDocumento || escHtml(gasto.concepto || 'Sin detalle adicional'),
+        };
+    }
+
+    function renderDetalleSolicitudContent(sol, gastos) {
+        const contentEl = document.getElementById('detalle-view-content');
+        const totalSolicitado = parseFloat(sol.monto) || 0;
+        const totalRendido = gastos.reduce((sum, gasto) => sum + (parseFloat(gasto.importe) || 0), 0);
+        const saldo = totalSolicitado - totalRendido;
+        const gastosHtml = gastos.length
+            ? gastos.map(gasto => {
+                const detalle = buildDetalleGasto(gasto);
+                return `
+                    <div class="gasto-item">
+                        <div>
+                            <strong>${escHtml(detalle.titulo)}</strong>
+                            <div class="gi-meta">${formatFecha(gasto.fecha)} | ${detalle.detalle}</div>
+                        </div>
+                        <div class="gi-amount">${formatMonto(gasto.importe)}</div>
+                    </div>
+                `;
+            }).join('')
+            : `<div class="table-empty" style="padding:18px 0;">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                <p>Aún no registraste gastos para esta solicitud.</p>
+            </div>`;
+
+        document.getElementById('detalle-view-title').textContent = `Solicitud #${sol.id}`;
+        const estadoRend = (sol.estado_rendicion || '').toLowerCase();
+        const subtitleMap = {
+            finalizada: 'La rendición fue enviada y está en revisión administrativa.',
+            aprobada:   'La rendición fue aprobada por el administrador.',
+            observada:  'El administrador observó la rendición. Revisa el estado.',
+            rechazada:  'El administrador rechazó la rendición. Revisa el estado.',
+        };
+        document.getElementById('detalle-view-subtitle').textContent = sol.rendicion_finalizada
+            ? (subtitleMap[estadoRend] || 'La rendición ya fue enviada para revisión administrativa.')
+            : 'Registra tus gastos y finaliza la rendición cuando esté completa.';
+
+        // Banner de alerta cuando el admin observó o rechazó la rendición.
+        const alertaBanner = (() => {
+            if (!sol.rendicion_finalizada) return '';
+            if (estadoRend === 'observada') {
+                return `<div style="margin-bottom:16px; padding:14px 18px; background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; display:flex; gap:12px; align-items:flex-start;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#D97706" style="flex-shrink:0;margin-top:1px"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                    <div><strong style="color:#92400E;">Rendición observada por el administrador.</strong><p style="margin:4px 0 0; font-size:13px; color:#78350F;">El administrador revisó tu rendición y tiene observaciones. Espera instrucciones.</p></div>
+                </div>`;
+            }
+            if (estadoRend === 'rechazada') {
+                return `<div style="margin-bottom:16px; padding:14px 18px; background:#FEF2F2; border:1px solid #FECACA; border-radius:12px; display:flex; gap:12px; align-items:flex-start;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#DC2626" style="flex-shrink:0;margin-top:1px"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <div><strong style="color:#991B1B;">Rendición rechazada por el administrador.</strong><p style="margin:4px 0 0; font-size:13px; color:#7F1D1D;">El administrador rechazó tu rendición. Comunícate con el área de finanzas.</p></div>
+                </div>`;
+            }
+            if (estadoRend === 'aprobada') {
+                return `<div style="margin-bottom:16px; padding:14px 18px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:12px; display:flex; gap:12px; align-items:flex-start;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#059669" style="flex-shrink:0;margin-top:1px"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    <div><strong style="color:#065F46;">Rendición aprobada por el administrador.</strong><p style="margin:4px 0 0; font-size:13px; color:#064E3B;">Tu rendición fue revisada y aprobada correctamente.</p></div>
+                </div>`;
+            }
+            return '';
+        })();
+
+        contentEl.innerHTML = `
+            ${alertaBanner}
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:18px;">
+                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Estado solicitud</div>
+                    <div>${badgeHTML(sol.estado)}</div>
+                </div>
+                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Estado rendición</div>
+                    <div>${getEstadoRendicionBadge(sol.estado_rendicion, sol.rendicion_finalizada)}</div>
+                </div>
+                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Fecha viaje</div>
+                    <div>${formatFecha(sol.fecha)}</div>
+                </div>
+                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Monto solicitado</div>
+                    <div><strong>${formatMonto(totalSolicitado)}</strong></div>
+                </div>
+                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">CECO / Proyecto</div>
+                    <div>${escHtml(sol.ceco || '—')}</div>
+                </div>
+                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Total rendido</div>
+                    <div><strong>${formatMonto(totalRendido)}</strong></div>
+                </div>
+                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Saldo simple</div>
+                    <div><strong>${formatMonto(saldo)}</strong></div>
+                </div>
+            </div>
+
+            <div style="margin-bottom:18px; padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#FFF;">
+                <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">Motivo del viaje</div>
+                <div>${escHtml(sol.motivo || '—')}</div>
+            </div>
+
+            <div class="card" style="box-shadow:none; border:1px solid #E5E7EB;">
+                <div class="card-header">
+                    <div>
+                        <div class="card-header-title">Gastos asociados</div>
+                        <div class="card-header-subtitle">${gastos.length} gasto(s) registrado(s)</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="card-header-subtitle">Total rendido</div>
+                        <div class="card-header-title">${formatMonto(totalRendido)}</div>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:16px 20px;">
+                    ${gastosHtml}
+                </div>
+            </div>
+        `;
+
+        const btnAgregar = document.getElementById('btn-detalle-view-agregar-gasto');
+        const btnFinalizar = document.getElementById('btn-detalle-view-finalizar-rendicion');
+        btnAgregar.disabled = !!sol.rendicion_finalizada;
+        btnFinalizar.disabled = !!sol.rendicion_finalizada || !gastos.length;
+
+        if (sol.rendicion_finalizada) {
+            btnAgregar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Rendición cerrada';
+            btnFinalizar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Rendición finalizada';
+        } else {
+            btnAgregar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Agregar gasto';
+            btnFinalizar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Finalizar rendición';
+        }
+    }
+
+    async function openDetalleSolicitudView(solicitudId) {
+        detalleSolicitudId = parseInt(solicitudId, 10);
+        document.getElementById('detalle-view-error').style.display = 'none';
+        document.getElementById('detalle-view-content').innerHTML = '<div class="card"><div class="modal-body"><div class="table-loading"><div class="spinner"></div> Cargando detalle...</div></div></div>';
+        navigateTo('view-detalle-solicitud');
+
+        try {
+            let sol = getSolicitudById(detalleSolicitudId);
+            if (!sol) {
+                await refreshSolicitudesCache();
+                sol = getSolicitudById(detalleSolicitudId);
+            }
+
+            if (!sol) throw new Error('No se encontró la solicitud seleccionada.');
+
+            await refreshGastosCache();
+            renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
+        } catch (err) {
+            const errEl = document.getElementById('detalle-view-error');
+            errEl.textContent = err.message || 'No se pudo cargar el detalle de la solicitud.';
+            errEl.style.display = 'block';
+            document.getElementById('detalle-view-content').innerHTML = '';
+        }
+    }
+
+    async function loadDetalleSolicitudView() {
+        if (!detalleSolicitudId) {
+            navigateTo('view-solicitudes');
+            return;
+        }
+
+        document.getElementById('detalle-view-error').style.display = 'none';
+        document.getElementById('detalle-view-content').innerHTML = '<div class="card"><div class="modal-body"><div class="table-loading"><div class="spinner"></div> Cargando detalle...</div></div></div>';
+
+        try {
+            await refreshSolicitudesCache();
+            const sol = getSolicitudById(detalleSolicitudId);
+
+            if (!sol) throw new Error('No se encontrÃ³ la solicitud seleccionada.');
+
+            await refreshGastosCache();
+            renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
+        } catch (err) {
+            const errEl = document.getElementById('detalle-view-error');
+            errEl.textContent = err.message || 'No se pudo cargar el detalle de la solicitud.';
+            errEl.style.display = 'block';
+            document.getElementById('detalle-view-content').innerHTML = '';
+        }
+    }
+
+    function closeDetalleSolicitudView() {
+        detalleSolicitudId = null;
+        navigateTo('view-solicitudes');
     }
 
     /* ── Render: inicio recent + KPIs ────────────────────── */
@@ -611,7 +982,7 @@ $args = wp_parse_args(
     function renderRendicionesTable(data) {
         const tbody = document.getElementById('rendiciones-tbody');
         if (!data || !data.length) { renderTableEmpty(tbody, 6, 'Aún no tienes gastos rendidos registrados.'); return; }
-        const tipoLabel = { vale_caja:'Vale de Caja', vale_movilidad:'Vale de Movilidad', modelo_liquidacion:'Modelo Liquidación' };
+        const tipoLabel = { movilidad:'Movilidad', vale_caja:'Vale de Caja', factura:'Factura', boleta:'Boleta', rxh:'RxH' };
         tbody.innerHTML = data.map(g => `<tr>
             <td class="text-muted">#${g.id}</td>
             <td>${g.id_solicitud ? `<span class="badge badge-aprobada">#${g.id_solicitud}</span>` : '—'}</td>
@@ -628,7 +999,7 @@ $args = wp_parse_args(
         const target = document.getElementById(viewId);
         if (target) target.classList.add('active');
         document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.dataset.view === viewId));
-        const names = { 'view-inicio':'Inicio', 'view-solicitudes':'Mis Solicitudes', 'view-rendiciones':'Mis Rendiciones' };
+        const names = { 'view-inicio':'Inicio', 'view-solicitudes':'Mis Solicitudes', 'view-detalle-solicitud':'Detalle de Solicitud', 'view-rendiciones':'Mis Rendiciones' };
         const nameEl = document.getElementById('topbar-section-name');
         if (nameEl) nameEl.textContent = names[viewId] || '';
         if (viewId === 'view-solicitudes') loadSolicitudesView();
@@ -639,21 +1010,82 @@ $args = wp_parse_args(
     async function loadInicioView() {
         const tbody = document.getElementById('inicio-recent-tbody');
         renderTableLoading(tbody, 5);
-        try { solicitudesCache = await fetchSolicitudes(); renderInicioRecent(solicitudesCache); }
+        try { await refreshSolicitudesCache(); renderInicioRecent(solicitudesCache); }
         catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 5, 'Error al cargar datos.'); showToast('error', 'Error', err.message); }
     }
 
     async function loadSolicitudesView() {
         const tbody = document.getElementById('solicitudes-tbody');
         renderTableLoading(tbody, 6);
-        try { solicitudesCache = await fetchSolicitudes(); renderSolicitudesTable(solicitudesCache); }
+        try { await refreshSolicitudesCache(); renderSolicitudesTable(solicitudesCache); }
         catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 6, 'Error al cargar solicitudes.'); showToast('error', 'Error', err.message); }
+    }
+
+    function renderRendicionesResumen(data) {
+        const tbody = document.getElementById('rendiciones-tbody');
+        if (!data || !data.length) { renderTableEmpty(tbody, 6, 'AÃºn no tienes gastos rendidos registrados.'); return; }
+
+        const tipoLabel = { movilidad:'Movilidad', vale_caja:'Vale de Caja', factura:'Factura', boleta:'Boleta', rxh:'RxH' };
+        const grouped = data.reduce((acc, gasto) => {
+            const key = gasto.id_solicitud || 0;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(gasto);
+            return acc;
+        }, {});
+
+        function buildDetalleCorto(gasto) {
+            if (gasto.tipo === 'movilidad') {
+                const parts = [gasto.destino_movilidad, gasto.motivo_movilidad, gasto.ceco_oi].filter(Boolean);
+                return parts.length ? parts.map(escHtml).join(' | ') : 'Movilidad registrada';
+            }
+            const parts = [];
+            if (gasto.razon) parts.push(escHtml(gasto.razon));
+            if (gasto.nro) parts.push(escHtml(gasto.nro));
+            if (!parts.length && gasto.concepto) parts.push(escHtml(gasto.concepto));
+            return parts.length ? parts.join(' | ') : 'Sin detalle adicional';
+        }
+
+        tbody.innerHTML = Object.keys(grouped)
+            .sort((a, b) => Number(b) - Number(a))
+            .map(id => {
+                const gastos = grouped[id];
+                const total = gastos.reduce((sum, gasto) => sum + (parseFloat(gasto.importe) || 0), 0);
+                const details = gastos.map(gasto => `
+                    <div class="gasto-item">
+                        <div>
+                            <strong>${escHtml(tipoLabel[gasto.tipo] || gasto.tipo || 'â€”')}</strong>
+                            <div class="gi-meta">${formatFecha(gasto.fecha)} | ${buildDetalleCorto(gasto)}</div>
+                        </div>
+                        <div class="gi-amount">${formatMonto(gasto.importe)}</div>
+                    </div>
+                `).join('');
+
+                return `<tr>
+                    <td colspan="6" style="padding:18px 16px;">
+                        <div class="card" style="box-shadow:none;">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-header-title">Solicitud #${escHtml(id)}</div>
+                                    <div class="card-header-subtitle">${gastos.length} gasto(s) registrado(s)</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div class="card-header-subtitle">Total rendido</div>
+                                    <div class="card-header-title">${formatMonto(total)}</div>
+                                </div>
+                            </div>
+                            <div class="modal-body" style="padding:16px 20px;">
+                                ${details}
+                            </div>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
     }
 
     async function loadRendicionesView() {
         const tbody = document.getElementById('rendiciones-tbody');
         renderTableLoading(tbody, 6);
-        try { const gastos = await fetchGastos(); renderRendicionesTable(gastos); }
+        try { await refreshGastosCache(); renderRendicionesResumen(gastosCache); }
         catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 6, 'Error al cargar rendiciones.'); showToast('error', 'Error', err.message); }
     }
 
@@ -755,44 +1187,127 @@ $args = wp_parse_args(
     }
 
     /* ── Modal: Rendir Gasto ──────────────────────────────── */
+    async function handleFinalizarRendicion() {
+        if (!detalleSolicitudId) return;
+
+        const btn = document.getElementById('btn-detalle-view-finalizar-rendicion');
+        const errEl = document.getElementById('detalle-view-error');
+        let finalizacionAplicada = false;
+        errEl.style.display = 'none';
+        setButtonLoading(btn, true);
+
+        try {
+            await apiFetch('/finalizar-rendicion', {
+                method: 'POST',
+                body: JSON.stringify({ id_solicitud: detalleSolicitudId }),
+            });
+
+            await refreshSolicitudesCache();
+            await refreshGastosCache();
+            renderSolicitudesTable(solicitudesCache);
+            renderInicioRecent(solicitudesCache);
+
+            const sol = getSolicitudById(detalleSolicitudId);
+            if (sol) {
+                renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
+                finalizacionAplicada = !!sol.rendicion_finalizada;
+            }
+
+            showToast('success', 'Rendición finalizada', `La solicitud #${detalleSolicitudId} fue enviada para revisión administrativa.`);
+        } catch (err) {
+            errEl.textContent = err.message || 'No se pudo finalizar la rendición.';
+            errEl.style.display = 'block';
+        } finally {
+            if (!finalizacionAplicada) setButtonLoading(btn, false);
+        }
+    }
+
     function openRendirModal(solicitudId) {
         const form = document.getElementById('form-rendir-gasto');
         form.reset(); resetFormErrors(form);
         document.getElementById('rendir-gasto-error').style.display = 'none';
         document.getElementById('rg-id-solicitud').value = solicitudId;
         document.getElementById('rendir-sol-ref').textContent = `#${solicitudId}`;
+        updateRendirTipoUI();
         ModalManager.open('modal-rendir-gasto');
-        document.getElementById('rg-fecha').focus();
+        document.getElementById('rg-tipo').focus();
     }
 
     async function handleRendirGastoSubmit(e) {
         e.preventDefault();
         const btn = document.getElementById('btn-submit-rendir-gasto'), errEl = document.getElementById('rendir-gasto-error');
         const idSolicitud = document.getElementById('rg-id-solicitud').value;
-        const fechaEl = document.getElementById('rg-fecha'), importeEl = document.getElementById('rg-importe');
-        const v1 = validateField(fechaEl,   document.getElementById('err-rg-fecha'),   v => !!v);
-        const v2 = validateField(importeEl, document.getElementById('err-rg-importe'), v => parseFloat(v) > 0);
-        if (!v1||!v2) return;
+        const tipoEl = document.getElementById('rg-tipo');
+        const fechaEl = document.getElementById('rg-fecha');
+        const importeEl = document.getElementById('rg-importe');
+        const cuentaEl = document.getElementById('rg-cuenta');
+        const rucEl = document.getElementById('rg-ruc');
+        const razonEl = document.getElementById('rg-razon');
+        const nroEl = document.getElementById('rg-nro-comprobante');
+        const conceptoEl = document.getElementById('rg-concepto');
+        const motivoEl = document.getElementById('rg-motivo');
+        const destinoEl = document.getElementById('rg-destino');
+        const cecoOiEl = document.getElementById('rg-ceco-oi');
+        const tipo = getRendicionTipo();
+        const isMovilidad = tipo === 'movilidad';
+        const validations = [
+            validateField(tipoEl, document.getElementById('err-rg-tipo'), v => !!v),
+            validateField(fechaEl, document.getElementById('err-rg-fecha'), v => !!v),
+            validateField(importeEl, document.getElementById('err-rg-importe'), v => parseFloat(v) > 0),
+            validateField(cuentaEl, document.getElementById('err-rg-cuenta'), v => v.trim().length > 0),
+        ];
+
+        if (isMovilidad) {
+            validations.push(
+                validateField(motivoEl, document.getElementById('err-rg-motivo'), v => v.trim().length > 0),
+                validateField(destinoEl, document.getElementById('err-rg-destino'), v => v.trim().length > 0),
+                validateField(cecoOiEl, document.getElementById('err-rg-ceco-oi'), v => v.trim().length > 0)
+            );
+        } else if (tipo) {
+            validations.push(
+                validateField(rucEl, document.getElementById('err-rg-ruc'), v => /^\d{11}$/.test(v.trim())),
+                validateField(razonEl, document.getElementById('err-rg-razon'), v => v.trim().length > 0),
+                validateField(nroEl, document.getElementById('err-rg-nro-comprobante'), v => v.trim().length > 0)
+            );
+        }
+
+        if (validations.some(v => !v)) return;
         errEl.style.display = 'none'; setButtonLoading(btn, true);
         try {
             const payload = {
                 id_solicitud:    parseInt(idSolicitud, 10),
-                tipo:            document.getElementById('rg-tipo').value || undefined,
+                tipo:            tipo,
                 fecha:           fechaEl.value,
                 importe:         parseFloat(importeEl.value),
-                ruc:             document.getElementById('rg-ruc').value.trim() || undefined,
-                razon_social:    document.getElementById('rg-razon').value.trim() || undefined,
-                nro_comprobante: document.getElementById('rg-nro-comprobante').value.trim() || undefined,
-                cuenta_contable: document.getElementById('rg-cuenta').value.trim() || undefined,
+                cuenta_contable: cuentaEl.value.trim(),
+                ruc:             !isMovilidad ? rucEl.value.trim() || undefined : undefined,
+                razon_social:    !isMovilidad ? razonEl.value.trim() || undefined : undefined,
+                nro_comprobante: !isMovilidad ? nroEl.value.trim() || undefined : undefined,
+                descripcion_concepto: !isMovilidad ? conceptoEl.value.trim() || undefined : undefined,
+                motivo_movilidad: isMovilidad ? motivoEl.value.trim() || undefined : undefined,
+                destino_movilidad: isMovilidad ? destinoEl.value.trim() || undefined : undefined,
+                ceco_oi: isMovilidad ? cecoOiEl.value.trim() || undefined : undefined,
             };
             Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
             await apiFetch('/nuevo-gasto', { method:'POST', body: JSON.stringify(payload) });
             ModalManager.close('modal-rendir-gasto');
+            await refreshSolicitudesCache();
+            await refreshGastosCache();
+            renderSolicitudesTable(solicitudesCache);
+            renderInicioRecent(solicitudesCache);
             showToast('success', 'Gasto registrado', `El comprobante fue rendido correctamente contra la solicitud #${idSolicitud}.`);
-            await loadRendicionesView();
+            if (document.getElementById('view-detalle-solicitud').classList.contains('active') && detalleSolicitudId === parseInt(idSolicitud, 10)) {
+                const sol = getSolicitudById(detalleSolicitudId);
+                if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
+            }
+            if (document.getElementById('view-rendiciones').classList.contains('active')) {
+                renderRendicionesResumen(gastosCache);
+            }
         } catch (err) {
             errEl.textContent = err.message || 'No se pudo registrar el gasto. Intente de nuevo.'; errEl.style.display = 'block';
-        } finally { setButtonLoading(btn, false); }
+        } finally {
+            setButtonLoading(btn, false);
+        }
     }
 
     /* ── Event binding ────────────────────────────────────── */
@@ -811,9 +1326,17 @@ $args = wp_parse_args(
         document.getElementById('form-editar-solicitud').addEventListener('submit', handleEditarSolicitudSubmit);
         ModalManager.closeOnOverlayClick('modal-editar-solicitud');
 
+        document.getElementById('btn-volver-detalle-solicitud').addEventListener('click', closeDetalleSolicitudView);
+        document.getElementById('btn-detalle-view-agregar-gasto').addEventListener('click', () => {
+            if (!detalleSolicitudId) return;
+            openRendirModal(detalleSolicitudId);
+        });
+        document.getElementById('btn-detalle-view-finalizar-rendicion').addEventListener('click', handleFinalizarRendicion);
+
         document.getElementById('btn-cerrar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('btn-cancelar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('form-rendir-gasto').addEventListener('submit', handleRendirGastoSubmit);
+        document.getElementById('rg-tipo').addEventListener('change', updateRendirTipoUI);
         ModalManager.closeOnOverlayClick('modal-rendir-gasto');
 
         document.getElementById('btn-refrescar-solicitudes').addEventListener('click', loadSolicitudesView);
