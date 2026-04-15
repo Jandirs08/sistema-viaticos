@@ -12,6 +12,7 @@
  * Grupos registrados:
  *  - Grupo 1: Datos de la Solicitud de Viático  → CPT 'solicitud_viatico'
  *  - Grupo 2: Datos del Gasto / Rendición        → CPT 'gasto_rendicion'
+ *  - Grupo 3: Datos ERP del Usuario              → Objeto 'user'
  *
  * @package ThemeAdministracion
  * @version 1.0.0
@@ -45,9 +46,9 @@ function viaticos_register_acf_fields() {
 
     viaticos_acf_group_solicitud();
     viaticos_acf_group_gasto();
+    viaticos_acf_group_usuario();
 }
 add_action( 'acf/init', 'viaticos_register_acf_fields' );
-
 
 // =============================================================================
 // GRUPO 1: CAMPOS PARA 'solicitud_viatico'
@@ -479,4 +480,128 @@ function viaticos_acf_group_gasto() {
         ), // fin fields
 
     ) ); // fin acf_add_local_field_group — grupo gasto
+}
+
+
+// =============================================================================
+// GRUPO 3: CAMPOS PARA USUARIOS
+// =============================================================================
+
+/**
+ * viaticos_acf_group_usuario()
+ *
+ * Registra los campos ERP asociados al objeto user.
+ *
+ * Campos:
+ *  - dni                  : Texto, máximo 8 caracteres.
+ *  - cargo                : Taxonomía de usuario administrable.
+ *  - area_departamento    : Taxonomía de usuario administrable.
+ *  - director_responsable : Relación a usuario.
+ *
+ * @return void
+ */
+function viaticos_acf_group_usuario() {
+
+    acf_add_local_field_group( array(
+
+        'key'                   => 'group_usuario_erp',
+        'title'                 => 'Datos ERP del Usuario',
+        'menu_order'            => 20,
+        'position'              => 'normal',
+        'style'                 => 'default',
+        'label_placement'       => 'top',
+        'instruction_placement' => 'label',
+        'active'                => true,
+        'description'           => 'Información operativa del colaborador para el portal ERP.',
+
+        'location' => array(
+            array(
+                array(
+                    'param'    => 'user_form',
+                    'operator' => '==',
+                    'value'    => 'all',
+                ),
+            ),
+        ),
+
+        'fields' => array(
+            array(
+                'key'           => 'field_user_dni',
+                'label'         => 'DNI',
+                'name'          => 'dni',
+                'type'          => 'text',
+                'instructions'  => 'Ingrese el DNI del colaborador.',
+                'required'      => 0,
+                'maxlength'     => 8,
+                'placeholder'   => '12345678',
+                'wrapper'       => array(
+                    'width' => '33',
+                    'class' => '',
+                    'id'    => '',
+                ),
+            ),
+            array(
+                'key'           => 'field_user_cargo',
+                'label'         => 'Cargo',
+                'name'          => 'cargo',
+                'type'          => 'taxonomy',
+                'instructions'  => 'Seleccione el cargo.',
+                'required'      => 0,
+                'taxonomy'      => 'viaticos_cargo',
+                'field_type'    => 'select',
+                'allow_null'    => 1,
+                'multiple'      => 0,
+                'ui'            => 1,
+                'return_format' => 'id',
+                'save_terms'    => 1,
+                'load_terms'    => 1,
+                'add_term'      => 0,
+                'wrapper'       => array(
+                    'width' => '33',
+                    'class' => '',
+                    'id'    => '',
+                ),
+            ),
+            array(
+                'key'           => 'field_user_area_departamento',
+                'label'         => 'Área / Departamento',
+                'name'          => 'area_departamento',
+                'type'          => 'taxonomy',
+                'instructions'  => 'Seleccione el área.',
+                'required'      => 0,
+                'taxonomy'      => 'viaticos_area',
+                'field_type'    => 'select',
+                'allow_null'    => 1,
+                'multiple'      => 0,
+                'ui'            => 1,
+                'return_format' => 'id',
+                'save_terms'    => 1,
+                'load_terms'    => 1,
+                'add_term'      => 0,
+                'wrapper'       => array(
+                    'width' => '33',
+                    'class' => '',
+                    'id'    => '',
+                ),
+            ),
+            array(
+                'key'           => 'field_user_director_responsable',
+                'label'         => 'Director Responsable',
+                'name'          => 'director_responsable',
+                'type'          => 'user',
+                'instructions'  => 'Seleccione el usuario que actúa como director responsable del colaborador.',
+                'required'      => 0,
+                'role'          => array(),
+                'allow_null'    => 1,
+                'multiple'      => 0,
+                'return_format' => 'id',
+                'wrapper'       => array(
+                    'width' => '100',
+                    'class' => '',
+                    'id'    => '',
+                ),
+            ),
+        ),
+
+    ) );
 }

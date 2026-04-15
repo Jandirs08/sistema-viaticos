@@ -33,6 +33,11 @@ require_once get_template_directory() . '/includes/cpt-setup.php';
 require_once get_template_directory() . '/includes/acf-fields.php';
 
 /**
+ * Incluye el módulo de taxonomías de usuario.
+ */
+require_once get_template_directory() . '/includes/user-taxonomies.php';
+
+/**
  * Incluye el módulo de roles y seguridad.
  */
 require_once get_template_directory() . '/includes/roles-setup.php';
