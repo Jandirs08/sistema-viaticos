@@ -119,6 +119,41 @@ function viaticos_registrar_endpoints() {
             ),
         ),
     ) );
+
+    // ── GET: listar adjuntos de un gasto ─────────────────────────────────
+    register_rest_route( VIATICOS_API_NAMESPACE, '/gasto-adjuntos/(?P<id_gasto>\\d+)', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'viaticos_callback_listar_adjuntos',
+        'permission_callback' => 'viaticos_permission_logueado',
+        'args'                => array(
+            'id_gasto' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'sanitize_callback' => static function( $v ) { return absint( $v ); },
+            ),
+        ),
+    ) );
+
+    // ── POST: subir adjunto a un gasto ────────────────────────────────────
+    register_rest_route( VIATICOS_API_NAMESPACE, '/gasto-adjunto', array(
+        'methods'             => WP_REST_Server::CREATABLE,
+        'callback'            => 'viaticos_callback_subir_adjunto',
+        'permission_callback' => 'viaticos_permission_logueado',
+    ) );
+
+    // ── DELETE: eliminar adjunto ──────────────────────────────────────────
+    register_rest_route( VIATICOS_API_NAMESPACE, '/gasto-adjunto/(?P<id_adjunto>\\d+)', array(
+        'methods'             => 'DELETE',
+        'callback'            => 'viaticos_callback_eliminar_adjunto',
+        'permission_callback' => 'viaticos_permission_logueado',
+        'args'                => array(
+            'id_adjunto' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'sanitize_callback' => static function( $v ) { return absint( $v ); },
+            ),
+        ),
+    ) );
 }
 add_action( 'rest_api_init', 'viaticos_registrar_endpoints' );
 
@@ -973,4 +1008,171 @@ function viaticos_callback_actualizar_estado( WP_REST_Request $request ) {
         ),
         200
     );
+}
+
+
+// =============================================================================
+// ADJUNTOS POR GASTO  /viaticos/v1/gasto-adjuntos  /viaticos/v1/gasto-adjunto
+// =============================================================================
+
+/**
+ * Utilidad interna: valida que el usuario actual puede operar sobre el gasto.
+ * Retorna true o WP_REST_Response con error.
+ */
+function viaticos_check_acceso_gasto( $id_gasto ) {
+    $gasto = get_post( absint( $id_gasto ) );
+    if ( ! $gasto || 'gasto_rendicion' !== $gasto->post_type ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'Gasto no encontrado.' ), 404 );
+    }
+    $is_owner = (int) $gasto->post_author === get_current_user_id();
+    $is_admin = current_user_can( 'administrator' ) || current_user_can( 'admin_viaticos' ) || current_user_can( 'edit_others_posts' );
+    if ( ! $is_owner && ! $is_admin ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'Sin permisos para este gasto.' ), 403 );
+    }
+    return $gasto;
+}
+
+/**
+ * GET /viaticos/v1/gasto-adjuntos/{id_gasto}
+ * Lista los adjuntos de un gasto (URL, nombre, tipo MIME).
+ */
+function viaticos_callback_listar_adjuntos( WP_REST_Request $request ) {
+    $id_gasto = absint( $request->get_param( 'id_gasto' ) );
+    $result   = viaticos_check_acceso_gasto( $id_gasto );
+    if ( $result instanceof WP_REST_Response ) return $result;
+
+    $ids  = get_post_meta( $id_gasto, 'adjuntos_ids', true );
+    $ids  = is_array( $ids ) ? array_filter( array_map( 'absint', $ids ) ) : array();
+    $data = array();
+
+    foreach ( $ids as $att_id ) {
+        $url  = wp_get_attachment_url( $att_id );
+        if ( ! $url ) continue;  // se eliminó del media
+        $data[] = array(
+            'id'   => $att_id,
+            'url'  => $url,
+            'name' => wp_basename( get_attached_file( $att_id ) ),
+            'mime' => (string) get_post_mime_type( $att_id ),
+        );
+    }
+
+    return new WP_REST_Response( array( 'success' => true, 'adjuntos' => $data ), 200 );
+}
+
+/**
+ * POST /viaticos/v1/gasto-adjunto
+ * Sube un archivo y lo adjunta al gasto (multipart/form-data: id_gasto + archivo).
+ * Tipos permitidos: pdf, jpg, jpeg, png, xml.
+ */
+function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
+    // Cargar utilidades de WordPress para manejar uploads.
+    if ( ! function_exists( 'wp_handle_upload' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+    if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+    }
+
+    // id_gasto llega como campo de formulario multipart.
+    $id_gasto = absint( isset( $_POST['id_gasto'] ) ? $_POST['id_gasto'] : 0 );
+    $result   = viaticos_check_acceso_gasto( $id_gasto );
+    if ( $result instanceof WP_REST_Response ) return $result;
+    $gasto = $result;
+
+    // Verificar que la rendición no esté finalizada.
+    $id_solicitud = (int) get_field( 'id_solicitud_padre', $id_gasto );
+    if ( $id_solicitud && viaticos_es_rendicion_finalizada( $id_solicitud ) ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'La rendición ya fue finalizada; no se pueden agregar adjuntos.' ), 409 );
+    }
+
+    if ( empty( $_FILES['archivo'] ) || empty( $_FILES['archivo']['name'] ) ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'No se recibió ningún archivo.' ), 400 );
+    }
+
+    // Tipos MIME permitidos.
+    $allowed = array(
+        'pdf'  => 'application/pdf',
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png'  => 'image/png',
+        'xml'  => 'text/xml',
+    );
+
+    $uploaded = wp_handle_upload( $_FILES['archivo'], array(
+        'test_form' => false,
+        'mimes'     => $allowed,
+    ) );
+
+    if ( isset( $uploaded['error'] ) ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => $uploaded['error'] ), 400 );
+    }
+
+    $att_id = wp_insert_attachment( array(
+        'post_mime_type' => $uploaded['type'],
+        'post_title'     => sanitize_file_name( pathinfo( $uploaded['file'], PATHINFO_FILENAME ) ),
+        'post_content'   => '',
+        'post_status'    => 'inherit',
+        'post_parent'    => $id_gasto,
+    ), $uploaded['file'], $id_gasto );
+
+    if ( is_wp_error( $att_id ) ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => $att_id->get_error_message() ), 500 );
+    }
+
+    wp_update_attachment_metadata( $att_id, wp_generate_attachment_metadata( $att_id, $uploaded['file'] ) );
+
+    // Guardar en meta del gasto.
+    $ids   = get_post_meta( $id_gasto, 'adjuntos_ids', true );
+    $ids   = is_array( $ids ) ? $ids : array();
+    $ids[] = $att_id;
+    update_post_meta( $id_gasto, 'adjuntos_ids', array_values( $ids ) );
+
+    return new WP_REST_Response( array(
+        'success' => true,
+        'message' => 'Archivo subido correctamente.',
+        'adjunto' => array(
+            'id'   => $att_id,
+            'url'  => wp_get_attachment_url( $att_id ),
+            'name' => wp_basename( $uploaded['file'] ),
+            'mime' => $uploaded['type'],
+        ),
+    ), 201 );
+}
+
+/**
+ * DELETE /viaticos/v1/gasto-adjunto/{id_adjunto}
+ * Elimina el adjunto de la media library y de la meta del gasto.
+ */
+function viaticos_callback_eliminar_adjunto( WP_REST_Request $request ) {
+    $id_adjunto = absint( $request->get_param( 'id_adjunto' ) );
+    $attachment = get_post( $id_adjunto );
+
+    if ( ! $attachment || 'attachment' !== $attachment->post_type ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'Adjunto no encontrado.' ), 404 );
+    }
+
+    // El gasto es el post_parent del adjunto.
+    $id_gasto = (int) $attachment->post_parent;
+    $result   = viaticos_check_acceso_gasto( $id_gasto );
+    if ( $result instanceof WP_REST_Response ) return $result;
+
+    // Verificar que la rendición no esté finalizada.
+    $id_solicitud = (int) get_field( 'id_solicitud_padre', $id_gasto );
+    if ( $id_solicitud && viaticos_es_rendicion_finalizada( $id_solicitud ) ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'La rendición ya fue finalizada.' ), 409 );
+    }
+
+    // Actualizar meta.
+    $ids = get_post_meta( $id_gasto, 'adjuntos_ids', true );
+    if ( is_array( $ids ) ) {
+        $ids = array_values( array_filter( $ids, static function( $id ) use ( $id_adjunto ) {
+            return (int) $id !== $id_adjunto;
+        } ) );
+        update_post_meta( $id_gasto, 'adjuntos_ids', $ids );
+    }
+
+    wp_delete_attachment( $id_adjunto, true );
+
+    return new WP_REST_Response( array( 'success' => true, 'message' => 'Adjunto eliminado correctamente.' ), 200 );
 }

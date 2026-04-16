@@ -63,12 +63,25 @@ $args = wp_parse_args(
     --sidebar-bg:       #1E2433;
     --sidebar-hover:    #2D3448;
 
-    /* Badge colors */
-    --badge-pendiente-bg:   #FEF3C7; --badge-pendiente-text: #92400E;
-    --badge-aprobada-bg:    #D1FAE5; --badge-aprobada-text:  #065F46;
-    --badge-observada-bg:   #FFEDD5; --badge-observada-text: #9A3412;
-    --badge-rechazada-bg:   #FEE2E2; --badge-rechazada-text: #991B1B;
-    --badge-rendida-bg:     #EDE9FE; --badge-rendida-text:   #5B21B6;
+    /* Badge colors: solicitud */
+    --badge-solicitud-pendiente-bg:  #FEF3C7; --badge-solicitud-pendiente-text:  #92400E; --badge-solicitud-pendiente-border:  #FCD34D;
+    --badge-solicitud-aprobada-bg:   #D1FAE5; --badge-solicitud-aprobada-text:   #065F46; --badge-solicitud-aprobada-border:   #6EE7B7;
+    --badge-solicitud-observada-bg:  #FFEDD5; --badge-solicitud-observada-text:  #9A3412; --badge-solicitud-observada-border:  #FDBA74;
+    --badge-solicitud-rechazada-bg:  #FEE2E2; --badge-solicitud-rechazada-text:  #991B1B; --badge-solicitud-rechazada-border:  #FCA5A5;
+
+    /* Badge colors: rendicion */
+    --badge-rendicion-no-disponible-bg: #E5E7EB; --badge-rendicion-no-disponible-text: #6B7280; --badge-rendicion-no-disponible-border: #D1D5DB;
+    --badge-rendicion-no-iniciada-bg:   #E0F2FE; --badge-rendicion-no-iniciada-text:   #075985; --badge-rendicion-no-iniciada-border:   #7DD3FC;
+    --badge-rendicion-en-proceso-bg:    #DBEAFE; --badge-rendicion-en-proceso-text:    #1D4ED8; --badge-rendicion-en-proceso-border:    #93C5FD;
+    --badge-rendicion-en-revision-bg:   #E0E7FF; --badge-rendicion-en-revision-text:   #4338CA; --badge-rendicion-en-revision-border:   #A5B4FC;
+    --badge-rendicion-aprobada-bg:      #DCFCE7; --badge-rendicion-aprobada-text:      #166534; --badge-rendicion-aprobada-border:      #86EFAC;
+    --badge-rendicion-observada-bg:     #FEF3C7; --badge-rendicion-observada-text:     #B45309; --badge-rendicion-observada-border:     #FCD34D;
+    --badge-rendicion-rechazada-bg:     #FEE2E2; --badge-rendicion-rechazada-text:     #B91C1C; --badge-rendicion-rechazada-border:     #FCA5A5;
+
+    --estado-solicitud-panel-bg: linear-gradient(180deg, #FFF7ED 0%, #FFFFFF 100%);
+    --estado-solicitud-panel-border: #FED7AA;
+    --estado-rendicion-panel-bg: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 100%);
+    --estado-rendicion-panel-border: #BFDBFE;
 
     --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
     --shadow-md: 0 4px 12px rgba(0,0,0,.10);
@@ -268,14 +281,43 @@ table.erp-table, table.tbl { width: 100%; border-collapse: collapse; font-size: 
 /* ── Badges ──────────────────────────────────────────────── */
 .badge {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 600; white-space: nowrap;
+    padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; white-space: nowrap;
+    border: 1px solid transparent;
 }
 .badge::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.badge-pendiente { background: var(--badge-pendiente-bg); color: var(--badge-pendiente-text); }
-.badge-aprobada  { background: var(--badge-aprobada-bg);  color: var(--badge-aprobada-text);  }
-.badge-observada { background: var(--badge-observada-bg); color: var(--badge-observada-text); }
-.badge-rechazada { background: var(--badge-rechazada-bg); color: var(--badge-rechazada-text); }
-.badge-rendida   { background: var(--badge-rendida-bg);   color: var(--badge-rendida-text);   }
+.badge-solicitud-pendiente { background: var(--badge-solicitud-pendiente-bg); color: var(--badge-solicitud-pendiente-text); border-color: var(--badge-solicitud-pendiente-border); }
+.badge-solicitud-aprobada  { background: var(--badge-solicitud-aprobada-bg);  color: var(--badge-solicitud-aprobada-text);  border-color: var(--badge-solicitud-aprobada-border); }
+.badge-solicitud-observada { background: var(--badge-solicitud-observada-bg); color: var(--badge-solicitud-observada-text); border-color: var(--badge-solicitud-observada-border); }
+.badge-solicitud-rechazada { background: var(--badge-solicitud-rechazada-bg); color: var(--badge-solicitud-rechazada-text); border-color: var(--badge-solicitud-rechazada-border); }
+.badge-rendicion-no_disponible { background: var(--badge-rendicion-no-disponible-bg); color: var(--badge-rendicion-no-disponible-text); border-color: var(--badge-rendicion-no-disponible-border); }
+.badge-rendicion-no_iniciada   { background: var(--badge-rendicion-no-iniciada-bg);   color: var(--badge-rendicion-no-iniciada-text);   border-color: var(--badge-rendicion-no-iniciada-border); }
+.badge-rendicion-en_proceso    { background: var(--badge-rendicion-en-proceso-bg);    color: var(--badge-rendicion-en-proceso-text);    border-color: var(--badge-rendicion-en-proceso-border); }
+.badge-rendicion-en_revision   { background: var(--badge-rendicion-en-revision-bg);   color: var(--badge-rendicion-en-revision-text);   border-color: var(--badge-rendicion-en-revision-border); }
+.badge-rendicion-aprobada      { background: var(--badge-rendicion-aprobada-bg);      color: var(--badge-rendicion-aprobada-text);      border-color: var(--badge-rendicion-aprobada-border); }
+.badge-rendicion-observada     { background: var(--badge-rendicion-observada-bg);     color: var(--badge-rendicion-observada-text);     border-color: var(--badge-rendicion-observada-border); }
+.badge-rendicion-rechazada     { background: var(--badge-rendicion-rechazada-bg);     color: var(--badge-rendicion-rechazada-text);     border-color: var(--badge-rendicion-rechazada-border); }
+
+.estado-group {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 14px 16px; border-radius: 14px; border: 1px solid var(--border);
+    min-height: 94px;
+}
+.estado-group-solicitud { background: var(--estado-solicitud-panel-bg); border-color: var(--estado-solicitud-panel-border); }
+.estado-group-rendicion { background: var(--estado-rendicion-panel-bg); border-color: var(--estado-rendicion-panel-border); }
+.estado-group-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em;
+}
+.estado-group-solicitud .estado-group-label { color: #9A3412; }
+.estado-group-rendicion .estado-group-label { color: #1D4ED8; }
+.estado-group-note { font-size: 12px; color: var(--text-muted); }
+
+.badge-ref {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 44px; padding: 4px 10px; border-radius: 999px;
+    background: #F8FAFC; border: 1px solid var(--border); color: var(--text);
+    font-size: 11.5px; font-weight: 700;
+}
 
 /* ── Buttons ─────────────────────────────────────────────── */
 .btn {
@@ -431,6 +473,562 @@ textarea.form-control { resize: vertical; min-height: 88px; }
 .gasto-item .gi-meta   { color: var(--text-muted); font-size: 12px; }
 .gasto-item .gi-amount { font-weight: 700; color: var(--text); }
 
+/* ── Gasto accordion ─────────────────────────────────────── */
+.gasto-acc-list { display: flex; flex-direction: column; gap: 6px; }
+.gasto-acc-item {
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: var(--surface); overflow: hidden;
+    transition: box-shadow var(--ease);
+}
+.gasto-acc-item.is-open { box-shadow: var(--shadow-sm); border-color: #CBD5E0; }
+.gasto-acc-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 16px; cursor: pointer; user-select: none;
+    background: var(--bg); transition: background var(--ease);
+}
+.gasto-acc-header:hover { background: #EDF2F7; }
+.gasto-acc-item.is-open .gasto-acc-header { background: #EDF2F7; border-bottom: 1px solid var(--border); }
+.gasto-acc-chevron {
+    width: 16px; height: 16px; flex-shrink: 0; color: var(--text-muted);
+    transition: transform .2s ease; display: flex; align-items: center;
+}
+.gasto-acc-item.is-open .gasto-acc-chevron { transform: rotate(90deg); }
+.gasto-acc-tipo {
+    font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px;
+    background: var(--primary-light); color: var(--primary-dark); white-space: nowrap;
+}
+.gasto-acc-summary { flex: 1; min-width: 0; }
+.gasto-acc-summary .gas-label {
+    font-size: 12.5px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gasto-acc-summary .gas-sub {
+    font-size: 11.5px; color: var(--text-muted); margin-top: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gasto-acc-importe { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.gasto-acc-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height .25s ease, padding .2s ease;
+    padding: 0 16px;
+}
+.gasto-acc-item.is-open .gasto-acc-body { max-height: 500px; padding: 14px 16px; }
+.gasto-acc-fields {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+}
+.gasto-acc-field { display: flex; flex-direction: column; gap: 3px; }
+.gaf-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-muted);
+}
+.gaf-value { font-size: 13px; color: var(--text); word-break: break-word; }
+
+/* ── Adjuntos panel (inside gasto accordion body) ──────────── */
+.gasto-adj-panel {
+    margin-top: 16px;
+    padding: 14px 16px 12px;
+    background: #F8FAFC;
+    border: 1px solid #CBD5E0;
+    border-radius: 10px;
+}
+.gasto-adj-title {
+    font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: #4A5568;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; gap: 8px;
+}
+.gasto-adj-title svg { flex-shrink: 0; }
+.gasto-adj-list { display: flex; flex-direction: column; gap: 6px; }
+.gasto-adj-empty {
+    font-size: 12.5px; color: var(--text-muted);
+    padding: 8px 0; font-style: italic;
+}
+.gasto-adj-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; background: #fff;
+    border: 1px solid #E2E8F0; border-radius: 8px;
+    font-size: 12.5px; transition: box-shadow var(--ease);
+}
+.gasto-adj-item:hover { box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.gasto-adj-icon {
+    width: 30px; height: 30px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9.5px; font-weight: 800; color: #fff; letter-spacing: .03em;
+}
+.gasto-adj-icon.pdf  { background: #E53E3E; }
+.gasto-adj-icon.img  { background: #38A169; }
+.gasto-adj-icon.xml  { background: #D69E2E; }
+.gasto-adj-icon.file { background: #718096; }
+.gasto-adj-name {
+    flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; color: var(--text); font-weight: 500;
+}
+.gasto-adj-actions { display: flex; gap: 5px; flex-shrink: 0; }
+.gasto-adj-btn {
+    font-size: 11.5px; padding: 4px 10px;
+    border: 1px solid #CBD5E0; border-radius: 6px;
+    background: #fff; cursor: pointer;
+    color: #4A5568; transition: all var(--ease); font-weight: 500;
+}
+.gasto-adj-btn:hover { background: #EDF2F7; color: var(--text); border-color: #A0AEC0; }
+.gasto-adj-btn.del { color: #C53030; border-color: #FEB2B2; background: #FFF5F5; }
+.gasto-adj-btn.del:hover { background: #FED7D7; border-color: #FC8181; }
+/* Upload area (accordion - unused, removed) */
+.gasto-adj-loading { font-size: 12px; color: var(--text-muted); font-style: italic; }
+
+/* ── Modal: adjuntos section inside "Registrar Gasto" form ── */
+.rg-adj-section {
+    margin-top: 18px;
+    padding: 14px 16px;
+    background: #F8FAFC;
+    border: 1px solid #CBD5E0;
+    border-radius: 10px;
+}
+.rg-adj-header {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: #4A5568; margin-bottom: 10px;
+}
+.rg-adj-file-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+.rg-adj-file-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; background: #fff;
+    border: 1px solid #E2E8F0; border-radius: 7px;
+    font-size: 12px;
+}
+.rg-adj-file-icon {
+    width: 26px; height: 26px; border-radius: 5px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; color: #fff;
+}
+.rg-adj-file-icon.pdf  { background: #E53E3E; }
+.rg-adj-file-icon.img  { background: #38A169; }
+.rg-adj-file-icon.xml  { background: #D69E2E; }
+.rg-adj-file-icon.file { background: #718096; }
+.rg-adj-file-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rg-adj-file-size { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.rg-adj-remove {
+    background: none; border: none; cursor: pointer;
+    color: #A0AEC0; padding: 2px; display: flex; align-items: center;
+    border-radius: 4px; transition: color var(--ease);
+}
+.rg-adj-remove:hover { color: #E53E3E; }
+.rg-adj-pick-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    background: #EBF8FF; border: 1px solid #90CDF4;
+    border-radius: 7px; cursor: pointer;
+    font-size: 12px; font-weight: 600; color: #2B6CB0;
+    transition: all var(--ease);
+}
+.rg-adj-pick-btn:hover { background: #BEE3F8; border-color: #63B3ED; }
+
+
+/* ── Liquidación — vista de documento formal ─────────────────────────── */
+.liq-view-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.liq-view-toolbar .liq-back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 500; color: var(--text-muted);
+    background: none; border: none; cursor: pointer;
+    padding: 6px 0; transition: color var(--ease);
+}
+.liq-view-toolbar .liq-back-btn:hover { color: var(--primary); }
+.liq-view-toolbar .liq-actions { display: flex; gap: 8px; }
+.liq-doc {
+    background: #fff;
+    border: 1px solid #CBD5E0;
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: inherit;
+    max-width: 960px;
+    margin: 0 auto;
+}
+/* Document header */
+.liq-doc-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 28px; background: #1A365D; color: #fff; gap: 16px;
+}
+.liq-doc-header-title { font-size: 17px; font-weight: 800; letter-spacing: .01em; }
+.liq-doc-header-sub { font-size: 12px; opacity: .75; margin-top: 2px; }
+.liq-doc-header-meta { text-align: right; font-size: 12px; opacity: .8; }
+.liq-doc-header-meta strong { display: block; font-size: 15px; opacity: 1; font-weight: 700; }
+/* Info grid */
+.liq-doc-info {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0; border-bottom: 1px solid #E2E8F0;
+}
+.liq-info-cell {
+    padding: 14px 20px; border-right: 1px solid #E2E8F0;
+}
+.liq-info-cell:last-child { border-right: none; }
+.liq-info-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: #718096; margin-bottom: 3px;
+}
+.liq-info-value { font-size: 13px; font-weight: 600; color: #1A202C; }
+.liq-info-value.muted { font-weight: 400; color: #4A5568; }
+/* Table */
+.liq-doc-table-wrap {
+    overflow-x: auto; border-bottom: 1px solid #E2E8F0;
+}
+.liq-doc-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px;
+}
+.liq-doc-table thead tr {
+    background: #EDF2F7;
+}
+.liq-doc-table th {
+    padding: 10px 12px; text-align: left;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #4A5568; white-space: nowrap;
+    border-bottom: 2px solid #CBD5E0;
+}
+.liq-doc-table th.num, .liq-doc-table td.num { text-align: right; }
+.liq-doc-table tbody tr {
+    border-bottom: 1px solid #EDF2F7;
+    transition: background var(--ease);
+}
+.liq-doc-table tbody tr:last-child { border-bottom: none; }
+.liq-doc-table tbody tr:hover { background: #F7FAFC; }
+.liq-doc-table td { padding: 9px 12px; vertical-align: middle; color: #2D3748; }
+.liq-doc-table td.muted { color: #718096; font-size: 11.5px; }
+/* Totals */
+.liq-doc-totals {
+    display: flex; align-items: stretch; justify-content: flex-end;
+    gap: 0; border-top: 2px solid #CBD5E0;
+}
+.liq-total-cell {
+    padding: 14px 20px; min-width: 160px; text-align: center;
+    border-right: 1px solid #E2E8F0;
+}
+.liq-total-cell:last-child { border-right: none; }
+.liq-total-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: #718096; margin-bottom: 4px;
+}
+.liq-total-value { font-size: 17px; font-weight: 800; }
+.liq-total-value.blue { color: #2B6CB0; }
+.liq-total-value.green { color: #276749; }
+.liq-total-value.amber { color: #744210; }
+.liq-total-value.red { color: #9B2C2C; }
+/* Footer */
+.liq-doc-footer {
+    padding: 12px 24px; background: #F7FAFC;
+    border-top: 1px solid #E2E8F0;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: #A0AEC0;
+}
+/* Empty/loading state */
+.liq-doc-empty { padding: 40px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+/* ============================================================
+   SECTION BLOCKS — Jerarquía visual para detalle de solicitud
+   ============================================================ */
+.section-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.section-block:last-child { margin-bottom: 0; }
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: linear-gradient(180deg, #FAFBFC 0%, #F8FAFC 100%);
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.section-header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+}
+.section-header-title svg {
+    width: 18px;
+    height: 18px;
+    color: var(--primary);
+    opacity: 0.8;
+}
+.section-header-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.section-body {
+    padding: 20px;
+}
+
+/* ── Estados Panel ────────────────────────────────────────── */
+.estados-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+.estado-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 18px;
+    border-radius: 10px;
+    border: 1px solid;
+}
+.estado-panel-solicitud {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border-color: #FCD34D;
+}
+.estado-panel-rendicion {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    border-color: #93C5FD;
+}
+.estado-panel-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.estado-panel-solicitud .estado-panel-label { color: #92400E; }
+.estado-panel-rendicion .estado-panel-label { color: #1E40AF; }
+.estado-panel-badge { display: flex; }
+
+/* ── Resumen Económico ───────────────────────────────────── */
+.resumen-economico {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+@media (max-width: 768px) {
+    .resumen-economico { grid-template-columns: 1fr; }
+}
+.resumen-card {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #FAFBFC;
+    text-align: center;
+    position: relative;
+}
+.resumen-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 10px 10px 0 0;
+}
+.resumen-card.monto-solicitado::before { background: #3B82F6; }
+.resumen-card.total-rendido::before { background: #10B981; }
+.resumen-card.saldo::before { background: #F59E0B; }
+.resumen-card.saldo-negativo::before { background: #EF4444; }
+
+.resumen-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+.resumen-card-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+}
+.resumen-card-value.saldo {
+    color: #D97706;
+}
+.resumen-card-value.saldo-negativo {
+    color: #DC2626;
+}
+
+/* ── Datos Generales Grid ────────────────────────────────── */
+.datos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px 20px;
+}
+.dato-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.dato-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+.dato-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+}
+.dato-value.muted {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+.dato-motivo {
+    grid-column: 1 / -1;
+    padding: 14px 16px;
+    background: #FAFBFC;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+}
+
+/* ── Alertas de Estado ───────────────────────────────────── */
+.estado-alerta {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+.estado-alerta-observada {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+}
+.estado-alerta-rechazada {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+}
+.estado-alerta-aprobada {
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+}
+.estado-alerta-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.estado-alerta-content strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+.estado-alerta-observada .estado-alerta-content strong { color: #92400E; }
+.estado-alerta-rechazada .estado-alerta-content strong { color: #991B1B; }
+.estado-alerta-aprobada .estado-alerta-content strong { color: #065F46; }
+.estado-alerta-content p {
+    font-size: 12.5px;
+    margin: 0;
+    line-height: 1.5;
+}
+.estado-alerta-observada .estado-alerta-content p { color: #78350F; }
+.estado-alerta-rechazada .estado-alerta-content p { color: #7F1D1D; }
+.estado-alerta-aprobada .estado-alerta-content p { color: #064E3B; }
+
+/* ── Gastos Section ──────────────────────────────────────── */
+.gastos-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+.gastos-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.gastos-section-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ── Mejoras Accordion Gastos ────────────────────────────── */
+.gasto-acc-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--bg);
+    transition: background var(--ease);
+}
+.gasto-acc-header:hover { background: #EDF2F7; }
+.gasto-acc-item.is-open .gasto-acc-header {
+    background: #EDF2F7;
+    border-bottom: 1px solid var(--border);
+}
+.gasto-acc-tipo {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.gasto-acc-summary { flex: 1; min-width: 0; }
+.gas-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.gas-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.gasto-acc-importe {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── Liquidación mejoras ─────────────────────────────────── */
+.liq-doc { max-width: 900px; }
+.liq-doc-header { padding: 24px 32px; }
+.liq-doc-header-title { font-size: 18px; }
+.liq-doc-info { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 768px) {
+    .liq-doc-info { grid-template-columns: repeat(2, 1fr); }
+}
+.liq-info-cell { padding: 16px 20px; }
+.liq-info-label { font-size: 10px; }
+.liq-info-value { font-size: 14px; }
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */
@@ -446,6 +1044,446 @@ textarea.form-control { resize: vertical; min-height: 88px; }
     .search-input { width: 100%; }
 }
 </style>
+<script>
+/**
+ * ViaticosGastoUI — Shared expandable gasto accordion module.
+ * Exposes:
+ *   renderGastoItem(gasto, idPrefix)  → HTML string for one accordion item
+ *   bindAccordionList(containerEl)    → attach single-open click handlers
+ */
+window.ViaticosGastoUI = (function () {
+    'use strict';
+
+    const TIPO_LABEL = {
+        movilidad:  'Movilidad',
+        vale_caja:  'Vale de Caja',
+        factura:    'Factura',
+        boleta:     'Boleta',
+        rxh:        'RxH',
+    };
+
+    function esc(v) {
+        return String(v || '')
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function fmtFecha(iso) {
+        if (!iso) return '—';
+        const p = String(iso).split('-');
+        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+    }
+
+    function fmtMonto(v) {
+        const n = parseFloat(v);
+        return isNaN(n) ? '—' : 'S/. ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function field(label, value) {
+        if (!value && value !== 0) return '';
+        return `<div class="gasto-acc-field">
+            <span class="gaf-label">${esc(label)}</span>
+            <span class="gaf-value">${esc(String(value))}</span>
+        </div>`;
+    }
+
+    function buildFields(gasto) {
+        const tipo = String(gasto.tipo || '');
+        const parts = [];
+        parts.push(field('Fecha emisión', fmtFecha(gasto.fecha)));
+        parts.push(field('Importe', fmtMonto(gasto.importe)));
+        parts.push(field('Cuenta contable', gasto.cuenta));
+        if (tipo === 'movilidad') {
+            parts.push(field('Motivo', gasto.motivo_movilidad));
+            parts.push(field('Destino', gasto.destino_movilidad));
+            parts.push(field('CECO / OI', gasto.ceco_oi));
+        } else {
+            parts.push(field('RUC proveedor', gasto.ruc));
+            parts.push(field('Razón social', gasto.razon));
+            parts.push(field('N° comprobante', gasto.nro));
+            parts.push(field('Concepto', gasto.concepto));
+        }
+        return parts.filter(Boolean).join('');
+    }
+
+    function summaryText(gasto) {
+        const tipo = String(gasto.tipo || '');
+        if (tipo === 'movilidad') {
+            return [gasto.destino_movilidad, gasto.motivo_movilidad].filter(Boolean).join(' · ') || 'Movilidad registrada';
+        }
+        return [gasto.razon, gasto.nro].filter(Boolean).join(' · ') || gasto.concepto || 'Sin detalle';
+    }
+
+    /**
+     * @param {Object} gasto   - gasto object from API
+     * @param {string} itemId  - unique HTML id for this item
+     * @returns {string} HTML
+     */
+    function renderGastoItem(gasto, itemId) {
+        const tipoLabel = TIPO_LABEL[gasto.tipo] || esc(gasto.tipo) || 'Gasto';
+        const summary   = esc(summaryText(gasto));
+        const fecha     = fmtFecha(gasto.fecha);
+        const importe   = fmtMonto(gasto.importe);
+        const fields    = buildFields(gasto);
+        const chevron   = `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/></svg>`;
+        const gastoId   = gasto.id ? esc(String(gasto.id)) : '';
+
+        return `
+        <div class="gasto-acc-item" data-acc-id="${esc(String(itemId))}" data-gasto-id="${gastoId}">
+            <div class="gasto-acc-header" role="button" tabindex="0"
+                 aria-expanded="false" data-acc-toggle="${esc(String(itemId))}">
+                <span class="gasto-acc-chevron">${chevron}</span>
+                <span class="gasto-acc-tipo">${esc(tipoLabel)}</span>
+                <div class="gasto-acc-summary">
+                    <div class="gas-label">${summary}</div>
+                    <div class="gas-sub">${esc(fecha)}</div>
+                </div>
+                <span class="gasto-acc-importe">${esc(importe)}</span>
+            </div>
+            <div class="gasto-acc-body">
+                <div class="gasto-acc-fields">${fields}</div>
+                ${gastoId ? `<div class="gasto-adj-panel" data-adj-gasto-id="${gastoId}">
+                    <div class="gasto-adj-title">
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#4A5568;"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .28-.22.5-.5.5s-.5-.22-.5-.5V6H11v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S8 2.79 8 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-2.5z"/></svg>
+                            Adjuntos
+                        </span>
+                    </div>
+                    <div class="gasto-adj-list"><span class="gasto-adj-loading">Cargando adjuntos…</span></div>
+                </div>` : ''}
+            </div>
+        </div>`;
+    }
+
+    /**
+     * Bind single-open accordion logic to all .gasto-acc-header elements
+     * inside containerEl. Safe to call multiple times (uses event delegation).
+     * @param {Element} containerEl
+     * @param {Object}  [opts]
+     * @param {Function} [opts.onOpen]  Called with (itemEl, gastoId) when an item opens.
+     */
+    function bindAccordionList(containerEl, opts) {
+        if (!containerEl) return;
+        const onOpen = (opts && typeof opts.onOpen === 'function') ? opts.onOpen : null;
+        containerEl.addEventListener('click', function (e) {
+            const header = e.target.closest('[data-acc-toggle]');
+            if (!header) return;
+            const id = header.dataset.accToggle;
+            const items = containerEl.querySelectorAll('.gasto-acc-item');
+            items.forEach(function (item) {
+                const isTarget = item.dataset.accId === id;
+                const wasOpen  = item.classList.contains('is-open');
+                if (isTarget) {
+                    const nowOpen = !wasOpen;
+                    item.classList.toggle('is-open', nowOpen);
+                    header.setAttribute('aria-expanded', String(nowOpen));
+                    if (nowOpen && onOpen) {
+                        onOpen(item, item.dataset.gastoId || null);
+                    }
+                } else {
+                    item.classList.remove('is-open');
+                    const h = item.querySelector('[data-acc-toggle]');
+                    if (h) h.setAttribute('aria-expanded', 'false');
+                }
+            });
+        });
+        // Keyboard: Enter/Space triggers click on focused header
+        containerEl.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            const header = e.target.closest('[data-acc-toggle]');
+            if (header) { e.preventDefault(); header.click(); }
+        });
+    }
+
+    return { renderGastoItem, bindAccordionList };
+})();
+</script>
+<script>
+window.ViaticosEstadoUI = (function () {
+    const labels = {
+        solicitud: {
+            pendiente: 'Pendiente',
+            aprobada: 'Aprobada',
+            observada: 'Observada',
+            rechazada: 'Rechazada',
+        },
+        rendicion: {
+            no_disponible: 'No disponible',
+            no_iniciada: 'No iniciada',
+            en_proceso: 'En proceso',
+            en_revision: 'En revisión',
+            aprobada: 'Aprobada',
+            observada: 'Observada',
+            rechazada: 'Rechazada',
+        },
+    };
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function isTruthy(value) {
+        return value === true || value === 1 || value === '1';
+    }
+
+    function resolveEstadoSolicitud(estado) {
+        const raw = String(estado || '').toLowerCase();
+        if (raw === 'rendida') return 'aprobada';
+        return labels.solicitud[raw] ? raw : 'pendiente';
+    }
+
+    function resolveEstadoRendicion(options = {}) {
+        const estadoSolicitud = resolveEstadoSolicitud(options.estadoSolicitud || options.estado);
+        const estadoRendicion = String(options.estadoRendicion || '').toLowerCase();
+        const rendicionFinalizada = isTruthy(options.rendicionFinalizada);
+        const tieneGastos = Array.isArray(options.gastos)
+            ? options.gastos.length > 0
+            : !!options.tieneGastos || Number(options.cantidadGastos || 0) > 0 || Number(options.totalRendido || 0) > 0;
+
+        if (estadoSolicitud !== 'aprobada') {
+            return 'no_disponible';
+        }
+
+        if (!rendicionFinalizada) {
+            return tieneGastos ? 'en_proceso' : 'no_iniciada';
+        }
+
+        if (estadoRendicion === 'aprobada' || estadoRendicion === 'observada' || estadoRendicion === 'rechazada') {
+            return estadoRendicion;
+        }
+
+        return 'en_revision';
+    }
+
+    function renderBadgeEstado(tipo, estado) {
+        const normalizedTipo = tipo === 'rendicion' ? 'rendicion' : 'solicitud';
+        const allowed = labels[normalizedTipo];
+        const fallback = normalizedTipo === 'rendicion' ? 'no_disponible' : 'pendiente';
+        const key = allowed[String(estado || '').toLowerCase()] ? String(estado || '').toLowerCase() : fallback;
+        return `<span class="badge badge-${normalizedTipo}-${key}">${escapeHtml(allowed[key])}</span>`;
+    }
+
+    function renderEstadoGrupo(tipo, estado) {
+        const normalizedTipo = tipo === 'rendicion' ? 'rendicion' : 'solicitud';
+        const title = normalizedTipo === 'rendicion' ? 'Rendición' : 'Solicitud';
+        return `
+            <div class="estado-group estado-group-${normalizedTipo}">
+                <div class="estado-group-label">${title}</div>
+                <div>${renderBadgeEstado(normalizedTipo, estado)}</div>
+            </div>
+        `;
+    }
+
+    return {
+        resolveEstadoSolicitud,
+        resolveEstadoRendicion,
+        renderBadgeEstado,
+        renderEstadoGrupo,
+    };
+})();
+window.resolveEstadoSolicitud = window.ViaticosEstadoUI.resolveEstadoSolicitud;
+window.resolveEstadoRendicion = window.ViaticosEstadoUI.resolveEstadoRendicion;
+window.renderBadgeEstado = window.ViaticosEstadoUI.renderBadgeEstado;
+window.renderEstadoGrupo = window.ViaticosEstadoUI.renderEstadoGrupo;
+</script>
+<script>
+/**
+ * ViaticosLiquidacion — Shared formal liquidation document renderer.
+ * Exposes:
+ *   buildData(sol, gastos, opts?)  → normalized data object
+ *   renderDoc(data)                → HTML string (document)
+ */
+window.ViaticosLiquidacion = (function () {
+    'use strict';
+
+    const TIPO_LABEL = {
+        movilidad: 'Movilidad', vale_caja: 'Vale de Caja',
+        factura: 'Factura', boleta: 'Boleta', rxh: 'RxH',
+    };
+    const CLASE_DOC = {
+        movilidad: 'Vale Movilidad', vale_caja: 'Vale de Caja',
+        factura: 'Factura', boleta: 'Boleta', rxh: 'Recibo x Hon.',
+    };
+
+    function esc(v) {
+        return String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function fmtFecha(iso) {
+        if (!iso) return '—';
+        const p = String(iso).split('-');
+        return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+    }
+    function fmtMonto(v) {
+        const n = parseFloat(v);
+        return isNaN(n) ? '—' : 'S/. ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    /**
+     * buildData — normalise all values into a plain object.
+     * @param {Object} sol    Solicitud record from the cache
+     * @param {Array}  gastos Array of gasto records
+     * @param {Object} opts   Optional overrides { colaboradorNombre, area, fechaRendicion }
+     */
+    function buildData(sol, gastos, opts) {
+        opts = opts || {};
+        const gastosArr = Array.isArray(gastos) ? gastos : [];
+        const totalRendido = gastosArr.reduce((s, g) => s + (parseFloat(g.importe) || 0), 0);
+        const montoSolicitado = parseFloat(sol.monto) || 0;
+        const saldo = montoSolicitado - totalRendido;
+        return {
+            id:                sol.id,
+            colaborador:       opts.colaboradorNombre || sol.colaborador || '—',
+            dni:               sol.dni || '—',
+            area:              opts.area || sol.area || '—',
+            cargo:             opts.cargo || sol.cargo || '—',
+            motivo:            sol.motivo || '—',
+            fechaViaje:        sol.fecha || sol.fecha_viaje || '',
+            fechaRendicion:    opts.fechaRendicion || sol.fecha_creacion || '—',
+            montoSolicitado,
+            totalRendido,
+            saldo,
+            moneda:            'SOLES',
+            ceco:              sol.ceco || '—',
+            estadoRendicion:   sol.estado_rendicion || 'finalizada',
+            gastos:            gastosArr,
+        };
+    }
+
+    /**
+     * renderDoc — build the full document HTML from normalised data.
+     * No DOM side-effects; returns a string.
+     */
+    function renderDoc(data) {
+        const today = new Date().toLocaleDateString('es-PE', {
+            day: '2-digit', month: 'long', year: 'numeric',
+        });
+
+        // Rows
+        const rows = data.gastos.map((g, i) => {
+            const tipo = String(g.tipo || '');
+            const concepto = tipo === 'movilidad'
+                ? [g.destino_movilidad, g.motivo_movilidad].filter(Boolean).join(' — ') || g.concepto || '—'
+                : g.concepto || g.razon || '—';
+            const ruc = tipo === 'movilidad' ? '—' : (g.ruc || '—');
+            return `
+            <tr>
+                <td class="muted">${i + 1}</td>
+                <td>${esc(TIPO_LABEL[tipo] || tipo || '—')}</td>
+                <td>${esc(CLASE_DOC[tipo] || '—')}</td>
+                <td>${esc(fmtFecha(g.fecha))}</td>
+                <td>SOLES</td>
+                <td>${esc(g.nro || '—')}</td>
+                <td>${esc(concepto)}</td>
+                <td class="muted">${esc(ruc)}</td>
+                <td class="muted">${esc(g.cuenta || '—')}</td>
+                <td class="muted">${esc(g.ceco_oi || '—')}</td>
+                <td class="num"><strong>${esc(fmtMonto(g.importe))}</strong></td>
+            </tr>`;
+        }).join('');
+
+        const emptyRow = `<tr><td colspan="11" style="text-align:center;padding:28px;color:#A0AEC0;font-style:italic;">Sin gastos registrados.</td></tr>`;
+
+        const saldoClass = data.saldo >= 0 ? 'amber' : 'red';
+
+        return `
+<div class="liq-doc" id="liq-documento">
+    <div class="liq-doc-header">
+        <div>
+            <div class="liq-doc-header-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-3px;margin-right:6px;"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                Liquidación de Rendición de Viáticos
+            </div>
+            <div class="liq-doc-header-sub">Solicitud N.° ${esc(data.id)} &nbsp;&bull;&nbsp; Moneda: ${esc(data.moneda)}</div>
+        </div>
+        <div class="liq-doc-header-meta">
+            <strong>Viáticos ERP</strong>
+            Generado: ${esc(today)}
+        </div>
+    </div>
+
+    <div class="liq-doc-info">
+        <div class="liq-info-cell">
+            <div class="liq-info-label">Colaborador</div>
+            <div class="liq-info-value">${esc(data.colaborador)}</div>
+        </div>
+        <div class="liq-info-cell">
+            <div class="liq-info-label">DNI / Código</div>
+            <div class="liq-info-value">${esc(data.dni)}</div>
+        </div>
+        <div class="liq-info-cell">
+            <div class="liq-info-label">Área</div>
+            <div class="liq-info-value muted">${esc(data.area)}</div>
+        </div>
+        <div class="liq-info-cell">
+            <div class="liq-info-label">CECO / Proyecto</div>
+            <div class="liq-info-value muted">${esc(data.ceco)}</div>
+        </div>
+        <div class="liq-info-cell">
+            <div class="liq-info-label">Fecha de Viaje</div>
+            <div class="liq-info-value">${esc(fmtFecha(data.fechaViaje))}</div>
+        </div>
+        <div class="liq-info-cell">
+            <div class="liq-info-label">Fecha de Rendición</div>
+            <div class="liq-info-value muted">${esc(data.fechaRendicion)}</div>
+        </div>
+        <div class="liq-info-cell" style="grid-column:1/-1;border-top:1px solid #E2E8F0;">
+            <div class="liq-info-label">Motivo del Viaje</div>
+            <div class="liq-info-value muted">${esc(data.motivo)}</div>
+        </div>
+    </div>
+
+    <div class="liq-doc-table-wrap">
+        <table class="liq-doc-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Categoría</th>
+                    <th>Clase Doc.</th>
+                    <th>Fecha</th>
+                    <th>Moneda</th>
+                    <th>N° Documento</th>
+                    <th>Concepto</th>
+                    <th>RUC</th>
+                    <th>Cuenta Cont.</th>
+                    <th>CECO</th>
+                    <th class="num">Importe</th>
+                </tr>
+            </thead>
+            <tbody>${rows || emptyRow}</tbody>
+        </table>
+    </div>
+
+    <div class="liq-doc-totals">
+        <div class="liq-total-cell">
+            <div class="liq-total-label">Monto Solicitado</div>
+            <div class="liq-total-value blue">${esc(fmtMonto(data.montoSolicitado))}</div>
+        </div>
+        <div class="liq-total-cell">
+            <div class="liq-total-label">Total Rendido</div>
+            <div class="liq-total-value green">${esc(fmtMonto(data.totalRendido))}</div>
+        </div>
+        <div class="liq-total-cell">
+            <div class="liq-total-label">Saldo</div>
+            <div class="liq-total-value ${saldoClass}">${esc(fmtMonto(data.saldo))}</div>
+        </div>
+    </div>
+
+    <div class="liq-doc-footer">
+        <span>Solicitud #${esc(data.id)} &mdash; Estado rendición: <strong>${esc(data.estadoRendicion)}</strong></span>
+        <span>Viáticos ERP &mdash; Documento de solo lectura</span>
+    </div>
+</div>`;
+    }
+
+    return { buildData, renderDoc };
+})();
+</script>
 </head>
 
 <body>

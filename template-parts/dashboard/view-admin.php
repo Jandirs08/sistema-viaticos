@@ -94,35 +94,26 @@ $args = wp_parse_args(
         return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
     }
 
+    const estadoUI = window.ViaticosEstadoUI;
+
+    // ── Badge helpers (single source — duplicates removed from AdminApp block below) ──
     function badgeHTML(estado) {
-        const labels = {
-            pendiente: 'Pendiente',
-            aprobada: 'Aprobada',
-            observada: 'Observada',
-            rechazada: 'Rechazada',
-            rendida: 'Rendida',
-        };
-        const key = String(estado || '').toLowerCase();
-        return `<span class="badge badge-${key}">${labels[key] || escHtml(estado)}</span>`;
+        return estadoUI.renderBadgeEstado('solicitud', estadoUI.resolveEstadoSolicitud(estado));
     }
 
-    function renderRendicionBadge(finalizada) {
-        return finalizada
-            ? '<span class="badge badge-aprobada">Finalizada</span>'
-            : '<span class="badge badge-pendiente">Pendiente</span>';
+    function estadoRendicionBadge(source, extra = {}) {
+        return estadoUI.renderBadgeEstado('rendicion', estadoUI.resolveEstadoRendicion({
+            estadoSolicitud: source && source.estado,
+            estadoRendicion: source && source.estado_rendicion,
+            rendicionFinalizada: source && source.rendicion_finalizada,
+            totalRendido: source && source.total_rendido,
+            ...extra,
+        }));
     }
 
-    function estadoRendicionBadge(estado) {
-        const map = {
-            finalizada: { cls: 'badge-pendiente', label: 'Finalizada — En revisión' },
-            aprobada:   { cls: 'badge-aprobada',  label: 'Rendición Aprobada' },
-            observada:  { cls: 'badge-observada', label: 'Rendición Observada' },
-            rechazada:  { cls: 'badge-rechazada', label: 'Rendición Rechazada' },
-        };
-        const k = String(estado || '').toLowerCase();
-        const info = map[k];
-        if (!info) return '<span class="badge" style="background:#E5E7EB;color:#6B7280;">—</span>';
-        return `<span class="badge ${info.cls}">${info.label}</span>`;
+    // ── Business logic helpers ──────────────────────────────────
+    function puedeDecidirRendicion(estadoRend) {
+        return estadoRend === 'finalizada' || estadoRend === '';
     }
 
     function setAdminView(viewId) {
@@ -161,7 +152,7 @@ $args = wp_parse_args(
         counter.textContent = `${rows.length} registros`;
 
         if (!rows.length) {
-            tbody.innerHTML = `<tr><td colspan="6"><div class="tbl-empty"><p>No hay rendiciones finalizadas para revisar.</p></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7"><div class="tbl-empty"><p>No hay rendiciones finalizadas para revisar.</p></div></td></tr>`;
             return;
         }
 
@@ -171,7 +162,8 @@ $args = wp_parse_args(
                 <td><strong>${escHtml(row.colaborador)}</strong></td>
                 <td><strong>${fmt(row.monto)}</strong></td>
                 <td><strong>${fmt(row.total_rendido)}</strong></td>
-                <td>${estadoRendicionBadge(row.estado_rendicion)}</td>
+                <td>${badgeHTML(row.estado)}</td>
+                <td>${estadoRendicionBadge(row)}</td>
                 <td>
                     <button class="btn btn-primary btn-sm js-ver-rendicion" data-id="${row.id}">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6a9.77 9.77 0 0 1 8.82 6A9.77 9.77 0 0 1 12 18a9.77 9.77 0 0 1-8.82-6A9.77 9.77 0 0 1 12 6zm0 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0-2.2a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/></svg>
@@ -186,14 +178,51 @@ $args = wp_parse_args(
         });
     }
 
-    function gastoDetalle(gasto) {
-        const parts = [];
-        if (gasto.concepto) parts.push(gasto.concepto);
-        if (gasto.razon) parts.push(gasto.razon);
-        if (gasto.nro) parts.push(`Nro: ${gasto.nro}`);
-        if (gasto.destino_movilidad) parts.push(`Destino: ${gasto.destino_movilidad}`);
-        if (gasto.motivo_movilidad) parts.push(`Motivo: ${gasto.motivo_movilidad}`);
-        return parts.length ? escHtml(parts.join(' | ')) : 'Sin detalle';
+    const gastoUI = window.ViaticosGastoUI;
+
+    /* ── Adjuntos helpers (admin, read-only) ───────────────────── */
+    function adjIconClassA(mime) {
+        if (!mime) return 'file';
+        if (mime.includes('pdf')) return 'pdf';
+        if (mime.includes('xml')) return 'xml';
+        if (mime.includes('image')) return 'img';
+        return 'file';
+    }
+    function adjIconLabelA(mime) {
+        if (!mime) return 'FILE';
+        if (mime.includes('pdf')) return 'PDF';
+        if (mime.includes('xml')) return 'XML';
+        if (mime.includes('image')) return mime.includes('png') ? 'PNG' : 'JPG';
+        return 'FILE';
+    }
+    function escAdj(v) {
+        return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    async function loadGastoAdjuntosAdmin(gastoId, itemEl) {
+        const panel = itemEl.querySelector('.gasto-adj-panel[data-adj-gasto-id="' + gastoId + '"]');
+        if (!panel || panel.dataset.adjLoaded === '1') return;
+        panel.dataset.adjLoaded = '1';
+        const listEl = panel.querySelector('.gasto-adj-list');
+        listEl.innerHTML = '<span class="gasto-adj-loading">Cargando adjuntos…</span>';
+        try {
+            const res     = await apiFetch('/gasto-adjuntos/' + gastoId);
+            const adjuntos = res.adjuntos || [];
+            if (!adjuntos.length) {
+                listEl.innerHTML = '<span class="gasto-adj-empty">Sin adjuntos registrados para este gasto.</span>';
+                return;
+            }
+            listEl.innerHTML = adjuntos.map(adj => `
+                <div class="gasto-adj-item">
+                    <div class="gasto-adj-icon ${adjIconClassA(adj.mime)}">${adjIconLabelA(adj.mime)}</div>
+                    <span class="gasto-adj-name" title="${escAdj(adj.name)}">${escAdj(adj.name)}</span>
+                    <div class="gasto-adj-actions">
+                        <a class="gasto-adj-btn" href="${escAdj(adj.url)}" target="_blank" rel="noopener">Ver / Descargar</a>
+                    </div>
+                </div>`).join('');
+        } catch(err) {
+            listEl.innerHTML = '<span class="gasto-adj-empty" style="color:#C53030;">Error al cargar adjuntos.</span>';
+        }
     }
 
     function renderDetalle(detalle) {
@@ -205,112 +234,173 @@ $args = wp_parse_args(
 
         const gastos = Array.isArray(detalle.gastos) ? detalle.gastos : [];
         const colaborador = detalle.colaborador || {};
+        const saldoNegativo = parseFloat(detalle.saldo) < 0;
+
         const gastosHtml = gastos.length
-            ? gastos.map(gasto => `
-                <tr>
-                    <td>${fmtFecha(gasto.fecha)}</td>
-                    <td>${escHtml(gasto.tipo || '—')}</td>
-                    <td>${gastoDetalle(gasto)}</td>
-                    <td><strong>${fmt(gasto.importe)}</strong></td>
-                </tr>
-            `).join('')
-            : `<tr><td colspan="4"><div class="tbl-empty"><p>No hay gastos asociados.</p></div></td></tr>`;
+            ? `<div class="gasto-acc-list" id="admin-gastos-acc">${
+                gastos.map((g, i) => gastoUI.renderGastoItem(g, `adm-${detalle.id}-${i}`)).join('')
+              }</div>`
+            : `<div class="table-empty" style="padding:32px 20px;">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.3;"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                <p>No hay gastos asociados a esta solicitud.</p>
+            </div>`;
 
         const estadoRend = detalle.estado_rendicion || '';
-        const puedeDecidir = estadoRend === 'finalizada' || estadoRend === '';
+        const puedeDecidir = puedeDecidirRendicion(estadoRend);
         const decisionBtns = `
-            <div id="rendicion-decision-area" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:14px 20px; border-top:1px solid #E5E7EB;">
-                <span style="font-size:13px; color:var(--text-muted); margin-right:4px;">Decisión:</span>
+            <div id="rendicion-decision-area" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:16px 20px; border-top:1px solid #E5E7EB; background:#FAFBFC;">
+                <span style="font-size:12px; font-weight:600; color:var(--text-muted); margin-right:4px;">Decisión:</span>
                 <button class="btn btn-success btn-sm js-decidir-rendicion" data-decision="aprobada" ${!puedeDecidir ? 'disabled' : ''}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                    Aprobar rendición
+                    Aprobar
                 </button>
                 <button class="btn btn-warning btn-sm js-decidir-rendicion" data-decision="observada" ${!puedeDecidir ? 'disabled' : ''}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-                    Observar rendición
+                    Observar
                 </button>
                 <button class="btn btn-danger btn-sm js-decidir-rendicion" data-decision="rechazada" ${!puedeDecidir ? 'disabled' : ''}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                    Rechazar rendición
+                    Rechazar
                 </button>
-                ${!puedeDecidir ? `<span style="font-size:12px;color:var(--text-muted); margin-left:auto;">Ya se tomó una decisión sobre esta rendición.</span>` : ''}
+                ${!puedeDecidir ? `<span style="font-size:12px;color:var(--text-muted); margin-left:auto;">Decisión ya registrada</span>` : ''}
             </div>
         `;
 
         container.innerHTML = `
-            <div class="card-header">
-                <div>
-                    <div class="card-header-title">Solicitud #${detalle.id}</div>
-                    <div class="card-header-subtitle">Revision administrativa</div>
+            <!-- SECCIÓN: Estados -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        Estados
+                    </div>
                 </div>
-            </div>
-            <div style="padding:20px 20px 4px;">
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <div class="di-label">Estado Solicitud</div>
-                        <div class="di-value">${badgeHTML(detalle.estado)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">Estado Rendición</div>
-                        <div class="di-value" id="rendicion-estado-badge">${estadoRendicionBadge(estadoRend)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">Colaborador</div>
-                        <div class="di-value">${escHtml(colaborador.display_name || '—')}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">Email</div>
-                        <div class="di-value">${escHtml(colaborador.email || '—')}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">DNI</div>
-                        <div class="di-value">${escHtml(detalle.dni || '—')}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">Fecha Viaje</div>
-                        <div class="di-value">${fmtFecha(detalle.fecha_viaje)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">Monto Solicitado</div>
-                        <div class="di-value">${fmt(detalle.monto)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">Total Rendido</div>
-                        <div class="di-value">${fmt(detalle.total_rendido)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">Saldo Simple</div>
-                        <div class="di-value">${fmt(detalle.saldo)}</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="di-label">CECO / Proyecto</div>
-                        <div class="di-value">${escHtml(detalle.ceco || '—')}</div>
-                    </div>
-                    <div class="detail-item col-full">
-                        <div class="di-label">Motivo</div>
-                        <div class="motivo-box">${escHtml(detalle.motivo || '—')}</div>
+                <div class="section-body">
+                    <div class="estados-row">
+                        <div class="estado-panel estado-panel-solicitud">
+                            <div class="estado-panel-label">Estado de Solicitud</div>
+                            <div class="estado-panel-badge">${badgeHTML(detalle.estado)}</div>
+                        </div>
+                        <div class="estado-panel estado-panel-rendicion">
+                            <div class="estado-panel-label">Estado de Rendición</div>
+                            <div class="estado-panel-badge" id="rendicion-estado-badge">${estadoRendicionBadge(detalle)}</div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- SECCIÓN: Resumen Económico -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78.0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61.0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41.0.97-.79 2.03-2.5 2.03-2.08.0-2.98-.93-3.1-2.1H7.3c.13 2.15 1.73 3.56 3.7 3.97V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55.0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                        Resumen Económico
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="resumen-economico">
+                        <div class="resumen-card monto-solicitado">
+                            <div class="resumen-card-label">Monto Solicitado</div>
+                            <div class="resumen-card-value">${fmt(detalle.monto)}</div>
+                        </div>
+                        <div class="resumen-card total-rendido">
+                            <div class="resumen-card-label">Total Rendido</div>
+                            <div class="resumen-card-value">${fmt(detalle.total_rendido)}</div>
+                        </div>
+                        <div class="resumen-card ${saldoNegativo ? 'saldo-negativo' : 'saldo'}">
+                            <div class="resumen-card-label">Saldo</div>
+                            <div class="resumen-card-value ${saldoNegativo ? 'saldo-negativo' : 'saldo'}">${fmt(detalle.saldo)}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: Datos Generales -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+                        Datos Generales
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="datos-grid">
+                        <div class="dato-item">
+                            <div class="dato-label">Colaborador</div>
+                            <div class="dato-value">${escHtml(colaborador.display_name || '—')}</div>
+                        </div>
+                        <div class="dato-item">
+                            <div class="dato-label">Email</div>
+                            <div class="dato-value">${escHtml(colaborador.email || '—')}</div>
+                        </div>
+                        <div class="dato-item">
+                            <div class="dato-label">DNI</div>
+                            <div class="dato-value">${escHtml(detalle.dni || '—')}</div>
+                        </div>
+                        <div class="dato-item">
+                            <div class="dato-label">Fecha de Viaje</div>
+                            <div class="dato-value">${fmtFecha(detalle.fecha_viaje)}</div>
+                        </div>
+                        <div class="dato-item">
+                            <div class="dato-label">CECO / Proyecto</div>
+                            <div class="dato-value">${escHtml(detalle.ceco || '—')}</div>
+                        </div>
+                        <div class="dato-motivo">
+                            <div class="dato-label">Motivo del Viaje</div>
+                            <div class="dato-value muted">${escHtml(detalle.motivo || '—')}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             ${decisionBtns}
             <div id="rendicion-decision-error" style="display:none; margin:0 20px 12px; padding:10px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
-            <div class="card" style="margin:20px;">
-                <div class="card-header">
-                    <div class="card-header-title">Gastos asociados</div>
-                    <div style="font-size:12px;color:var(--text-muted);">${gastos.length} registros</div>
+
+            <!-- SECCIÓN: Gastos -->
+            <div class="section-block" style="margin-top:20px;">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                        Gastos Asociados
+                    </div>
+                    <div class="section-header-subtitle">${gastos.length} registro(s) · Total: ${fmt(detalle.total_rendido)}</div>
                 </div>
-                <div class="table-wrap">
-                    <table class="tbl" aria-label="Detalle de gastos de rendicion">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Importe</th>
-                            </tr>
-                        </thead>
-                        <tbody>${gastosHtml}</tbody>
-                    </table>
+                <div class="section-body" style="padding:16px 20px;">
+                    ${gastosHtml}
                 </div>
             </div>
         `;
+
+        // Bind accordion for gastos + adjuntos lazy-load (read-only).
+        const accContainer = container.querySelector('#admin-gastos-acc');
+        if (accContainer) {
+            gastoUI.bindAccordionList(accContainer, {
+                onOpen: function(itemEl, gastoId) {
+                    if (gastoId) loadGastoAdjuntosAdmin(gastoId, itemEl);
+                }
+            });
+        }
+
+        // Liquidación — shared formal document
+        if (detalle.rendicion_finalizada) {
+            const _liqData = window.ViaticosLiquidacion.buildData(
+                {
+                    id: detalle.id, monto: detalle.monto, fecha: detalle.fecha_viaje,
+                    motivo: detalle.motivo, ceco: detalle.ceco, dni: detalle.dni,
+                    estado_rendicion: detalle.estado_rendicion,
+                    rendicion_finalizada: detalle.rendicion_finalizada,
+                },
+                Array.isArray(detalle.gastos) ? detalle.gastos : [],
+                {
+                    colaboradorNombre: detalle.colaborador ? detalle.colaborador.display_name : '',
+                    fechaRendicion: detalle.fecha_creacion || '',
+                }
+            );
+            const _liqWrap = document.createElement('div');
+            _liqWrap.style.cssText = 'margin:20px;';
+            _liqWrap.innerHTML = window.ViaticosLiquidacion.renderDoc(_liqData);
+            container.appendChild(_liqWrap);
+        }
 
         // Bind decision buttons.
         container.querySelectorAll('.js-decidir-rendicion').forEach(btn => {
@@ -322,13 +412,13 @@ $args = wp_parse_args(
         const tbody = document.getElementById('rendiciones-tbody');
         if (!tbody) return;
 
-        tbody.innerHTML = `<tr><td colspan="5"><div class="tbl-loading"><div class="spinner"></div>Cargando rendiciones...</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7"><div class="tbl-loading"><div class="spinner"></div>Cargando rendiciones...</div></td></tr>`;
 
         try {
             const rows = await fetchRendicionesFinalizadas();
             renderRendicionesTable(rows);
         } catch (error) {
-            tbody.innerHTML = `<tr><td colspan="5"><div class="tbl-empty"><p>Error: ${escHtml(error.message)}</p></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7"><div class="tbl-empty"><p>Error: ${escHtml(error.message)}</p></div></td></tr>`;
         }
     }
 
@@ -370,7 +460,13 @@ $args = wp_parse_args(
 
             // Actualizar badge en la vista, sin recargar todo.
             const badgeEl = document.getElementById('rendicion-estado-badge');
-            if (badgeEl) badgeEl.innerHTML = estadoRendicionBadge(decision);
+            if (badgeEl) {
+                badgeEl.innerHTML = estadoRendicionBadge({
+                    estado: 'aprobada',
+                    estado_rendicion: decision,
+                    rendicion_finalizada: true,
+                });
+            }
 
             // Deshabilitar todos los botones de decisión.
             allBtns.forEach(b => {
@@ -531,11 +627,11 @@ $args = wp_parse_args(
                 <thead>
                     <tr>
                         <th>ID</th><th>Colaborador</th><th>Fecha Viaje</th>
-                        <th>Monto</th><th>Estado</th>
+                        <th>Monto</th><th>Estado solicitud</th><th>Estado rendición</th>
                     </tr>
                 </thead>
                 <tbody id="resumen-tbody">
-                    <tr><td colspan="5"><div class="tbl-loading"><div class="spinner"></div>Cargando...</div></td></tr>
+                    <tr><td colspan="6"><div class="tbl-loading"><div class="spinner"></div>Cargando...</div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -552,7 +648,7 @@ $args = wp_parse_args(
     <div class="page-header">
         <div class="page-header-left">
             <h1>Solicitudes del Equipo</h1>
-            <p>Revisa, filtra y evalúa todas las solicitudes de viáticos.</p>
+            <p>Evaluación de solicitudes de viáticos</p>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             <input
@@ -579,11 +675,11 @@ $args = wp_parse_args(
                 <thead>
                     <tr>
                         <th>ID</th><th>Colaborador</th><th>Fecha Viaje</th>
-                        <th>Monto</th><th>CECO / Proyecto</th><th>Estado</th><th>Acciones</th>
+                        <th>Monto</th><th>CECO / Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="solicitudes-tbody">
-                    <tr><td colspan="7"><div class="tbl-loading"><div class="spinner"></div>Cargando solicitudes...</div></td></tr>
+                    <tr><td colspan="8"><div class="tbl-loading"><div class="spinner"></div>Cargando solicitudes...</div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -600,7 +696,7 @@ $args = wp_parse_args(
     <div class="page-header">
         <div class="page-header-left">
             <h1>Rendiciones Finalizadas</h1>
-            <p>Revisa solicitudes aprobadas con rendici&oacute;n enviada por el colaborador.</p>
+            <p>Solicitudes aprobadas en revisión</p>
         </div>
         <button class="btn btn-ghost btn-sm" id="btn-refrescar-rendiciones" title="Actualizar">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42.0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73.0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31.0-6-2.69-6-6s2.69-6 6-6c1.66.0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
@@ -618,11 +714,11 @@ $args = wp_parse_args(
                 <thead>
                     <tr>
                         <th>ID Solicitud</th><th>Colaborador</th><th>Monto Solicitado</th>
-                        <th>Total Rendido</th><th>Estado Rendición</th><th>Acciones</th>
+                        <th>Total Rendido</th><th>Estado solicitud</th><th>Estado rendición</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="rendiciones-tbody">
-                    <tr><td colspan="6"><div class="tbl-loading"><div class="spinner"></div>Cargando rendiciones...</div></td></tr>
+                    <tr><td colspan="7"><div class="tbl-loading"><div class="spinner"></div>Cargando rendiciones...</div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -638,8 +734,8 @@ $args = wp_parse_args(
 
     <div class="page-header">
         <div class="page-header-left">
-            <h1>Detalle de Rendici&oacute;n</h1>
-            <p>Revisi&oacute;n administrativa en solo lectura.</p>
+            <h1>Detalle de Rendición</h1>
+            <p>Revisión de solicitud y gastos</p>
         </div>
         <button class="btn btn-secondary btn-sm" id="btn-volver-rendiciones">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.58-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -758,11 +854,31 @@ $args = wp_parse_args(
         return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
     }
 
-    const estadoLabel = { pendiente:'Pendiente', aprobada:'Aprobada', observada:'Observada', rechazada:'Rechazada', rendida:'Rendida' };
+    // ── Shared badge & logic helpers (same logic as AdminRendicionesExt; separate IIFE scope) ──
+    const estadoUI = window.ViaticosEstadoUI;
 
     function badgeHTML(estado) {
-        const k = (estado || '').toLowerCase();
-        return `<span class="badge badge-${k}">${estadoLabel[k] || estado}</span>`;
+        return estadoUI.renderBadgeEstado('solicitud', estadoUI.resolveEstadoSolicitud(estado));
+    }
+
+    function estadoRendicionBadge(source) {
+        return estadoUI.renderBadgeEstado('rendicion', estadoUI.resolveEstadoRendicion({
+            estadoSolicitud: source && source.estado,
+            estadoRendicion: source && source.estado_rendicion,
+            rendicionFinalizada: source && source.rendicion_finalizada,
+            totalRendido: source && source.total_rendido,
+        }));
+    }
+
+    function buildAccionAdmin(sol) {
+        const estado = estadoUI.resolveEstadoSolicitud(sol.estado);
+        if (estado === 'pendiente') {
+            return `<button class="btn btn-primary btn-sm action-evaluar" data-id="${sol.id}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                Evaluar
+            </button>`;
+        }
+        return `<span style="color:var(--text-light);font-size:12px;">Sin acciones</span>`;
     }
 
     function escHtml(s) {
@@ -819,7 +935,7 @@ $args = wp_parse_args(
         document.getElementById('tbl-counter').textContent = `${rows.length} de ${data.length} registros`;
 
         if (!rows.length) {
-            tbody.innerHTML = `<tr><td colspan="7"><div class="tbl-empty">
+            tbody.innerHTML = `<tr><td colspan="8"><div class="tbl-empty">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
                 <p>${q ? 'Sin resultados para "' + escHtml(q) + '".' : 'No hay solicitudes registradas.'}</p>
             </div></td></tr>`;
@@ -827,22 +943,15 @@ $args = wp_parse_args(
         }
 
         tbody.innerHTML = rows.map(s => {
-            const estado   = (s.estado || 'pendiente').toLowerCase();
-            const evaluable = estado === 'pendiente' || estado === 'rendida';
-            const accion = evaluable
-                ? `<button class="btn btn-primary btn-sm action-evaluar" data-id="${s.id}">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                        Evaluar
-                   </button>`
-                : `<span style="color:var(--text-light);font-size:12px;">Sin acciones</span>`;
             return `<tr>
                 <td class="muted">#${s.id}</td>
                 <td><strong>${escHtml(s.colaborador)}</strong></td>
                 <td>${fmtFecha(s.fecha)}</td>
                 <td><strong>${fmt(s.monto)}</strong></td>
                 <td>${escHtml(s.ceco)}</td>
-                <td>${badgeHTML(estado)}</td>
-                <td>${accion}</td>
+                <td>${badgeHTML(s.estado)}</td>
+                <td>${estadoRendicionBadge(s)}</td>
+                <td>${buildAccionAdmin(s)}</td>
             </tr>`;
         }).join('');
 
@@ -860,7 +969,7 @@ $args = wp_parse_args(
 
         let pendientes = 0, montoAprobado = 0, observadas = 0;
         data.forEach(s => {
-            const e = (s.estado || '').toLowerCase();
+            const e = estadoUI.resolveEstadoSolicitud(s.estado);
             if (e === 'pendiente') pendientes++;
             if (e === 'aprobada')  montoAprobado += parseFloat(s.monto) || 0;
             if (e === 'observada') observadas++;
@@ -871,7 +980,7 @@ $args = wp_parse_args(
 
         const recent = data.slice(0, 8);
         if (!recent.length) {
-            tbody.innerHTML = `<tr><td colspan="5"><div class="tbl-empty"><p>No hay solicitudes registradas.</p></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6"><div class="tbl-empty"><p>No hay solicitudes registradas.</p></div></td></tr>`;
             return;
         }
         tbody.innerHTML = recent.map(s => `
@@ -881,31 +990,32 @@ $args = wp_parse_args(
                 <td>${fmtFecha(s.fecha)}</td>
                 <td><strong>${fmt(s.monto)}</strong></td>
                 <td>${badgeHTML(s.estado)}</td>
+                <td>${estadoRendicionBadge(s)}</td>
             </tr>`).join('');
     }
 
     /* ── Load per view ────────────────────────────────────── */
     async function loadResumen() {
         const tbody = document.getElementById('resumen-tbody');
-        tbody.innerHTML = `<tr><td colspan="5"><div class="tbl-loading"><div class="spinner"></div>Cargando...</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6"><div class="tbl-loading"><div class="spinner"></div>Cargando...</div></td></tr>`;
         try {
             cache = await fetchTodas();
             renderResumenTable(cache);
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="5"><div class="tbl-empty"><p>Error: ${escHtml(err.message)}</p></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6"><div class="tbl-empty"><p>Error: ${escHtml(err.message)}</p></div></td></tr>`;
             showToast('error', 'Error al cargar datos', err.message);
         }
     }
 
     async function loadSolicitudes() {
         const tbody = document.getElementById('solicitudes-tbody');
-        tbody.innerHTML = `<tr><td colspan="7"><div class="tbl-loading"><div class="spinner"></div>Cargando...</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8"><div class="tbl-loading"><div class="spinner"></div>Cargando...</div></td></tr>`;
         try {
             cache = await fetchTodas();
             const q = document.getElementById('search-solicitudes').value;
             renderSolicitudesTable(cache, q);
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="7"><div class="tbl-empty"><p>Error: ${escHtml(err.message)}</p></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8"><div class="tbl-empty"><p>Error: ${escHtml(err.message)}</p></div></td></tr>`;
             showToast('error', 'Error al cargar solicitudes', err.message);
         }
     }

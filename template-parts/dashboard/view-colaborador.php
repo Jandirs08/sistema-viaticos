@@ -121,11 +121,11 @@ $args = wp_parse_args(
             <table class="erp-table" aria-label="Actividad reciente">
                 <thead>
                     <tr>
-                        <th>ID</th><th>Fecha Viaje</th><th>Monto</th><th>CECO/Proyecto</th><th>Estado</th>
+                        <th>ID</th><th>Fecha Viaje</th><th>Monto</th><th>CECO/Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th>
                     </tr>
                 </thead>
                 <tbody id="inicio-recent-tbody">
-                    <tr><td colspan="5"><div class="table-loading"><div class="spinner"></div> Cargando...</div></td></tr>
+                    <tr><td colspan="6"><div class="table-loading"><div class="spinner"></div> Cargando...</div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -142,7 +142,7 @@ $args = wp_parse_args(
     <div class="page-header">
         <div class="page-header-left">
             <h1>Mis Solicitudes</h1>
-            <p>Gestiona y da seguimiento a tus solicitudes de viáticos.</p>
+            <p>Gestión de solicitudes de viáticos</p>
         </div>
         <button class="btn btn-primary" id="btn-abrir-nueva-solicitud">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -163,11 +163,11 @@ $args = wp_parse_args(
                 <thead>
                     <tr>
                         <th>ID</th><th>Fecha Viaje</th><th>Monto Solicitado</th>
-                        <th>CECO / Proyecto</th><th>Estado</th><th>Acciones</th>
+                        <th>CECO / Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="solicitudes-tbody">
-                    <tr><td colspan="6"><div class="table-loading"><div class="spinner"></div> Cargando solicitudes...</div></td></tr>
+                    <tr><td colspan="7"><div class="table-loading"><div class="spinner"></div> Cargando solicitudes...</div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -184,12 +184,16 @@ $args = wp_parse_args(
     <div class="page-header">
         <div class="page-header-left">
             <h1 id="detalle-view-title">Detalle de Solicitud</h1>
-            <p id="detalle-view-subtitle">Revisa la solicitud y gestiona su rendicion desde esta vista.</p>
+            <p id="detalle-view-subtitle">Revisión y gestión de rendición</p>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button class="btn btn-secondary" id="btn-volver-detalle-solicitud">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                 Volver
+            </button>
+            <button class="btn btn-outline" id="btn-detalle-view-liquidacion" style="display:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                Ver Liquidación
             </button>
             <button class="btn btn-primary" id="btn-detalle-view-agregar-gasto">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -222,7 +226,7 @@ $args = wp_parse_args(
     <div class="page-header">
         <div class="page-header-left">
             <h1>Mis Rendiciones</h1>
-            <p>Revisa los gastos rendidos contra tus solicitudes aprobadas.</p>
+            <p>Gastos registrados por solicitud</p>
         </div>
     </div>
 
@@ -246,6 +250,27 @@ $args = wp_parse_args(
     </div>
 
 </section><!-- /#view-rendiciones -->
+
+<!-- ============================================================
+     VIEW: LIQUIDACIÓN (read-only document)
+     ============================================================ -->
+<section id="view-liquidacion" class="erp-view" aria-label="Liquidación de Rendición">
+    <div class="liq-view-toolbar">
+        <button class="liq-back-btn" id="btn-liq-volver" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            Volver al detalle
+        </button>
+        <div class="liq-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-liq-exportar" title="Exportar PDF (próximamente)" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg>
+                Exportar
+            </button>
+        </div>
+    </div>
+    <div id="liq-doc-container">
+        <div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidación…</div>
+    </div>
+</section><!-- /#view-liquidacion -->
 
 
 <!-- ============================================================
@@ -487,6 +512,19 @@ $args = wp_parse_args(
                         <span class="form-error" id="err-rg-ceco-oi">Ingrese el CECO / OI.</span>
                     </div>
                 </div>
+                <!-- Adjuntos al registrar el gasto -->
+                <div class="rg-adj-section">
+                    <div class="rg-adj-header">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .28-.22.5-.5.5s-.5-.22-.5-.5V6H11v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S8 2.79 8 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-2.5z"/></svg>
+                        Adjuntos <span style="font-weight:400;color:var(--text-muted);">(opcional &mdash; PDF, JPG, PNG, XML)</span>
+                    </div>
+                    <div class="rg-adj-file-list" id="rg-adj-file-list"></div>
+                    <label class="rg-adj-pick-btn">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        Agregar archivo
+                        <input type="file" id="rg-adj-input" accept=".pdf,.jpg,.jpeg,.png,.xml" multiple style="display:none;">
+                    </label>
+                </div>
                 <div id="rendir-gasto-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
             </form>
         </div>
@@ -527,6 +565,24 @@ $args = wp_parse_args(
         return data;
     }
 
+    const estadoUI = window.ViaticosEstadoUI;
+    const renderEstadoBadge = estadoUI.renderBadgeEstado;
+    const renderEstadoGrupo = estadoUI.renderEstadoGrupo;
+
+    function getSolicitudEstado(sol) {
+        return estadoUI.resolveEstadoSolicitud(sol && sol.estado);
+    }
+
+    function getRendicionEstado(sol, extra = {}) {
+        return estadoUI.resolveEstadoRendicion({
+            estadoSolicitud: sol && sol.estado,
+            estadoRendicion: sol && sol.estado_rendicion,
+            rendicionFinalizada: sol && sol.rendicion_finalizada,
+            ...extra,
+        });
+    }
+
+
     function formatMonto(value) {
         const num = parseFloat(value);
         return isNaN(num) ? '—' : 'S/. ' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -538,34 +594,14 @@ $args = wp_parse_args(
         return parts.length !== 3 ? isoStr : `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
 
-    const estadoLabel = { pendiente:'Pendiente', aprobada:'Aprobada', observada:'Observada', rechazada:'Rechazada' };
-
-    function badgeHTML(estado) {
-        const key = (estado || '').toLowerCase();
-        return `<span class="badge badge-${key}">${estadoLabel[key] || estado}</span>`;
+    function renderSolicitudBadge(sol) {
+        return renderEstadoBadge('solicitud', getSolicitudEstado(sol));
     }
 
-    function getRendicionBadgeHTML(finalizada) {
-        return finalizada
-            ? '<span class="badge badge-aprobada">Rendición finalizada</span>'
-            : '<span class="badge badge-pendiente">Rendición en proceso</span>';
+    function renderRendicionBadge(sol, extra = {}) {
+        return renderEstadoBadge('rendicion', getRendicionEstado(sol, extra));
     }
 
-    function getEstadoRendicionBadge(estadoRend, rendicionFinalizada) {
-        if (!rendicionFinalizada) {
-            return '<span class="badge badge-pendiente">En proceso</span>';
-        }
-        const map = {
-            finalizada: { cls: 'badge-pendiente', label: 'Enviada — En revisión' },
-            aprobada:   { cls: 'badge-aprobada',  label: 'Rendición aprobada' },
-            observada:  { cls: 'badge-observada', label: 'Rendición observada' },
-            rechazada:  { cls: 'badge-rechazada', label: 'Rendición rechazada' },
-        };
-        const k = String(estadoRend || '').toLowerCase();
-        const info = map[k];
-        if (!info) return '<span class="badge badge-pendiente">Enviada — En revisión</span>';
-        return `<span class="badge ${info.cls}">${info.label}</span>`;
-    }
 
     function escHtml(str) {
         return String(str || '')
@@ -684,16 +720,17 @@ $args = wp_parse_args(
     /* ── Render: solicitudes table ────────────────────────── */
     function renderSolicitudesTable(data) {
         const tbody = document.getElementById('solicitudes-tbody');
-        if (!data || !data.length) { renderTableEmpty(tbody, 6, 'Aún no tienes solicitudes registradas.'); return; }
+        if (!data || !data.length) { renderTableEmpty(tbody, 7, 'Aún no tienes solicitudes registradas.'); return; }
         tbody.innerHTML = data.map(sol => {
-            const estado   = (sol.estado || 'pendiente').toLowerCase();
+            const gastosSolicitud = getGastosBySolicitud(sol.id);
             const acciones = buildAcciones(sol);
             return `<tr>
                 <td class="text-muted">#${sol.id}</td>
                 <td>${formatFecha(sol.fecha)}</td>
                 <td><strong>${formatMonto(sol.monto)}</strong></td>
                 <td>${escHtml(sol.ceco)}</td>
-                <td>${badgeHTML(estado)}</td>
+                <td>${renderSolicitudBadge(sol)}</td>
+                <td>${renderRendicionBadge(sol, { gastos: gastosSolicitud })}</td>
                 <td>${acciones}</td>
             </tr>`;
         }).join('');
@@ -701,9 +738,8 @@ $args = wp_parse_args(
     }
 
     function buildAcciones(sol) {
-        const estado      = (sol.estado || '').toLowerCase();
-        const estadoRend  = (sol.estado_rendicion || '').toLowerCase();
-        const finalizada  = !!sol.rendicion_finalizada;
+        const estado = getSolicitudEstado(sol);
+        const estadoRend = getRendicionEstado(sol, { gastos: getGastosBySolicitud(sol.id) });
         let btns = '';
 
         // Botón Editar — solo si la solicitud fue observada por el admin
@@ -716,7 +752,7 @@ $args = wp_parse_args(
         // Botón contextual para solicitudes aprobadas
         if (estado === 'aprobada') {
             // caso 1: rendición ya cerrada/evaluada → solo Ver
-            const verSolo = finalizada || estadoRend === 'aprobada' || estadoRend === 'observada' || estadoRend === 'rechazada';
+            const verSolo = [ 'en_revision', 'aprobada', 'observada', 'rechazada' ].includes(estadoRend);
             if (verSolo) {
                 btns += `<button class="btn btn-secondary btn-sm action-ver-rendir" data-id="${sol.id}" title="Ver detalle de la rendición">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76.0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66.0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
@@ -756,138 +792,262 @@ $args = wp_parse_args(
 
     // getRendicionBadgeHTML ya definida arriba (línea ~554) — no se duplica.
 
-    function buildDetalleGasto(gasto) {
-        const tipoLabel = { movilidad:'Movilidad', vale_caja:'Vale de Caja', factura:'Factura', boleta:'Boleta', rxh:'RxH' };
-        if (gasto.tipo === 'movilidad') {
-            const detalleMovilidad = [gasto.destino_movilidad, gasto.motivo_movilidad, gasto.ceco_oi].filter(Boolean).map(escHtml).join(' | ');
-            return {
-                titulo: tipoLabel[gasto.tipo] || 'Movilidad',
-                detalle: detalleMovilidad || 'Movilidad registrada',
-            };
-        }
+    // buildDetalleGasto replaced by shared ViaticosGastoUI.renderGastoItem
+    const gastoUI = window.ViaticosGastoUI;
 
-        const detalleDocumento = [gasto.razon, gasto.nro].filter(Boolean).map(escHtml).join(' | ');
-
-        return {
-            titulo: tipoLabel[gasto.tipo] || gasto.tipo || 'Documento',
-            detalle: detalleDocumento || escHtml(gasto.concepto || 'Sin detalle adicional'),
-        };
+    /* ── Adjuntos helpers ──────────────────────────────────────────── */
+    function adjIconClass(mime) {
+        if (!mime) return 'file';
+        if (mime.includes('pdf')) return 'pdf';
+        if (mime.includes('xml')) return 'xml';
+        if (mime.includes('image')) return 'img';
+        return 'file';
     }
+    function adjIconLabel(mime) {
+        if (!mime) return 'FILE';
+        if (mime.includes('pdf')) return 'PDF';
+        if (mime.includes('xml')) return 'XML';
+        if (mime.includes('image')) return mime.includes('png') ? 'PNG' : 'JPG';
+        return 'FILE';
+    }
+    function escA(v) {
+        return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderAdjuntosList(adjuntos, gastoId, canDelete) {
+        if (!adjuntos.length) {
+            return '<span style="font-size:12px;color:var(--text-muted);">Sin adjuntos.</span>';
+        }
+        return adjuntos.map(adj => `
+            <div class="gasto-adj-item" data-adj-id="${escA(adj.id)}">
+                <div class="gasto-adj-icon ${adjIconClass(adj.mime)}">${adjIconLabel(adj.mime)}</div>
+                <span class="gasto-adj-name" title="${escA(adj.name)}">${escA(adj.name)}</span>
+                <div class="gasto-adj-actions">
+                    <a class="gasto-adj-btn" href="${escA(adj.url)}" target="_blank" rel="noopener">Ver</a>
+                    ${canDelete ? `<button class="gasto-adj-btn del js-adj-delete" data-adj-id="${escA(adj.id)}" data-gasto-id="${escA(gastoId)}">Eliminar</button>` : ''}
+                </div>
+            </div>`).join('');
+    }
+
+
+    async function loadGastoAdjuntos(gastoId, itemEl) {
+        const panel = itemEl.querySelector('.gasto-adj-panel[data-adj-gasto-id="' + gastoId + '"]');
+        if (!panel || panel.dataset.adjLoaded === '1') return;
+        panel.dataset.adjLoaded = '1';
+
+        const listEl = panel.querySelector('.gasto-adj-list');
+        listEl.innerHTML = '<span class="gasto-adj-loading">Cargando adjuntos\u2026</span>';
+        try {
+            const { adjuntos = [] } = await apiFetch('/gasto-adjuntos/' + gastoId);
+            if (!adjuntos.length) {
+                listEl.innerHTML = '<span class="gasto-adj-empty">Sin adjuntos.</span>';
+                return;
+            }
+            listEl.innerHTML = renderAdjuntosList(adjuntos, gastoId, true);
+            listEl.addEventListener('click', async function(e) {
+                const btn = e.target.closest('.js-adj-delete');
+                if (!btn || btn.disabled) return;
+                btn.disabled = true; btn.textContent = '\u2026';
+                try {
+                    await apiFetch('/gasto-adjunto/' + btn.dataset.adjId, { method: 'DELETE' });
+                    panel.dataset.adjLoaded = '0';
+                    await loadGastoAdjuntos(gastoId, itemEl);
+                } catch(err) {
+                    btn.textContent = 'Error';
+                    setTimeout(() => { btn.textContent = 'Eliminar'; btn.disabled = false; }, 2000);
+                }
+            }, { once: true });
+        } catch (err) {
+            listEl.innerHTML = '<span class="gasto-adj-empty" style="color:#C53030;">Error al cargar adjuntos.</span>';
+        }
+    }
+
+    // apiFetchForm: multipart POST (no JSON header)
+    async function apiFetchForm(endpoint, formData) {
+        const url = CONFIG.apiBase.replace(/\/$/, '') + endpoint;
+        const resp = await fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-WP-Nonce': CONFIG.nonce },
+            body: formData,
+        });
+        const json = await resp.json();
+        if (!resp.ok || !json.success) throw new Error(json.message || 'Error en la solicitud.');
+        return json;
+    }
+
+    /* ── Liquidación (Fase 13 base) ─────────────────────────────────── */
+
 
     function renderDetalleSolicitudContent(sol, gastos) {
         const contentEl = document.getElementById('detalle-view-content');
         const totalSolicitado = parseFloat(sol.monto) || 0;
         const totalRendido = gastos.reduce((sum, gasto) => sum + (parseFloat(gasto.importe) || 0), 0);
         const saldo = totalSolicitado - totalRendido;
+        const estadoSolicitud = getSolicitudEstado(sol);
+        const estadoRend = getRendicionEstado(sol, { gastos });
+        const saldoNegativo = saldo < 0;
+
         const gastosHtml = gastos.length
-            ? gastos.map(gasto => {
-                const detalle = buildDetalleGasto(gasto);
-                return `
-                    <div class="gasto-item">
-                        <div>
-                            <strong>${escHtml(detalle.titulo)}</strong>
-                            <div class="gi-meta">${formatFecha(gasto.fecha)} | ${detalle.detalle}</div>
-                        </div>
-                        <div class="gi-amount">${formatMonto(gasto.importe)}</div>
-                    </div>
-                `;
-            }).join('')
-            : `<div class="table-empty" style="padding:18px 0;">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            ? `<div class="gasto-acc-list" id="colab-gastos-acc">${
+                gastos.map((g, i) => gastoUI.renderGastoItem(g, `col-${sol.id}-${i}`)).join('')
+              }</div>`
+            : `<div class="table-empty" style="padding:32px 20px;">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.3;"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                 <p>Aún no registraste gastos para esta solicitud.</p>
             </div>`;
 
         document.getElementById('detalle-view-title').textContent = `Solicitud #${sol.id}`;
-        const estadoRend = (sol.estado_rendicion || '').toLowerCase();
-        const subtitleMap = {
-            finalizada: 'La rendición fue enviada y está en revisión administrativa.',
-            aprobada:   'La rendición fue aprobada por el administrador.',
-            observada:  'El administrador observó la rendición. Revisa el estado.',
-            rechazada:  'El administrador rechazó la rendición. Revisa el estado.',
-        };
-        document.getElementById('detalle-view-subtitle').textContent = sol.rendicion_finalizada
-            ? (subtitleMap[estadoRend] || 'La rendición ya fue enviada para revisión administrativa.')
-            : 'Registra tus gastos y finaliza la rendición cuando esté completa.';
 
-        // Banner de alerta cuando el admin observó o rechazó la rendición.
+        // Alerta de estado si aplica
         const alertaBanner = (() => {
-            if (!sol.rendicion_finalizada) return '';
-            if (estadoRend === 'observada') {
-                return `<div style="margin-bottom:16px; padding:14px 18px; background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; display:flex; gap:12px; align-items:flex-start;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#D97706" style="flex-shrink:0;margin-top:1px"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-                    <div><strong style="color:#92400E;">Rendición observada por el administrador.</strong><p style="margin:4px 0 0; font-size:13px; color:#78350F;">El administrador revisó tu rendición y tiene observaciones. Espera instrucciones.</p></div>
-                </div>`;
-            }
-            if (estadoRend === 'rechazada') {
-                return `<div style="margin-bottom:16px; padding:14px 18px; background:#FEF2F2; border:1px solid #FECACA; border-radius:12px; display:flex; gap:12px; align-items:flex-start;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#DC2626" style="flex-shrink:0;margin-top:1px"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                    <div><strong style="color:#991B1B;">Rendición rechazada por el administrador.</strong><p style="margin:4px 0 0; font-size:13px; color:#7F1D1D;">El administrador rechazó tu rendición. Comunícate con el área de finanzas.</p></div>
-                </div>`;
-            }
-            if (estadoRend === 'aprobada') {
-                return `<div style="margin-bottom:16px; padding:14px 18px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:12px; display:flex; gap:12px; align-items:flex-start;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#059669" style="flex-shrink:0;margin-top:1px"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                    <div><strong style="color:#065F46;">Rendición aprobada por el administrador.</strong><p style="margin:4px 0 0; font-size:13px; color:#064E3B;">Tu rendición fue revisada y aprobada correctamente.</p></div>
-                </div>`;
-            }
-            return '';
+            if (!['observada', 'rechazada', 'aprobada'].includes(estadoRend)) return '';
+            const configs = {
+                observada: {
+                    clase: 'estado-alerta-observada',
+                    icono: '<path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>',
+                    color: '#D97706',
+                    titulo: 'Rendición observada',
+                    mensaje: 'El administrador revisó tu rendición y tiene observaciones. Espera instrucciones.'
+                },
+                rechazada: {
+                    clase: 'estado-alerta-rechazada',
+                    icono: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>',
+                    color: '#DC2626',
+                    titulo: 'Rendición rechazada',
+                    mensaje: 'El administrador rechazó tu rendición. Comunícate con el área de finanzas.'
+                },
+                aprobada: {
+                    clase: 'estado-alerta-aprobada',
+                    icono: '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>',
+                    color: '#059669',
+                    titulo: 'Rendición aprobada',
+                    mensaje: 'Tu rendición fue revisada y aprobada correctamente.'
+                }
+            };
+            const cfg = configs[estadoRend];
+            return `<div class="estado-alerta ${cfg.clase}">
+                <svg class="estado-alerta-icon" viewBox="0 0 24 24" fill="${cfg.color}">${cfg.icono}</svg>
+                <div class="estado-alerta-content">
+                    <strong>${cfg.titulo}</strong>
+                    <p>${cfg.mensaje}</p>
+                </div>
+            </div>`;
         })();
 
         contentEl.innerHTML = `
             ${alertaBanner}
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:18px;">
-                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
-                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Estado solicitud</div>
-                    <div>${badgeHTML(sol.estado)}</div>
+
+            <!-- SECCIÓN: Estados -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        Estados
+                    </div>
                 </div>
-                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
-                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Estado rendición</div>
-                    <div>${getEstadoRendicionBadge(sol.estado_rendicion, sol.rendicion_finalizada)}</div>
-                </div>
-                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
-                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Fecha viaje</div>
-                    <div>${formatFecha(sol.fecha)}</div>
-                </div>
-                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
-                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Monto solicitado</div>
-                    <div><strong>${formatMonto(totalSolicitado)}</strong></div>
-                </div>
-                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
-                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">CECO / Proyecto</div>
-                    <div>${escHtml(sol.ceco || '—')}</div>
-                </div>
-                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
-                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Total rendido</div>
-                    <div><strong>${formatMonto(totalRendido)}</strong></div>
-                </div>
-                <div style="padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#F8FAFC;">
-                    <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Saldo simple</div>
-                    <div><strong>${formatMonto(saldo)}</strong></div>
+                <div class="section-body">
+                    <div class="estados-row">
+                        <div class="estado-panel estado-panel-solicitud">
+                            <div class="estado-panel-label">Estado de Solicitud</div>
+                            <div class="estado-panel-badge">${renderSolicitudBadge(sol)}</div>
+                        </div>
+                        <div class="estado-panel estado-panel-rendicion">
+                            <div class="estado-panel-label">Estado de Rendición</div>
+                            <div class="estado-panel-badge">${renderRendicionBadge(sol, { gastos })}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div style="margin-bottom:18px; padding:14px; border:1px solid #E5E7EB; border-radius:12px; background:#FFF;">
-                <div style="font-size:12px; color:var(--text-muted); margin-bottom:6px;">Motivo del viaje</div>
-                <div>${escHtml(sol.motivo || '—')}</div>
-            </div>
-
-            <div class="card" style="box-shadow:none; border:1px solid #E5E7EB;">
-                <div class="card-header">
-                    <div>
-                        <div class="card-header-title">Gastos asociados</div>
-                        <div class="card-header-subtitle">${gastos.length} gasto(s) registrado(s)</div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div class="card-header-subtitle">Total rendido</div>
-                        <div class="card-header-title">${formatMonto(totalRendido)}</div>
+            <!-- SECCIÓN: Resumen Económico -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78.0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61.0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41.0.97-.79 2.03-2.5 2.03-2.08.0-2.98-.93-3.1-2.1H7.3c.13 2.15 1.73 3.56 3.7 3.97V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55.0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                        Resumen Económico
                     </div>
                 </div>
-                <div class="modal-body" style="padding:16px 20px;">
+                <div class="section-body">
+                    <div class="resumen-economico">
+                        <div class="resumen-card monto-solicitado">
+                            <div class="resumen-card-label">Monto Solicitado</div>
+                            <div class="resumen-card-value">${formatMonto(totalSolicitado)}</div>
+                        </div>
+                        <div class="resumen-card total-rendido">
+                            <div class="resumen-card-label">Total Rendido</div>
+                            <div class="resumen-card-value">${formatMonto(totalRendido)}</div>
+                        </div>
+                        <div class="resumen-card ${saldoNegativo ? 'saldo-negativo' : 'saldo'}">
+                            <div class="resumen-card-label">Saldo</div>
+                            <div class="resumen-card-value ${saldoNegativo ? 'saldo-negativo' : 'saldo'}">${formatMonto(saldo)}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: Datos Generales -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+                        Datos Generales
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="datos-grid">
+                        <div class="dato-item">
+                            <div class="dato-label">Fecha de Viaje</div>
+                            <div class="dato-value">${formatFecha(sol.fecha)}</div>
+                        </div>
+                        <div class="dato-item">
+                            <div class="dato-label">CECO / Proyecto</div>
+                            <div class="dato-value">${escHtml(sol.ceco || '—')}</div>
+                        </div>
+                        <div class="dato-item">
+                            <div class="dato-label">DNI Colaborador</div>
+                            <div class="dato-value">${escHtml(sol.dni || '—')}</div>
+                        </div>
+                        <div class="dato-motivo">
+                            <div class="dato-label">Motivo del Viaje</div>
+                            <div class="dato-value muted">${escHtml(sol.motivo || '—')}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: Gastos -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                        Gastos Asociados
+                    </div>
+                    <div class="section-header-subtitle">${gastos.length} registro(s) · Total: ${formatMonto(totalRendido)}</div>
+                </div>
+                <div class="section-body" style="padding:16px 20px;">
                     ${gastosHtml}
                 </div>
             </div>
         `;
 
+        // Bind accordion for gastos + adjuntos lazy-load.
+        const accContainer = contentEl.querySelector('#colab-gastos-acc');
+        if (accContainer) {
+            gastoUI.bindAccordionList(accContainer, {
+                onOpen: function(itemEl, gastoId) {
+                    if (gastoId) loadGastoAdjuntos(gastoId, itemEl);
+                }
+            });
+        }
+
+
+
+        
+        const btnLiquidacion = document.getElementById('btn-detalle-view-liquidacion');
+        if (btnLiquidacion) {
+            btnLiquidacion.style.display = sol.rendicion_finalizada ? 'inline-flex' : 'none';
+        }
         const btnAgregar = document.getElementById('btn-detalle-view-agregar-gasto');
         const btnFinalizar = document.getElementById('btn-detalle-view-finalizar-rendicion');
         btnAgregar.disabled = !!sol.rendicion_finalizada;
@@ -900,6 +1060,22 @@ $args = wp_parse_args(
             btnAgregar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Agregar gasto';
             btnFinalizar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Finalizar rendición';
         }
+    }
+
+    
+    function openLiquidacionView() {
+        if (!detalleSolicitudId) return;
+        const sol = getSolicitudById(detalleSolicitudId);
+        const gastos = getGastosBySolicitud(detalleSolicitudId);
+        if (!sol) return;
+
+        const data = window.ViaticosLiquidacion.buildData(sol, gastos, {
+            colaboradorNombre: sol.colaborador || '',
+            area:  sol.area || '',
+        });
+        const docEl = document.getElementById('liq-doc-container');
+        if (docEl) docEl.innerHTML = window.ViaticosLiquidacion.renderDoc(data);
+        navigateTo('view-liquidacion');
     }
 
     async function openDetalleSolicitudView(solicitudId) {
@@ -961,20 +1137,21 @@ $args = wp_parse_args(
     function renderInicioRecent(data) {
         const tbody = document.getElementById('inicio-recent-tbody');
         const kpis  = { total: data.length, pendiente: 0, aprobada: 0, rechazada: 0 };
-        data.forEach(s => { const e = (s.estado||'').toLowerCase(); if (e in kpis) kpis[e]++; });
+        data.forEach(s => { const e = getSolicitudEstado(s); if (e in kpis) kpis[e]++; });
         document.getElementById('kpi-total').textContent     = kpis.total;
         document.getElementById('kpi-pendiente').textContent = kpis.pendiente;
         document.getElementById('kpi-aprobada').textContent  = kpis.aprobada;
         document.getElementById('kpi-rechazada').textContent = kpis.rechazada;
 
         const recent = data.slice(0, 5);
-        if (!recent.length) { renderTableEmpty(tbody, 5, 'Aún no tienes actividad registrada.'); return; }
+        if (!recent.length) { renderTableEmpty(tbody, 6, 'Aún no tienes actividad registrada.'); return; }
         tbody.innerHTML = recent.map(sol => `<tr>
             <td class="text-muted">#${sol.id}</td>
             <td>${formatFecha(sol.fecha)}</td>
             <td><strong>${formatMonto(sol.monto)}</strong></td>
             <td>${escHtml(sol.ceco)}</td>
-            <td>${badgeHTML(sol.estado)}</td>
+            <td>${renderSolicitudBadge(sol)}</td>
+            <td>${renderRendicionBadge(sol, { gastos: getGastosBySolicitud(sol.id) })}</td>
         </tr>`).join('');
     }
 
@@ -985,7 +1162,7 @@ $args = wp_parse_args(
         const tipoLabel = { movilidad:'Movilidad', vale_caja:'Vale de Caja', factura:'Factura', boleta:'Boleta', rxh:'RxH' };
         tbody.innerHTML = data.map(g => `<tr>
             <td class="text-muted">#${g.id}</td>
-            <td>${g.id_solicitud ? `<span class="badge badge-aprobada">#${g.id_solicitud}</span>` : '—'}</td>
+            <td>${g.id_solicitud ? `<span class="badge-ref">#${g.id_solicitud}</span>` : '—'}</td>
             <td>${tipoLabel[g.tipo] || g.tipo || '—'}</td>
             <td>${formatFecha(g.fecha)}</td>
             <td><strong>${formatMonto(g.importe)}</strong></td>
@@ -1009,23 +1186,22 @@ $args = wp_parse_args(
     /* ── Load per view ────────────────────────────────────── */
     async function loadInicioView() {
         const tbody = document.getElementById('inicio-recent-tbody');
-        renderTableLoading(tbody, 5);
-        try { await refreshSolicitudesCache(); renderInicioRecent(solicitudesCache); }
-        catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 5, 'Error al cargar datos.'); showToast('error', 'Error', err.message); }
+        renderTableLoading(tbody, 6);
+        try { await Promise.all([ refreshSolicitudesCache(), refreshGastosCache() ]); renderInicioRecent(solicitudesCache); }
+        catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 6, 'Error al cargar datos.'); showToast('error', 'Error', err.message); }
     }
 
     async function loadSolicitudesView() {
         const tbody = document.getElementById('solicitudes-tbody');
-        renderTableLoading(tbody, 6);
-        try { await refreshSolicitudesCache(); renderSolicitudesTable(solicitudesCache); }
-        catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 6, 'Error al cargar solicitudes.'); showToast('error', 'Error', err.message); }
+        renderTableLoading(tbody, 7);
+        try { await Promise.all([ refreshSolicitudesCache(), refreshGastosCache() ]); renderSolicitudesTable(solicitudesCache); }
+        catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 7, 'Error al cargar solicitudes.'); showToast('error', 'Error', err.message); }
     }
 
     function renderRendicionesResumen(data) {
         const tbody = document.getElementById('rendiciones-tbody');
-        if (!data || !data.length) { renderTableEmpty(tbody, 6, 'AÃºn no tienes gastos rendidos registrados.'); return; }
+        if (!data || !data.length) { renderTableEmpty(tbody, 6, 'Aún no tienes gastos rendidos registrados.'); return; }
 
-        const tipoLabel = { movilidad:'Movilidad', vale_caja:'Vale de Caja', factura:'Factura', boleta:'Boleta', rxh:'RxH' };
         const grouped = data.reduce((acc, gasto) => {
             const key = gasto.id_solicitud || 0;
             if (!acc[key]) acc[key] = [];
@@ -1033,59 +1209,59 @@ $args = wp_parse_args(
             return acc;
         }, {});
 
-        function buildDetalleCorto(gasto) {
-            if (gasto.tipo === 'movilidad') {
-                const parts = [gasto.destino_movilidad, gasto.motivo_movilidad, gasto.ceco_oi].filter(Boolean);
-                return parts.length ? parts.map(escHtml).join(' | ') : 'Movilidad registrada';
-            }
-            const parts = [];
-            if (gasto.razon) parts.push(escHtml(gasto.razon));
-            if (gasto.nro) parts.push(escHtml(gasto.nro));
-            if (!parts.length && gasto.concepto) parts.push(escHtml(gasto.concepto));
-            return parts.length ? parts.join(' | ') : 'Sin detalle adicional';
-        }
+        const sortedIds = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
 
-        tbody.innerHTML = Object.keys(grouped)
-            .sort((a, b) => Number(b) - Number(a))
-            .map(id => {
-                const gastos = grouped[id];
-                const total = gastos.reduce((sum, gasto) => sum + (parseFloat(gasto.importe) || 0), 0);
-                const details = gastos.map(gasto => `
-                    <div class="gasto-item">
-                        <div>
-                            <strong>${escHtml(tipoLabel[gasto.tipo] || gasto.tipo || 'â€”')}</strong>
-                            <div class="gi-meta">${formatFecha(gasto.fecha)} | ${buildDetalleCorto(gasto)}</div>
-                        </div>
-                        <div class="gi-amount">${formatMonto(gasto.importe)}</div>
+        tbody.innerHTML = sortedIds.map(id => {
+            const gastos = grouped[id];
+            const solicitud = getSolicitudById(id);
+            const total = gastos.reduce((sum, g) => sum + (parseFloat(g.importe) || 0), 0);
+            const accId = `rend-acc-sol-${escHtml(id)}`;
+            const details = `<div class="gasto-acc-list" id="${accId}">${
+                gastos.map((g, i) => gastoUI.renderGastoItem(g, `rend-${id}-${i}`)).join('')
+            }</div>`;
+
+            const estadosRow = solicitud ? `
+                <div class="estados-row" style="padding:0 20px 16px;">
+                    <div class="estado-panel estado-panel-solicitud">
+                        <div class="estado-panel-label">Estado de Solicitud</div>
+                        <div class="estado-panel-badge">${renderSolicitudBadge(solicitud)}</div>
                     </div>
-                `).join('');
+                    <div class="estado-panel estado-panel-rendicion">
+                        <div class="estado-panel-label">Estado de Rendición</div>
+                        <div class="estado-panel-badge">${renderRendicionBadge(solicitud, { gastos })}</div>
+                    </div>
+                </div>
+            ` : '';
 
-                return `<tr>
-                    <td colspan="6" style="padding:18px 16px;">
-                        <div class="card" style="box-shadow:none;">
-                            <div class="card-header">
-                                <div>
-                                    <div class="card-header-title">Solicitud #${escHtml(id)}</div>
-                                    <div class="card-header-subtitle">${gastos.length} gasto(s) registrado(s)</div>
-                                </div>
-                                <div style="text-align:right;">
-                                    <div class="card-header-subtitle">Total rendido</div>
-                                    <div class="card-header-title">${formatMonto(total)}</div>
-                                </div>
+            return `<tr>
+                <td colspan="6" style="padding:12px 16px;">
+                    <div class="section-block" style="margin:0;">
+                        <div class="section-header">
+                            <div class="section-header-title">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+                                Solicitud #${escHtml(id)}
                             </div>
-                            <div class="modal-body" style="padding:16px 20px;">
-                                ${details}
-                            </div>
+                            <div class="section-header-subtitle">${formatMonto(total)} · ${gastos.length} gasto(s)</div>
                         </div>
-                    </td>
-                </tr>`;
-            }).join('');
+                        ${estadosRow}
+                        <div class="section-body" style="padding:16px 20px;">
+                            ${details}
+                        </div>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+
+        sortedIds.forEach(id => {
+            const el = document.getElementById(`rend-acc-sol-${id}`);
+            if (el) gastoUI.bindAccordionList(el);
+        });
     }
 
     async function loadRendicionesView() {
         const tbody = document.getElementById('rendiciones-tbody');
         renderTableLoading(tbody, 6);
-        try { await refreshGastosCache(); renderRendicionesResumen(gastosCache); }
+        try { await Promise.all([ refreshSolicitudesCache(), refreshGastosCache() ]); renderRendicionesResumen(gastosCache); }
         catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 6, 'Error al cargar rendiciones.'); showToast('error', 'Error', err.message); }
     }
 
@@ -1222,15 +1398,53 @@ $args = wp_parse_args(
         }
     }
 
+    // Accumulated files for the current modal session
+    let _adjFiles = [];
+
     function openRendirModal(solicitudId) {
         const form = document.getElementById('form-rendir-gasto');
         form.reset(); resetFormErrors(form);
         document.getElementById('rendir-gasto-error').style.display = 'none';
         document.getElementById('rg-id-solicitud').value = solicitudId;
         document.getElementById('rendir-sol-ref').textContent = `#${solicitudId}`;
+        _adjFiles = [];
+        renderAdjPickList();
         updateRendirTipoUI();
         ModalManager.open('modal-rendir-gasto');
         document.getElementById('rg-tipo').focus();
+    }
+
+
+
+    function renderAdjPickList() {
+        const listEl = document.getElementById('rg-adj-file-list');
+        if (!listEl) return;
+        if (!_adjFiles.length) { listEl.innerHTML = ''; return; }
+        listEl.innerHTML = _adjFiles.map((f, i) => `
+            <div class="rg-adj-file-item">
+                <span class="rg-adj-file-icon ${adjIconClass(f.type)}">${adjIconLabel(f.type)}</span>
+                <span class="rg-adj-file-name" title="${escA(f.name)}">${escA(f.name)}</span>
+                <span class="rg-adj-file-size">${(f.size/1024).toFixed(0)} KB</span>
+                <button type="button" class="rg-adj-remove" data-idx="${i}" aria-label="Quitar">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>`).join('');
+        listEl.querySelectorAll('.rg-adj-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                _adjFiles.splice(parseInt(btn.dataset.idx, 10), 1);
+                renderAdjPickList();
+            });
+        });
+    }
+
+    function bindAdjInput() {
+        const input = document.getElementById('rg-adj-input');
+        if (!input) return;
+        input.addEventListener('change', function() {
+            Array.from(this.files).forEach(f => _adjFiles.push(f));
+            this.value = '';
+            renderAdjPickList();
+        });
     }
 
     async function handleRendirGastoSubmit(e) {
@@ -1289,7 +1503,21 @@ $args = wp_parse_args(
                 ceco_oi: isMovilidad ? cecoOiEl.value.trim() || undefined : undefined,
             };
             Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
-            await apiFetch('/nuevo-gasto', { method:'POST', body: JSON.stringify(payload) });
+            const res = await apiFetch('/nuevo-gasto', { method:'POST', body: JSON.stringify(payload) });
+            const gastoId = res.id;
+            if (gastoId && _adjFiles.length) {
+                for (const file of [..._adjFiles]) {
+                    try {
+                        const fd = new FormData();
+                        fd.append('id_gasto', gastoId);
+                        fd.append('archivo', file);
+                        await apiFetchForm('/gasto-adjunto', fd);
+                    } catch(uploadErr) {
+                        console.warn('[Adjunto] No se pudo subir:', file.name, uploadErr.message);
+                    }
+                }
+                _adjFiles = [];
+            }
             ModalManager.close('modal-rendir-gasto');
             await refreshSolicitudesCache();
             await refreshGastosCache();
@@ -1327,12 +1555,18 @@ $args = wp_parse_args(
         ModalManager.closeOnOverlayClick('modal-editar-solicitud');
 
         document.getElementById('btn-volver-detalle-solicitud').addEventListener('click', closeDetalleSolicitudView);
+                const liqBtn = document.getElementById('btn-detalle-view-liquidacion');
+        if (liqBtn) liqBtn.addEventListener('click', openLiquidacionView);
+        const liqBack = document.getElementById('btn-liq-volver');
+        if (liqBack) liqBack.addEventListener('click', () => navigateTo('view-detalle-solicitud'));
+
         document.getElementById('btn-detalle-view-agregar-gasto').addEventListener('click', () => {
             if (!detalleSolicitudId) return;
             openRendirModal(detalleSolicitudId);
         });
         document.getElementById('btn-detalle-view-finalizar-rendicion').addEventListener('click', handleFinalizarRendicion);
 
+        bindAdjInput();
         document.getElementById('btn-cerrar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('btn-cancelar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('form-rendir-gasto').addEventListener('submit', handleRendirGastoSubmit);
