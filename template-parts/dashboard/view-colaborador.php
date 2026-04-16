@@ -566,6 +566,7 @@ $args = wp_parse_args(
     }
 
     const estadoUI = window.ViaticosEstadoUI;
+    const timelineUI = window.ViaticosTimelineUI;
     const renderEstadoBadge = estadoUI.renderBadgeEstado;
     const renderEstadoGrupo = estadoUI.renderEstadoGrupo;
 
@@ -887,6 +888,8 @@ $args = wp_parse_args(
         const estadoSolicitud = getSolicitudEstado(sol);
         const estadoRend = getRendicionEstado(sol, { gastos });
         const saldoNegativo = saldo < 0;
+        const historial = Array.isArray(sol.historial) ? sol.historial : [];
+        const historialHtml = timelineUI.renderTimeline(historial);
 
         const gastosHtml = gastos.length
             ? `<div class="gasto-acc-list" id="colab-gastos-acc">${
@@ -1016,7 +1019,20 @@ $args = wp_parse_args(
                 </div>
             </div>
 
-            <!-- SECCIÓN: Gastos -->
+            <!-- SECCIÓN: Historial -->
+            <div class="section-block">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 1 0 8.95 10H20a7 7 0 1 1-2.05-4.95L16 10h6V4l-2.64 2.64A8.96 8.96 0 0 0 13 3zm-1 5h2v5l4.25 2.52-1 1.68L12 14V8z"/></svg>
+                        Historial
+                    </div>
+                    <div class="section-header-subtitle">${historial.length} evento(s)</div>
+                </div>
+                <div class="section-body">
+                    ${historialHtml}
+                </div>
+            </div>
+
             <div class="section-block">
                 <div class="section-header">
                     <div class="section-header-title">

@@ -278,6 +278,117 @@ function viaticos_calcular_total_rendido_solicitud( $solicitud_id ) {
     return $total;
 }
 
+function viaticos_get_historial_meta_key() {
+    return 'viaticos_historial_solicitud';
+}
+
+function viaticos_get_eventos_historial_validos() {
+    return array(
+        'solicitud_creada',
+        'solicitud_aprobada',
+        'solicitud_observada',
+        'solicitud_rechazada',
+        'rendicion_iniciada',
+        'rendicion_finalizada',
+        'rendicion_aprobada',
+        'rendicion_observada',
+        'rendicion_rechazada',
+    );
+}
+
+function registrarEventoSolicitud( $solicitud_id, $evento, $usuario_id = 0 ) {
+    $solicitud_id = absint( $solicitud_id );
+    $evento       = sanitize_key( $evento );
+    $usuario_id   = absint( $usuario_id ?: get_current_user_id() );
+
+    if ( ! $solicitud_id || 'solicitud_viatico' !== get_post_type( $solicitud_id ) ) {
+        return false;
+    }
+
+    if ( ! in_array( $evento, viaticos_get_eventos_historial_validos(), true ) ) {
+        return false;
+    }
+
+    $historial = get_post_meta( $solicitud_id, viaticos_get_historial_meta_key(), true );
+    $historial = is_array( $historial ) ? $historial : array();
+    $ultimo    = ! empty( $historial ) ? end( $historial ) : null;
+
+    if (
+        is_array( $ultimo )
+        && ( $ultimo['evento'] ?? '' ) === $evento
+        && absint( $ultimo['usuario_id'] ?? 0 ) === $usuario_id
+    ) {
+        return false;
+    }
+
+    $historial[] = array(
+        'evento'     => $evento,
+        'fecha'      => current_time( 'timestamp' ),
+        'usuario_id' => $usuario_id,
+    );
+
+    return update_post_meta( $solicitud_id, viaticos_get_historial_meta_key(), $historial );
+}
+
+function viaticos_obtener_historial_solicitud( $solicitud_id ) {
+    $historial = get_post_meta( absint( $solicitud_id ), viaticos_get_historial_meta_key(), true );
+    $historial = is_array( $historial ) ? $historial : array();
+    $eventos   = viaticos_get_eventos_historial_validos();
+    $data      = array();
+
+    foreach ( $historial as $item ) {
+        if ( ! is_array( $item ) ) {
+            continue;
+        }
+
+        $evento = sanitize_key( $item['evento'] ?? '' );
+
+        if ( ! in_array( $evento, $eventos, true ) ) {
+            continue;
+        }
+
+        $data[] = array(
+            'evento'     => $evento,
+            'fecha'      => absint( $item['fecha'] ?? 0 ),
+            'usuario_id' => absint( $item['usuario_id'] ?? 0 ),
+        );
+    }
+
+    usort(
+        $data,
+        static function( $a, $b ) {
+            return (int) $a['fecha'] <=> (int) $b['fecha'];
+        }
+    );
+
+    return $data;
+}
+
+function viaticos_preparar_historial_solicitud( $solicitud_id ) {
+    $historial = viaticos_obtener_historial_solicitud( $solicitud_id );
+    $usuarios  = array();
+    $data      = array();
+
+    foreach ( $historial as $item ) {
+        $usuario_id = absint( $item['usuario_id'] );
+
+        if ( $usuario_id && ! array_key_exists( $usuario_id, $usuarios ) ) {
+            $usuarios[ $usuario_id ] = get_userdata( $usuario_id );
+        }
+
+        $usuario = $usuario_id ? $usuarios[ $usuario_id ] : null;
+
+        $data[] = array(
+            'evento'         => $item['evento'],
+            'fecha'          => $item['fecha'],
+            'usuario_id'     => $usuario_id,
+            'usuario_nombre' => $usuario ? $usuario->display_name : '',
+        );
+    }
+
+    return $data;
+}
+
 // =============================================================================
 // ENDPOINT 1: POST /viaticos/v1/nueva-solicitud
 // =============================================================================
@@ -354,6 +465,7 @@ function viaticos_callback_nueva_solicitud( WP_REST_Request $request ) {
     update_field( 'field_sol_motivo_viaje',     $request->get_param( 'motivo' ), $post_id );
     update_field( 'field_sol_centro_costo',     $request->get_param( 'ceco' ),   $post_id );
     update_field( 'field_sol_estado_solicitud', 'pendiente',                      $post_id );
+    registrarEventoSolicitud( $post_id, 'solicitud_creada', get_current_user_id() );
 
     return new WP_REST_Response(
         array(
@@ -471,6 +583,7 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
     $id_solicitud = $request->get_param( 'id_solicitud' );
     $tipo         = $request->get_param( 'tipo' );
     $solicitud    = get_post( $id_solicitud );
+    $tenia_gastos = viaticos_solicitud_tiene_gastos( $id_solicitud );
 
     if ( ! $solicitud || 'solicitud_viatico' !== $solicitud->post_type ) {
         return new WP_REST_Response(
@@ -622,6 +735,10 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
         update_field( 'field_gas_descripcion_concepto', $request->get_param( 'descripcion_concepto' ), $post_id );
     }
 
+    if ( ! $tenia_gastos ) {
+        registrarEventoSolicitud( $id_solicitud, 'rendicion_iniciada', get_current_user_id() );
+    }
+
     return new WP_REST_Response(
         array(
             'success' => true,
@@ -694,6 +811,8 @@ function viaticos_callback_finalizar_rendicion( WP_REST_Request $request ) {
         update_post_meta( $id_solicitud, 'estado_rendicion', 'finalizada' );
     }
 
+    registrarEventoSolicitud( $id_solicitud, 'rendicion_finalizada', get_current_user_id() );
+
     return new WP_REST_Response(
         array(
             'success'              => true,
@@ -746,6 +865,7 @@ function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
             'estado'               => get_field( 'estado_solicitud', $post->ID ) ?: 'pendiente',
             'rendicion_finalizada' => viaticos_es_rendicion_finalizada( $post->ID ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
+            'historial'            => viaticos_preparar_historial_solicitud( $post->ID ),
         );
     }
 
@@ -845,6 +965,7 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
             'total_rendido'        => $rendicion_finalizada ? viaticos_calcular_total_rendido_solicitud( $post->ID ) : 0,
             'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
+            'historial'            => viaticos_preparar_historial_solicitud( $post->ID ),
         );
     }
 
@@ -906,6 +1027,7 @@ function viaticos_callback_detalle_rendicion_admin( WP_REST_Request $request ) {
                 'email'        => $usuario ? $usuario->user_email : '',
             ),
             'gastos'               => $gastos,
+            'historial'            => viaticos_preparar_historial_solicitud( $id_solicitud ),
         ),
         200
     );
@@ -944,7 +1066,18 @@ function viaticos_callback_decidir_rendicion( WP_REST_Request $request ) {
         );
     }
 
+    $estado_anterior = viaticos_get_estado_rendicion( $id_solicitud );
     update_post_meta( $id_solicitud, 'estado_rendicion', $decision );
+
+    $eventos = array(
+        'aprobada'  => 'rendicion_aprobada',
+        'observada' => 'rendicion_observada',
+        'rechazada' => 'rendicion_rechazada',
+    );
+
+    if ( $estado_anterior !== $decision && isset( $eventos[ $decision ] ) ) {
+        registrarEventoSolicitud( $id_solicitud, $eventos[ $decision ], get_current_user_id() );
+    }
 
     $labels = array(
         'aprobada'  => 'aprobada',
@@ -981,6 +1114,7 @@ function viaticos_callback_actualizar_estado( WP_REST_Request $request ) {
 
     $post_id     = $request->get_param( 'id_solicitud' );
     $nuevo_estado = $request->get_param( 'nuevo_estado' );
+    $estado_actual = get_field( 'estado_solicitud', $post_id ) ?: 'pendiente';
 
     // Doble verificación: el post debe ser del tipo correcto.
     if ( 'solicitud_viatico' !== get_post_type( $post_id ) ) {
@@ -997,6 +1131,16 @@ function viaticos_callback_actualizar_estado( WP_REST_Request $request ) {
             array( 'success' => false, 'message' => 'No se pudo actualizar el estado.' ),
             500
         );
+    }
+
+    $eventos = array(
+        'aprobada'  => 'solicitud_aprobada',
+        'observada' => 'solicitud_observada',
+        'rechazada' => 'solicitud_rechazada',
+    );
+
+    if ( $estado_actual !== $nuevo_estado && isset( $eventos[ $nuevo_estado ] ) ) {
+        registrarEventoSolicitud( $post_id, $eventos[ $nuevo_estado ], get_current_user_id() );
     }
 
     return new WP_REST_Response(
