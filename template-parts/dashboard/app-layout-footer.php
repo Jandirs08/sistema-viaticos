@@ -14,5 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
     </div><!-- /#erp-main -->
 </div><!-- /#erp-shell -->
 
+<?php wp_footer(); ?>
 </body>
 </html>

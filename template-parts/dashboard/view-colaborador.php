@@ -1,6 +1,6 @@
-<?php
+﻿<?php
 /**
- * Template Part: Dashboard — Vista Colaborador
+ * Template Part: Dashboard â€” Vista Colaborador
  *
  * Renders the full Colaborador SPA: sidebar nav links, three views
  * (Inicio / Mis Solicitudes / Mis Rendiciones), three modals
@@ -60,8 +60,8 @@ $args = wp_parse_args(
 
     <div class="welcome-banner">
         <div>
-            <h2>¡Bienvenido, <?php echo $args['user_name']; ?>!</h2>
-            <p>Panel de gestión de viáticos — Fundación Romero</p>
+            <h2>Â¡Bienvenido, <?php echo $args['user_name']; ?>!</h2>
+            <p>Panel de gestiÃ³n de viÃ¡ticos â€” FundaciÃ³n Romero</p>
         </div>
         <button class="btn btn-white" onclick="ViaticosApp.navigate('view-solicitudes')" id="btn-inicio-nueva">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -76,7 +76,7 @@ $args = wp_parse_args(
                 <svg viewBox="0 0 24 24" fill="#da5b3e"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
             </div>
             <div class="stat-body">
-                <div class="stat-num" id="kpi-total">—</div>
+                <div class="stat-num" id="kpi-total">â€”</div>
                 <div class="stat-label">Total Solicitudes</div>
             </div>
         </div>
@@ -85,7 +85,7 @@ $args = wp_parse_args(
                 <svg viewBox="0 0 24 24" fill="#D97706"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
             </div>
             <div class="stat-body">
-                <div class="stat-num" id="kpi-pendiente">—</div>
+                <div class="stat-num" id="kpi-pendiente">â€”</div>
                 <div class="stat-label">Pendientes</div>
             </div>
         </div>
@@ -94,7 +94,7 @@ $args = wp_parse_args(
                 <svg viewBox="0 0 24 24" fill="#059669"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
             </div>
             <div class="stat-body">
-                <div class="stat-num" id="kpi-aprobada">—</div>
+                <div class="stat-num" id="kpi-aprobada">â€”</div>
                 <div class="stat-label">Aprobadas</div>
             </div>
         </div>
@@ -103,7 +103,7 @@ $args = wp_parse_args(
                 <svg viewBox="0 0 24 24" fill="#DC2626"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </div>
             <div class="stat-body">
-                <div class="stat-num" id="kpi-rechazada">—</div>
+                <div class="stat-num" id="kpi-rechazada">â€”</div>
                 <div class="stat-label">Rechazadas</div>
             </div>
         </div>
@@ -113,7 +113,7 @@ $args = wp_parse_args(
         <div class="card-header">
             <div>
                 <div class="card-header-title">Actividad Reciente</div>
-                <div class="card-header-subtitle">Últimas 5 solicitudes registradas</div>
+                <div class="card-header-subtitle">Ãšltimas 5 solicitudes registradas</div>
             </div>
             <button class="btn btn-secondary btn-sm" onclick="ViaticosApp.navigate('view-solicitudes')" id="btn-ver-todas">Ver todas</button>
         </div>
@@ -121,7 +121,7 @@ $args = wp_parse_args(
             <table class="erp-table" aria-label="Actividad reciente">
                 <thead>
                     <tr>
-                        <th>ID</th><th>Fecha Viaje</th><th>Monto</th><th>CECO/Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th>
+                        <th>ID</th><th>Fecha Viaje</th><th>Monto</th><th>CECO/Proyecto</th><th>Estado solicitud</th><th>Estado rendiciÃ³n</th>
                     </tr>
                 </thead>
                 <tbody id="inicio-recent-tbody">
@@ -142,7 +142,7 @@ $args = wp_parse_args(
     <div class="page-header">
         <div class="page-header-left">
             <h1>Mis Solicitudes</h1>
-            <p>Gestión de solicitudes de viáticos</p>
+            <p>GestiÃ³n de solicitudes de viÃ¡ticos</p>
         </div>
         <button class="btn btn-primary" id="btn-abrir-nueva-solicitud">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -159,11 +159,11 @@ $args = wp_parse_args(
             </button>
         </div>
         <div class="table-wrapper">
-            <table class="erp-table" aria-label="Mis solicitudes de viáticos">
+            <table class="erp-table" aria-label="Mis solicitudes de viÃ¡ticos">
                 <thead>
                     <tr>
                         <th>ID</th><th>Fecha Viaje</th><th>Monto Solicitado</th>
-                        <th>CECO / Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th><th>Acciones</th>
+                        <th>CECO / Proyecto</th><th>Estado solicitud</th><th>Estado rendiciÃ³n</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="solicitudes-tbody">
@@ -181,94 +181,62 @@ $args = wp_parse_args(
      ============================================================ -->
 <section id="view-detalle-solicitud" class="erp-view" aria-label="Detalle de Solicitud">
 
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1 id="detalle-view-title">Detalle de Solicitud</h1>
-            <p id="detalle-view-subtitle">Revisión y gestión de rendición</p>
-        </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn btn-secondary" id="btn-volver-detalle-solicitud">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                Volver
-            </button>
-            <button class="btn btn-outline" id="btn-detalle-view-liquidacion" style="display:none;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                Ver Liquidación
-            </button>
-            <button class="btn btn-primary" id="btn-detalle-view-agregar-gasto">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                Agregar gasto
-            </button>
-            <button class="btn btn-success" id="btn-detalle-view-finalizar-rendicion">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                Finalizar rendicion
-            </button>
-        </div>
+    <!-- Topbar liviana â€” los CTAs viven en el rail derecho -->
+    <div class="rd-topbar">
+        <button class="rd-back-btn" id="btn-volver-detalle-solicitud">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            Volver
+        </button>
+        <button class="btn btn-outline btn-sm" id="btn-detalle-view-liquidacion" style="display:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            Ver LiquidaciÃ³n
+        </button>
     </div>
 
-    <div id="detalle-view-content">
-        <div class="card">
-            <div class="modal-body">
-                <div class="table-loading"><div class="spinner"></div> Cargando detalle...</div>
-            </div>
-        </div>
-    </div>
+    <!-- Contenido dinÃ¡mico generado por renderDetalleSolicitudContent() -->
+    <div id="detalle-view-content"></div>
     <div id="detalle-view-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
 
 </section><!-- /#view-detalle-solicitud -->
 
 
 <!-- ============================================================
-     VISTA: MIS RENDICIONES
+     VISTA: MIS RENDICIONES (Card list)
      ============================================================ -->
 <section id="view-rendiciones" class="erp-view" aria-label="Mis Rendiciones">
 
     <div class="page-header">
         <div class="page-header-left">
             <h1>Mis Rendiciones</h1>
-            <p>Gastos registrados por solicitud</p>
+            <p>Resumen de expedientes por solicitud aprobada</p>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <div class="card-header-title">Gastos Rendidos</div>
-        </div>
-        <div class="table-wrapper">
-            <table class="erp-table" aria-label="Mis gastos rendidos">
-                <thead>
-                    <tr>
-                        <th>ID Gasto</th><th>Solicitud Ref.</th><th>Tipo</th>
-                        <th>Fecha Emisión</th><th>Importe</th><th>Proveedor / RUC</th>
-                    </tr>
-                </thead>
-                <tbody id="rendiciones-tbody">
-                    <tr><td colspan="6"><div class="table-loading"><div class="spinner"></div> Cargando rendiciones...</div></td></tr>
-                </tbody>
-            </table>
-        </div>
+    <!-- El JS inyecta tarjetas aquÃ­ -->
+    <div id="rendiciones-list-container">
+        <div class="rd-list-loading"><div class="spinner"></div> Cargando rendiciones...</div>
     </div>
 
 </section><!-- /#view-rendiciones -->
 
 <!-- ============================================================
-     VIEW: LIQUIDACIÓN (read-only document)
+     VIEW: LIQUIDACIÃ“N (read-only document)
      ============================================================ -->
-<section id="view-liquidacion" class="erp-view" aria-label="Liquidación de Rendición">
+<section id="view-liquidacion" class="erp-view" aria-label="LiquidaciÃ³n de RendiciÃ³n">
     <div class="liq-view-toolbar">
         <button class="liq-back-btn" id="btn-liq-volver" type="button">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             Volver al detalle
         </button>
         <div class="liq-actions">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-liq-exportar" title="Exportar PDF (próximamente)" disabled>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-liq-exportar" title="Exportar PDF (prÃ³ximamente)" disabled>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg>
                 Exportar
             </button>
         </div>
     </div>
     <div id="liq-doc-container">
-        <div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidación…</div>
+        <div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidaciÃ³nâ€¦</div>
     </div>
 </section><!-- /#view-liquidacion -->
 
@@ -280,7 +248,7 @@ $args = wp_parse_args(
     <div class="modal">
         <div class="modal-header">
             <div class="modal-header-info">
-                <h2 id="modal-nueva-titulo">Nueva Solicitud de Viático</h2>
+                <h2 id="modal-nueva-titulo">Nueva Solicitud de ViÃ¡tico</h2>
                 <p>Complete todos los campos para enviar su solicitud.</p>
             </div>
             <button class="modal-close" id="btn-cerrar-modal-nueva" aria-label="Cerrar modal">
@@ -293,7 +261,7 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="ns-dni">DNI del Colaborador <span class="required">*</span></label>
                         <input type="text" id="ns-dni" name="dni" class="form-control" placeholder="Ej: 12345678" maxlength="8" pattern="\d{8}" required inputmode="numeric" autocomplete="off">
-                        <span class="form-error" id="err-ns-dni">El DNI debe tener exactamente 8 dígitos numéricos.</span>
+                        <span class="form-error" id="err-ns-dni">El DNI debe tener exactamente 8 dÃ­gitos numÃ©ricos.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ns-monto">Monto Solicitado <span class="required">*</span></label>
@@ -306,11 +274,11 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="ns-fecha">Fecha del Viaje <span class="required">*</span></label>
                         <input type="date" id="ns-fecha" name="fecha" class="form-control" required>
-                        <span class="form-error" id="err-ns-fecha">Seleccione una fecha válida.</span>
+                        <span class="form-error" id="err-ns-fecha">Seleccione una fecha vÃ¡lida.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ns-ceco">CECO / Proyecto <span class="required">*</span></label>
-                        <input type="text" id="ns-ceco" name="ceco" class="form-control" placeholder="Ej: CC-001 / ADMINISTRACIÓN" required autocomplete="off">
+                        <input type="text" id="ns-ceco" name="ceco" class="form-control" placeholder="Ej: CC-001 / ADMINISTRACIÃ“N" required autocomplete="off">
                         <span class="form-error" id="err-ns-ceco">Este campo es obligatorio.</span>
                     </div>
                     <div class="form-group col-full">
@@ -341,7 +309,7 @@ $args = wp_parse_args(
         <div class="modal-header">
             <div class="modal-header-info">
                 <h2 id="modal-editar-titulo">Editar Solicitud <span id="editar-sol-id" style="color:var(--text-muted); font-weight:400;"></span></h2>
-                <p>Esta solicitud fue observada. Corrija los datos y reenvíe.</p>
+                <p>Esta solicitud fue observada. Corrija los datos y reenvÃ­e.</p>
             </div>
             <button class="modal-close" id="btn-cerrar-modal-editar" aria-label="Cerrar modal">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -354,7 +322,7 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="ed-dni">DNI del Colaborador <span class="required">*</span></label>
                         <input type="text" id="ed-dni" name="dni" class="form-control" maxlength="8" pattern="\d{8}" required inputmode="numeric">
-                        <span class="form-error" id="err-ed-dni">El DNI debe tener exactamente 8 dígitos numéricos.</span>
+                        <span class="form-error" id="err-ed-dni">El DNI debe tener exactamente 8 dÃ­gitos numÃ©ricos.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ed-monto">Monto Solicitado <span class="required">*</span></label>
@@ -367,7 +335,7 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="ed-fecha">Fecha del Viaje <span class="required">*</span></label>
                         <input type="date" id="ed-fecha" name="fecha" class="form-control" required>
-                        <span class="form-error" id="err-ed-fecha">Seleccione una fecha válida.</span>
+                        <span class="form-error" id="err-ed-fecha">Seleccione una fecha vÃ¡lida.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ed-ceco">CECO / Proyecto <span class="required">*</span></label>
@@ -395,14 +363,14 @@ $args = wp_parse_args(
 
 
 <!-- ============================================================
-     MODAL: DETALLE DE SOLICITUD / RENDICIÓN
+     MODAL: DETALLE DE SOLICITUD / RENDICIÃ“N
      ============================================================ -->
 <div class="modal-overlay" id="modal-detalle-solicitud" role="dialog" aria-modal="true" aria-labelledby="modal-detalle-titulo">
     <div class="modal modal-lg">
         <div class="modal-header">
             <div class="modal-header-info">
                 <h2 id="modal-detalle-titulo">Solicitud <span id="detalle-sol-id" style="color:var(--text-muted); font-weight:400;"></span></h2>
-                <p id="detalle-sol-subtitulo">Revisa el detalle de la solicitud y gestiona su rendición.</p>
+                <p id="detalle-sol-subtitulo">Revisa el detalle de la solicitud y gestiona su rendiciÃ³n.</p>
             </div>
             <button class="modal-close" id="btn-cerrar-modal-detalle" aria-label="Cerrar modal">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -422,7 +390,7 @@ $args = wp_parse_args(
             </button>
             <button type="button" class="btn btn-success" id="btn-detalle-finalizar-rendicion">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                Finalizar rendición
+                Finalizar rendiciÃ³n
             </button>
         </div>
     </div>
@@ -450,19 +418,19 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="rg-tipo">Tipo de Documento <span class="required">*</span></label>
                         <select id="rg-tipo" name="tipo" class="form-control" required>
-                            <option value="">— Seleccione —</option>
+                            <option value="">â€” Seleccione â€”</option>
                             <option value="movilidad">Movilidad</option>
                             <option value="vale_caja">Vale de Caja</option>
                             <option value="factura">Factura</option>
                             <option value="boleta">Boleta</option>
                             <option value="rxh">RxH</option>
                         </select>
-                        <span class="form-error" id="err-rg-tipo">Seleccione un tipo de rendiciÃ³n.</span>
+                        <span class="form-error" id="err-rg-tipo">Seleccione un tipo de rendiciÃƒÂ³n.</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="rg-fecha">Fecha de Emisión <span class="required">*</span></label>
+                        <label class="form-label" for="rg-fecha">Fecha de EmisiÃ³n <span class="required">*</span></label>
                         <input type="date" id="rg-fecha" name="fecha" class="form-control" required>
-                        <span class="form-error" id="err-rg-fecha">Seleccione la fecha de emisión.</span>
+                        <span class="form-error" id="err-rg-fecha">Seleccione la fecha de emisiÃ³n.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rg-importe">Importe <span class="required">*</span></label>
@@ -478,14 +446,14 @@ $args = wp_parse_args(
                         <span class="form-error" id="err-rg-ruc">Ingrese el RUC del proveedor.</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="rg-razon">Razón Social</label>
+                        <label class="form-label" for="rg-razon">RazÃ³n Social</label>
                         <input type="text" id="rg-razon" name="razon_social" class="form-control" placeholder="Ej: EMPRESA S.A.C.">
-                        <span class="form-error" id="err-rg-razon">Ingrese la razÃ³n social.</span>
+                        <span class="form-error" id="err-rg-razon">Ingrese la razÃƒÂ³n social.</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="rg-nro-comprobante">N° Comprobante</label>
+                        <label class="form-label" for="rg-nro-comprobante">NÂ° Comprobante</label>
                         <input type="text" id="rg-nro-comprobante" name="nro_comprobante" class="form-control" placeholder="Ej: F001-00123456">
-                        <span class="form-error" id="err-rg-nro-comprobante">Ingrese el nÃºmero de comprobante.</span>
+                        <span class="form-error" id="err-rg-nro-comprobante">Ingrese el nÃƒÂºmero de comprobante.</span>
                     </div>
                     <div class="form-group col-full">
                         <label class="form-label" for="rg-cuenta">Cuenta Contable</label>
@@ -493,7 +461,7 @@ $args = wp_parse_args(
                         <span class="form-error" id="err-rg-cuenta">Ingrese la cuenta contable.</span>
                     </div>
                     <div class="form-group col-full" id="rg-group-concepto">
-                        <label class="form-label" for="rg-concepto">DescripciÃ³n / Concepto</label>
+                        <label class="form-label" for="rg-concepto">DescripciÃƒÂ³n / Concepto</label>
                         <textarea id="rg-concepto" name="descripcion_concepto" class="form-control" placeholder="Describa el concepto del gasto..." rows="3"></textarea>
                     </div>
                     <div class="form-group" id="rg-group-motivo">
@@ -540,8 +508,29 @@ $args = wp_parse_args(
 
 
 <!-- ============================================================
-     JAVASCRIPT — ViaticosApp
+     JAVASCRIPT â€” ViaticosApp
      ============================================================ -->
+<div class="modal-overlay" id="modal-historial-solicitud" role="dialog" aria-modal="true" aria-labelledby="modal-historial-titulo">
+    <div class="modal modal-lg solv-history-modal">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <h2 id="modal-historial-titulo">Historial del expediente</h2>
+                <p id="detalle-historial-subtitulo">Seguimiento completo de la solicitud y su rendicion.</p>
+            </div>
+            <button class="modal-close" id="btn-cerrar-modal-historial" aria-label="Cerrar modal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="solv-history-meta" id="detalle-historial-meta"></div>
+        <div class="solv-history-body" id="detalle-historial-body">
+            <div class="table-loading"><div class="spinner"></div> Cargando historial...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-modal-historial">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <script>
 (function () {
     'use strict';
@@ -550,11 +539,12 @@ $args = wp_parse_args(
         nonce:   '<?php echo esc_js( $args['rest_nonce'] ); ?>',
         apiBase: '<?php echo esc_js( $args['api_base'] ); ?>',
         profile: {
+            name: '<?php echo esc_js( $args['user_name'] ); ?>',
             dni:  '<?php echo esc_js( $args['user_dni'] ); ?>',
         },
     };
 
-    /* ── Utilities ────────────────────────────────────────── */
+    /* â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     async function apiFetch(endpoint, options = {}) {
         const defaults = { headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': CONFIG.nonce } };
         const merged = Object.assign({}, defaults, options);
@@ -569,6 +559,7 @@ $args = wp_parse_args(
     const timelineUI = window.ViaticosTimelineUI;
     const renderEstadoBadge = estadoUI.renderBadgeEstado;
     const renderEstadoGrupo = estadoUI.renderEstadoGrupo;
+    const getLabelEstado = estadoUI.getLabelEstado;
 
     function getSolicitudEstado(sol) {
         return estadoUI.resolveEstadoSolicitud(sol && sol.estado);
@@ -586,11 +577,11 @@ $args = wp_parse_args(
 
     function formatMonto(value) {
         const num = parseFloat(value);
-        return isNaN(num) ? '—' : 'S/. ' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return isNaN(num) ? 'â€”' : 'S/. ' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
     function formatFecha(isoStr) {
-        if (!isoStr) return '—';
+        if (!isoStr) return 'â€”';
         const parts = isoStr.split('-');
         return parts.length !== 3 ? isoStr : `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
@@ -637,7 +628,7 @@ $args = wp_parse_args(
         }
     }
 
-    /* ── Modal Manager ────────────────────────────────────── */
+    /* â”€â”€ Modal Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     const ModalManager = {
         open(id)  { const o = document.getElementById(id); if (o) { o.classList.add('open'); document.body.style.overflow = 'hidden'; } },
         close(id) { const o = document.getElementById(id); if (o) { o.classList.remove('open'); document.body.style.overflow = ''; } },
@@ -649,10 +640,10 @@ $args = wp_parse_args(
 
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
-        ['modal-nueva-solicitud','modal-editar-solicitud','modal-rendir-gasto'].forEach(id => ModalManager.close(id));
+        ['modal-nueva-solicitud','modal-editar-solicitud','modal-rendir-gasto','modal-confirmar-finalizar','modal-historial-solicitud'].forEach(id => ModalManager.close(id));
     });
 
-    /* ── Form validation ──────────────────────────────────── */
+    /* â”€â”€ Form validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function validateField(inputEl, errorEl, customValidator) {
         let isValid = inputEl.checkValidity();
         if (isValid && customValidator) isValid = customValidator(inputEl.value);
@@ -697,17 +688,310 @@ $args = wp_parse_args(
         }
     }
 
-    /* ── Data ─────────────────────────────────────────────── */
+    /* â”€â”€ Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     let solicitudesCache = [];
     let gastosCache = [];
     let detalleSolicitudId = null;
+    let currentRoute = { name: 'inicio', id: null };
 
     async function fetchSolicitudes() { return await apiFetch('/mis-solicitudes'); }
     async function fetchGastos()      { return await apiFetch('/mis-rendiciones'); }
     async function refreshSolicitudesCache() { solicitudesCache = await fetchSolicitudes(); return solicitudesCache; }
     async function refreshGastosCache() { gastosCache = await fetchGastos(); return gastosCache; }
 
-    /* ── Render helpers ───────────────────────────────────── */
+    function getCurrentRoute() {
+        return { ...currentRoute };
+    }
+
+    function setCurrentRoute(name, id = null) {
+        currentRoute = { name, id: id == null ? null : parseInt(id, 10) };
+    }
+
+    function setSectionTitle(routeName) {
+        const titleEl = document.getElementById('topbar-section-name');
+        if (!titleEl) return;
+        const labels = {
+            inicio: 'Inicio',
+            solicitudes: 'Mis Solicitudes',
+            solicitud: 'Detalle de Solicitud',
+            rendiciones: 'Mis Rendiciones',
+            liquidacion: 'Liquidacion',
+        };
+        titleEl.textContent = labels[routeName] || 'Viaticos';
+    }
+
+    function showView(viewId, routeName = null) {
+        document.querySelectorAll('.erp-view').forEach(view => {
+            view.classList.toggle('active', view.id === viewId);
+        });
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const target = link.dataset.view;
+            const isActive = target === viewId || (
+                target === 'view-solicitudes' && (viewId === 'view-detalle-solicitud' || viewId === 'view-liquidacion')
+            );
+            link.classList.toggle('active', isActive);
+        });
+
+        setSectionTitle(routeName || currentRoute.name);
+    }
+
+    function normalizeRoute(target) {
+        if (typeof target === 'string') {
+            const mapping = {
+                'view-inicio': { name: 'inicio' },
+                'view-solicitudes': { name: 'solicitudes' },
+                'view-rendiciones': { name: 'rendiciones' },
+                'view-detalle-solicitud': { name: 'solicitud', id: detalleSolicitudId },
+                'view-liquidacion': { name: 'liquidacion', id: detalleSolicitudId },
+            };
+            return mapping[target] || { name: target };
+        }
+        return target || { name: 'inicio' };
+    }
+
+    function renderInicioStats(data) {
+        const list = Array.isArray(data) ? data : [];
+        const byEstado = list.reduce((acc, sol) => {
+            const estado = getSolicitudEstado(sol);
+            acc[estado] = (acc[estado] || 0) + 1;
+            return acc;
+        }, {});
+
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = String(value);
+        };
+
+        setText('kpi-total', list.length);
+        setText('kpi-pendiente', byEstado.pendiente || 0);
+        setText('kpi-aprobada', byEstado.aprobada || 0);
+        setText('kpi-rechazada', byEstado.rechazada || 0);
+    }
+
+    function renderInicioRecent(data) {
+        const tbody = document.getElementById('inicio-recent-tbody');
+        if (!tbody) return;
+        const recent = (Array.isArray(data) ? [...data] : [])
+            .sort((a, b) => Number(b.id) - Number(a.id))
+            .slice(0, 5);
+
+        if (!recent.length) {
+            renderTableEmpty(tbody, 6, 'Aun no tienes solicitudes registradas.');
+            return;
+        }
+
+        tbody.innerHTML = recent.map(sol => `
+            <tr>
+                <td class="text-muted">#${sol.id}</td>
+                <td>${formatFecha(sol.fecha)}</td>
+                <td><strong>${formatMonto(sol.monto)}</strong></td>
+                <td>${escHtml(sol.ceco || '-')}</td>
+                <td>${renderSolicitudBadge(sol)}</td>
+                <td>${renderRendicionBadge(sol, { gastos: getGastosBySolicitud(sol.id) })}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function loadInicioView() {
+        showView('view-inicio', 'inicio');
+        const recentTbody = document.getElementById('inicio-recent-tbody');
+        if (recentTbody) renderTableLoading(recentTbody, 6);
+        try {
+            await Promise.all([refreshSolicitudesCache(), refreshGastosCache()]);
+            renderInicioStats(solicitudesCache);
+            renderInicioRecent(solicitudesCache);
+        } catch (err) {
+            showToast('error', 'Error', err.message);
+        }
+    }
+
+    async function loadSolicitudesView() {
+        showView('view-solicitudes', 'solicitudes');
+        const tbody = document.getElementById('solicitudes-tbody');
+        if (tbody) renderTableLoading(tbody, 7);
+        try {
+            await Promise.all([refreshSolicitudesCache(), refreshGastosCache()]);
+            renderSolicitudesTable(solicitudesCache);
+        } catch (err) {
+            showToast('error', 'Error', err.message);
+        }
+    }
+
+    async function openDetalleSolicitudView(solicitudId) {
+        detalleSolicitudId = parseInt(solicitudId, 10);
+        setCurrentRoute('solicitud', detalleSolicitudId);
+        showView('view-detalle-solicitud', 'solicitud');
+
+        const contentEl = document.getElementById('detalle-view-content');
+        const errorEl = document.getElementById('detalle-view-error');
+        if (contentEl) contentEl.innerHTML = `<div class="table-loading"><div class="spinner"></div> Cargando detalle...</div>`;
+        if (errorEl) { errorEl.style.display = 'none'; errorEl.textContent = ''; }
+
+        try {
+            if (!solicitudesCache.length) await refreshSolicitudesCache();
+            if (!gastosCache.length) await refreshGastosCache();
+            const sol = getSolicitudById(detalleSolicitudId);
+            if (!sol) throw new Error('No se encontro la solicitud seleccionada.');
+            renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
+        } catch (err) {
+            if (errorEl) {
+                errorEl.textContent = err.message;
+                errorEl.style.display = 'block';
+            }
+            showToast('error', 'Error', err.message);
+        }
+    }
+
+    function renderLiquidacionView(sol, gastos) {
+        const container = document.getElementById('liq-doc-container');
+        if (!container || !window.ViaticosLiquidacion) return;
+
+        const liqData = window.ViaticosLiquidacion.buildData(
+            {
+                id: sol.id,
+                monto: sol.monto,
+                fecha: sol.fecha,
+                motivo: sol.motivo,
+                ceco: sol.ceco,
+                dni: sol.dni,
+                estado_rendicion: getLabelEstado('rendicion', getRendicionEstado(sol, { gastos })),
+                rendicion_finalizada: sol.rendicion_finalizada
+            },
+            gastos,
+            {
+                colaboradorNombre: CONFIG.profile.name || '',
+                fechaRendicion: sol.fecha_creacion || ''
+            }
+        );
+
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'margin:20px;';
+        wrap.innerHTML = window.ViaticosLiquidacion.renderDoc(liqData);
+        container.innerHTML = '';
+        container.appendChild(wrap);
+    }
+
+    async function openLiquidacionView(solicitudId = null) {
+        const id = parseInt(solicitudId || detalleSolicitudId || getCurrentRoute().id, 10);
+        if (!id) return;
+        detalleSolicitudId = id;
+        setCurrentRoute('liquidacion', id);
+        showView('view-liquidacion', 'liquidacion');
+
+        const container = document.getElementById('liq-doc-container');
+        if (container) container.innerHTML = `<div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidacion...</div>`;
+
+        try {
+            if (!solicitudesCache.length) await refreshSolicitudesCache();
+            if (!gastosCache.length) await refreshGastosCache();
+            const sol = getSolicitudById(id);
+            if (!sol) throw new Error('No se encontro la solicitud para la liquidacion.');
+            renderLiquidacionView(sol, getGastosBySolicitud(id));
+        } catch (err) {
+            if (container) container.innerHTML = `<div class="liq-doc-empty" style="color:#C53030;">${escHtml(err.message)}</div>`;
+            showToast('error', 'Error', err.message);
+        }
+    }
+
+    async function navigateTo(target) {
+        const route = normalizeRoute(target);
+        if (!route || !route.name) return;
+
+        switch (route.name) {
+            case 'inicio':
+                setCurrentRoute('inicio');
+                await loadInicioView();
+                break;
+            case 'solicitudes':
+                setCurrentRoute('solicitudes');
+                await loadSolicitudesView();
+                break;
+            case 'rendiciones':
+                setCurrentRoute('rendiciones');
+                showView('view-rendiciones', 'rendiciones');
+                await loadRendicionesView();
+                break;
+            case 'solicitud':
+                await openDetalleSolicitudView(route.id);
+                break;
+            case 'liquidacion':
+                await openLiquidacionView(route.id);
+                break;
+            default:
+                if (route.name.startsWith('view-')) {
+                    showView(route.name);
+                }
+                break;
+        }
+    }
+
+    function openEditarModal(sol) {
+        if (!sol) return;
+        const idEl = document.getElementById('editar-sol-id');
+        const postIdEl = document.getElementById('ed-post-id');
+        const dniEl = document.getElementById('ed-dni');
+        const montoEl = document.getElementById('ed-monto');
+        const fechaEl = document.getElementById('ed-fecha');
+        const cecoEl = document.getElementById('ed-ceco');
+        const motivoEl = document.getElementById('ed-motivo');
+
+        if (idEl) idEl.textContent = `#${sol.id}`;
+        if (postIdEl) postIdEl.value = sol.id || '';
+        if (dniEl) dniEl.value = sol.dni || '';
+        if (montoEl) montoEl.value = sol.monto || '';
+        if (fechaEl) fechaEl.value = sol.fecha || '';
+        if (cecoEl) cecoEl.value = sol.ceco || '';
+        if (motivoEl) motivoEl.value = sol.motivo || '';
+
+        const errEl = document.getElementById('editar-solicitud-error');
+        if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+        ModalManager.open('modal-editar-solicitud');
+    }
+
+    async function handleNuevaSolicitudSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-submit-nueva-solicitud');
+        const errEl = document.getElementById('nueva-solicitud-error');
+        if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+
+        const payload = {
+            dni: document.getElementById('ns-dni').value.trim(),
+            monto: parseFloat(document.getElementById('ns-monto').value),
+            fecha: document.getElementById('ns-fecha').value,
+            ceco: document.getElementById('ns-ceco').value.trim(),
+            motivo: document.getElementById('ns-motivo').value.trim(),
+        };
+
+        try {
+            setButtonLoading(btn, true);
+            await apiFetch('/nueva-solicitud', { method: 'POST', body: JSON.stringify(payload) });
+            ModalManager.close('modal-nueva-solicitud');
+            document.getElementById('form-nueva-solicitud').reset();
+            prefillNuevaSolicitudForm();
+            await Promise.all([refreshSolicitudesCache(), refreshGastosCache()]);
+            renderInicioStats(solicitudesCache);
+            renderInicioRecent(solicitudesCache);
+            if (getCurrentRoute().name === 'solicitudes') renderSolicitudesTable(solicitudesCache);
+            showToast('success', 'Solicitud registrada');
+            await navigateTo({ name: 'solicitudes' });
+        } catch (err) {
+            if (errEl) {
+                errEl.textContent = err.message;
+                errEl.style.display = 'block';
+            }
+            showToast('error', 'Error', err.message);
+        } finally {
+            setButtonLoading(btn, false);
+        }
+    }
+
+    function handleEditarSolicitudSubmit(e) {
+        e.preventDefault();
+        showToast('error', 'No disponible', 'La edicion de solicitudes observadas no esta conectada en esta version.');
+    }
+
+    /* â”€â”€ Render helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function renderTableEmpty(tbody, colSpan, message = 'No se encontraron registros.') {
         tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="table-empty">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
@@ -718,10 +1002,10 @@ $args = wp_parse_args(
         tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="table-loading"><div class="spinner"></div>Cargando datos...</div></td></tr>`;
     }
 
-    /* ── Render: solicitudes table ────────────────────────── */
+    /* â”€â”€ Render: solicitudes table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function renderSolicitudesTable(data) {
         const tbody = document.getElementById('solicitudes-tbody');
-        if (!data || !data.length) { renderTableEmpty(tbody, 7, 'Aún no tienes solicitudes registradas.'); return; }
+        if (!data || !data.length) { renderTableEmpty(tbody, 7, 'AÃºn no tienes solicitudes registradas.'); return; }
         tbody.innerHTML = data.map(sol => {
             const gastosSolicitud = getGastosBySolicitud(sol.id);
             const acciones = buildAcciones(sol);
@@ -743,23 +1027,19 @@ $args = wp_parse_args(
         const estadoRend = getRendicionEstado(sol, { gastos: getGastosBySolicitud(sol.id) });
         let btns = '';
 
-        // Botón Editar — solo si la solicitud fue observada por el admin
         if (estado === 'observada') {
             btns += `<button class="btn btn-secondary btn-sm action-editar" data-id="${sol.id}" title="Editar solicitud observada">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02.0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41.0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
                 Editar</button>`;
         }
 
-        // Botón contextual para solicitudes aprobadas
         if (estado === 'aprobada') {
-            // caso 1: rendición ya cerrada/evaluada → solo Ver
             const verSolo = [ 'en_revision', 'aprobada', 'observada', 'rechazada' ].includes(estadoRend);
             if (verSolo) {
-                btns += `<button class="btn btn-secondary btn-sm action-ver-rendir" data-id="${sol.id}" title="Ver detalle de la rendición">
+                btns += `<button class="btn btn-secondary btn-sm action-ver-rendir" data-id="${sol.id}" title="Ver detalle de la rendiciÃ³n">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76.0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66.0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
                     Ver</button>`;
             } else {
-                // caso 2: pendiente de rendir → Rendir
                 btns += `<button class="btn btn-success btn-sm action-ver-rendir" data-id="${sol.id}" title="Rendir gastos de la solicitud">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78.0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61.0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41.0.97-.79 2.03-2.5 2.03-2.08.0-2.98-.93-3.1-2.1H7.3c.13 2.15 1.73 3.56 3.7 3.97V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55.0-2.84-2.43-3.81-4.7-4.4z"/></svg>
                     Rendir</button>`;
@@ -791,12 +1071,9 @@ $args = wp_parse_args(
             .sort((a, b) => Number(b.id) - Number(a.id));
     }
 
-    // getRendicionBadgeHTML ya definida arriba (línea ~554) — no se duplica.
-
-    // buildDetalleGasto replaced by shared ViaticosGastoUI.renderGastoItem
     const gastoUI = window.ViaticosGastoUI;
 
-    /* ── Adjuntos helpers ──────────────────────────────────────────── */
+    /* â”€â”€ Adjuntos helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function adjIconClass(mime) {
         if (!mime) return 'file';
         if (mime.includes('pdf')) return 'pdf';
@@ -863,7 +1140,6 @@ $args = wp_parse_args(
         }
     }
 
-    // apiFetchForm: multipart POST (no JSON header)
     async function apiFetchForm(endpoint, formData) {
         const url = CONFIG.apiBase.replace(/\/$/, '') + endpoint;
         const resp = await fetch(url, {
@@ -877,560 +1153,276 @@ $args = wp_parse_args(
         return json;
     }
 
-    /* ── Liquidación (Fase 13 base) ─────────────────────────────────── */
-
-
     function renderDetalleSolicitudContent(sol, gastos) {
         const contentEl = document.getElementById('detalle-view-content');
         const totalSolicitado = parseFloat(sol.monto) || 0;
-        const totalRendido = gastos.reduce((sum, gasto) => sum + (parseFloat(gasto.importe) || 0), 0);
+        const totalRendido = gastos.reduce((sum, g) => sum + (parseFloat(g.importe) || 0), 0);
         const saldo = totalSolicitado - totalRendido;
         const estadoSolicitud = getSolicitudEstado(sol);
         const estadoRend = getRendicionEstado(sol, { gastos });
         const saldoNegativo = saldo < 0;
         const historial = Array.isArray(sol.historial) ? sol.historial : [];
         const historialHtml = timelineUI.renderTimeline(historial);
+        const solicitudBadgeHtml = renderSolicitudBadge(sol);
+        const rendicionBadgeHtml = renderRendicionBadge(sol, { gastos });
+        const fechaViaje = formatFecha(sol.fecha);
+        const cecoLabel = escHtml(sol.ceco || '-');
+        const dniLabel = escHtml(sol.dni || '-');
+        const motivoLabel = escHtml(sol.motivo || 'Sin detalle registrado.');
+        const avancePct = totalSolicitado > 0 ? Math.max(0, Math.min(100, Math.round((totalRendido / totalSolicitado) * 100))) : (gastos.length ? 100 : 0);
+
+        const accionContexto = (() => {
+            if (estadoRend === 'aprobada') return 'Todo esta cerrado. Solo queda consultar la liquidacion o el historial.';
+            if (estadoRend === 'rechazada') return 'Revisa el historial para entender el motivo del rechazo antes de continuar.';
+            if (estadoRend === 'observada') return 'Hay ajustes pendientes. Corrige lo necesario y vuelve a enviarla.';
+            if (sol.rendicion_finalizada) return 'La rendicion ya fue enviada. Por ahora solo queda esperar la revision.';
+            if (estadoSolicitud === 'observada') return 'Primero corrige la solicitud observada antes de seguir con la rendicion.';
+            if (estadoSolicitud === 'rechazada') return 'Esta solicitud no puede continuar. Necesitaras registrar una nueva.';
+            if (estadoSolicitud !== 'aprobada') return 'Aun no puedes rendir gastos hasta que la solicitud sea aprobada.';
+            if (gastos.length) return saldoNegativo ? 'Ya superaste el monto solicitado. Revisa los comprobantes antes de enviarla.' : 'Ya empezaste la rendicion. Puedes seguir cargando gastos o enviarla a revision.';
+            return 'Aun no registras gastos. Empieza con el primer comprobante del viaje.';
+        })();
+
+        const estadoWorkspace = (() => {
+            if (estadoRend === 'aprobada') return { tone: 'is-ok', pill: 'Aprobada', title: 'Tu rendicion fue aprobada', copy: 'No tienes nada pendiente. Puedes revisar la liquidacion cuando la necesites.', icon: 'check' };
+            if (estadoRend === 'rechazada') return { tone: 'is-danger', pill: 'Rechazada', title: 'Tu rendicion fue rechazada', copy: 'Revisa el historial para ver la observacion y coordina el siguiente paso.', icon: 'alert' };
+            if (estadoRend === 'observada') return { tone: 'is-warning', pill: 'Observada', title: 'Tu rendicion necesita ajustes', copy: 'Hay observaciones pendientes. Revisa el historial y completa lo necesario antes de enviarla otra vez.', icon: 'edit' };
+            if (sol.rendicion_finalizada) return { tone: 'is-review', pill: 'En revision', title: 'Tu rendicion esta en revision', copy: 'Ya la enviaste. Por ahora no necesitas hacer nada mas.', icon: 'clock' };
+            if (estadoSolicitud === 'observada') return { tone: 'is-warning', pill: 'Solicitud observada', title: 'Tu solicitud necesita correccion', copy: 'Corrige la solicitud observada antes de continuar con la rendicion.', icon: 'edit' };
+            if (estadoSolicitud === 'rechazada') return { tone: 'is-danger', pill: 'Solicitud rechazada', title: 'Tu solicitud fue rechazada', copy: 'No podras rendir gastos con esta solicitud.', icon: 'alert' };
+            if (estadoSolicitud !== 'aprobada') return { tone: 'is-idle', pill: 'Pendiente', title: 'Tu solicitud aun espera aprobacion', copy: 'Cuando la aprueben podras registrar los gastos del viaje.', icon: 'clock' };
+            if (!gastos.length) return { tone: 'is-active', pill: 'Lista para rendir', title: 'Ya puedes registrar tus gastos', copy: 'Empieza con el primer comprobante del viaje.', icon: 'wallet' };
+            return { tone: 'is-active', pill: 'En progreso', title: 'Completa tu rendicion', copy: saldoNegativo ? 'Ya superaste el monto solicitado. Revisa tus comprobantes antes de enviarla.' : (saldo > 0 ? `Tienes ${formatMonto(saldo)} pendientes por sustentar.` : 'Revisa tus comprobantes y enviala cuando todo este listo.'), icon: 'wallet' };
+        })();
+
+        const statusIconHtml = (() => {
+            if (estadoWorkspace.icon === 'check') return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+            if (estadoWorkspace.icon === 'alert') return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
+            if (estadoWorkspace.icon === 'edit') return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm14.71-9.04c.39-.39.39-1.02.0-1.41l-2.5-2.5a.9959.9959.0 0 0-1.41.0l-1.96 1.96 3.75 3.75 2.15-2.26z"/></svg>';
+            if (estadoWorkspace.icon === 'wallet') return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 7H5C3.89 7 3 7.89 3 9v8c0 1.11.89 2 2 2h16c1.11.0 2-.89 2-2V9c0-1.11-.89-2-2-2zm0 10H5V9h16v8zm-3-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM5 6h13V4H5c-1.11.0-2 .89-2 2v1h2V6z"/></svg>';
+            return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 11H11V7h2zm0 4H11v-2h2z"/></svg>';
+        })();
+
+        const flowSteps = [
+            { state: 'is-done', label: 'Etapa 1', title: 'Solicitud', meta: `#${sol.id} registrada` },
+            {
+                state: estadoSolicitud === 'aprobada' ? 'is-done' : (['observada','rechazada'].includes(estadoSolicitud) ? 'is-warning' : 'is-current'),
+                label: 'Etapa 2', title: 'Aprobacion',
+                meta: estadoSolicitud === 'aprobada' ? 'Aprobada' : (estadoSolicitud === 'observada' ? 'Observada' : (estadoSolicitud === 'rechazada' ? 'Rechazada' : 'Pendiente'))
+            },
+            {
+                state: sol.rendicion_finalizada || ['aprobada','rechazada','observada'].includes(estadoRend) ? 'is-done' : (estadoSolicitud === 'aprobada' ? 'is-current' : ''),
+                label: 'Etapa 3', title: 'Gastos',
+                meta: gastos.length ? `${gastos.length} registro(s)` : 'Sin registros'
+            },
+            {
+                state: ['aprobada','rechazada','observada'].includes(estadoRend) ? (estadoRend === 'aprobada' ? 'is-done' : 'is-warning') : (sol.rendicion_finalizada ? 'is-current' : ''),
+                label: 'Etapa 4', title: 'Revision',
+                meta: estadoRend === 'aprobada' ? 'Aprobada' : (estadoRend === 'rechazada' ? 'Rechazada' : (estadoRend === 'observada' ? 'Observada' : (sol.rendicion_finalizada ? 'En revision' : 'Pendiente')))
+            }
+        ];
+        const flowStepsHtml = flowSteps.map(s => `
+            <div class="solv-stage-card ${s.state}">
+                <span class="solv-stage-index">${escHtml(s.label.replace('Etapa ', ''))}</span>
+                <div class="solv-stage-copy">
+                    <div class="solv-stage-title">${s.title}</div>
+                    <div class="solv-stage-meta">${escHtml(s.meta)}</div>
+                </div>
+            </div>`).join('');
 
         const gastosHtml = gastos.length
-            ? `<div class="gasto-acc-list" id="colab-gastos-acc">${
-                gastos.map((g, i) => gastoUI.renderGastoItem(g, `col-${sol.id}-${i}`)).join('')
-              }</div>`
-            : `<div class="table-empty" style="padding:32px 20px;">
-                <svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.3;"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                <p>Aún no registraste gastos para esta solicitud.</p>
-            </div>`;
+            ? `<div class="gasto-acc-list" id="colab-gastos-acc">${gastos.map((g, i) => gastoUI.renderGastoItem(g, `col-${sol.id}-${i}`)).join('')}</div>`
+            : `<div class="table-empty" style="padding:36px 20px;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.28;"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>Aun no registraste gastos para esta solicitud.</p></div>`;
 
-        document.getElementById('detalle-view-title').textContent = `Solicitud #${sol.id}`;
-
-        // Alerta de estado si aplica
         const alertaBanner = (() => {
             if (!['observada', 'rechazada', 'aprobada'].includes(estadoRend)) return '';
-            const configs = {
-                observada: {
-                    clase: 'estado-alerta-observada',
-                    icono: '<path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>',
-                    color: '#D97706',
-                    titulo: 'Rendición observada',
-                    mensaje: 'El administrador revisó tu rendición y tiene observaciones. Espera instrucciones.'
-                },
-                rechazada: {
-                    clase: 'estado-alerta-rechazada',
-                    icono: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>',
-                    color: '#DC2626',
-                    titulo: 'Rendición rechazada',
-                    mensaje: 'El administrador rechazó tu rendición. Comunícate con el área de finanzas.'
-                },
-                aprobada: {
-                    clase: 'estado-alerta-aprobada',
-                    icono: '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>',
-                    color: '#059669',
-                    titulo: 'Rendición aprobada',
-                    mensaje: 'Tu rendición fue revisada y aprobada correctamente.'
-                }
-            };
-            const cfg = configs[estadoRend];
-            return `<div class="estado-alerta ${cfg.clase}">
-                <svg class="estado-alerta-icon" viewBox="0 0 24 24" fill="${cfg.color}">${cfg.icono}</svg>
-                <div class="estado-alerta-content">
-                    <strong>${cfg.titulo}</strong>
-                    <p>${cfg.mensaje}</p>
-                </div>
-            </div>`;
+            const m = { observada: ['estado-alerta-observada','Rendicion observada','El administrador devolvio observaciones.'], rechazada: ['estado-alerta-rechazada','Rendicion rechazada','Comunicate con el area de finanzas.'], aprobada: ['estado-alerta-aprobada','Rendicion aprobada','Tu rendicion fue aprobada correctamente.'] };
+            const [cls, tit, msg] = m[estadoRend];
+            return `<div class="estado-alerta ${cls}"><div class="estado-alerta-content"><strong>${tit}</strong><p>${msg}</p></div></div>`;
         })();
 
         contentEl.innerHTML = `
             ${alertaBanner}
-
-            <!-- SECCIÓN: Estados -->
-            <div class="section-block">
-                <div class="section-header">
-                    <div class="section-header-title">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                        Estados
+            <div class="solv-shell">
+                <section class="solv-hero ${estadoWorkspace.tone}">
+                    <div class="solv-hero-main">
+                        <div class="solv-hero-eyebrow">Expediente #${sol.id}</div>
+                        <div class="solv-hero-state">
+                            <span class="solv-state-icon">${statusIconHtml}</span>
+                            <div class="solv-hero-intro">
+                                <span class="solv-state-pill">${estadoWorkspace.pill}</span>
+                                <h1 class="solv-hero-title">${estadoWorkspace.title}</h1>
+                            </div>
+                        </div>
+                        <p class="solv-hero-copy">${estadoWorkspace.copy}</p>
+                        <div class="solv-hero-badges">${solicitudBadgeHtml}${rendicionBadgeHtml}</div>
                     </div>
-                </div>
-                <div class="section-body">
-                    <div class="estados-row">
-                        <div class="estado-panel estado-panel-solicitud">
-                            <div class="estado-panel-label">Estado de Solicitud</div>
-                            <div class="estado-panel-badge">${renderSolicitudBadge(sol)}</div>
-                        </div>
-                        <div class="estado-panel estado-panel-rendicion">
-                            <div class="estado-panel-label">Estado de Rendición</div>
-                            <div class="estado-panel-badge">${renderRendicionBadge(sol, { gastos })}</div>
-                        </div>
+                    <div class="solv-hero-stats">
+                        <div class="solv-hero-stat is-primary"><span class="solv-hero-stat-label">Monto solicitado</span><strong class="solv-hero-stat-value">${formatMonto(totalSolicitado)}</strong><span class="solv-hero-stat-note">Anticipo aprobado</span></div>
+                        <div class="solv-hero-stat is-positive"><span class="solv-hero-stat-label">Total rendido</span><strong class="solv-hero-stat-value">${formatMonto(totalRendido)}</strong><span class="solv-hero-stat-note">${gastos.length} comprobante(s)</span></div>
+                        <div class="solv-hero-stat ${saldoNegativo ? 'is-warning' : 'is-neutral'}"><span class="solv-hero-stat-label">Saldo</span><strong class="solv-hero-stat-value">${formatMonto(saldo)}</strong><span class="solv-hero-stat-note">${saldoNegativo ? 'Monto excedido' : 'Disponible por rendir'}</span></div>
                     </div>
-                </div>
-            </div>
-
-            <!-- SECCIÓN: Resumen Económico -->
-            <div class="section-block">
-                <div class="section-header">
-                    <div class="section-header-title">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78.0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61.0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41.0.97-.79 2.03-2.5 2.03-2.08.0-2.98-.93-3.1-2.1H7.3c.13 2.15 1.73 3.56 3.7 3.97V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55.0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-                        Resumen Económico
+                </section>
+                <div class="solv-stage-strip">${flowStepsHtml}</div>
+                <div class="solv-grid">
+                    <div class="solv-main">
+                        <section class="solv-panel solv-panel-primary">
+                            <div class="solv-panel-head">
+                                <div>
+                                    <div class="solv-kicker">Rendicion</div>
+                                    <h2 class="solv-panel-title">Comprobantes</h2>
+                                    <p class="solv-panel-copy">Aqui registras y revisas los gastos del viaje.</p>
+                                </div>
+                                <div class="solv-toolbar">
+                                    <div class="solv-chip-stat"><span class="solv-chip-stat-label">Registros</span><strong class="solv-chip-stat-value">${gastos.length}</strong></div>
+                                    <div class="solv-chip-stat"><span class="solv-chip-stat-label">Avance</span><strong class="solv-chip-stat-value">${avancePct}%</strong></div>
+                                </div>
+                            </div>
+                            <div class="solv-context-strip">
+                                <div class="solv-context-item"><span class="solv-context-label">Fecha de viaje</span><strong class="solv-context-value">${fechaViaje}</strong></div>
+                                <div class="solv-context-item"><span class="solv-context-label">Centro de costo</span><strong class="solv-context-value">${cecoLabel}</strong></div>
+                                <div class="solv-context-item"><span class="solv-context-label">DNI</span><strong class="solv-context-value">${dniLabel}</strong></div>
+                            </div>
+                            <div class="solv-panel-body solv-panel-body-gastos">${gastosHtml}</div>
+                        </section>
+                        <section class="solv-panel">
+                            <div class="solv-panel-head">
+                                <div>
+                                    <div class="solv-kicker">Detalle del viaje</div>
+                                    <h2 class="solv-panel-title">Lo esencial de esta solicitud</h2>
+                                </div>
+                            </div>
+                            <div class="solv-panel-body">
+                                    <div class="solv-data-grid">
+                                    <div class="solv-data-item"><span class="solv-data-label">Expediente</span><span class="solv-data-value">#${sol.id}</span></div>
+                                    <div class="solv-data-item"><span class="solv-data-label">Historial</span><span class="solv-data-value">${historial.length} evento(s)</span></div>
+                                    <div class="solv-data-item"><span class="solv-data-label">Estado solicitud</span><span class="solv-data-value">${escHtml(estadoSolicitud)}</span></div>
+                                    <div class="solv-data-item"><span class="solv-data-label">Estado rendicion</span><span class="solv-data-value">${escHtml(estadoRend)}</span></div>
+                                    <div class="solv-data-item is-wide"><span class="solv-data-label">Motivo del viaje</span><span class="solv-data-value is-muted">${motivoLabel}</span></div>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                </div>
-                <div class="section-body">
-                    <div class="resumen-economico">
-                        <div class="resumen-card monto-solicitado">
-                            <div class="resumen-card-label">Monto Solicitado</div>
-                            <div class="resumen-card-value">${formatMonto(totalSolicitado)}</div>
-                        </div>
-                        <div class="resumen-card total-rendido">
-                            <div class="resumen-card-label">Total Rendido</div>
-                            <div class="resumen-card-value">${formatMonto(totalRendido)}</div>
-                        </div>
-                        <div class="resumen-card ${saldoNegativo ? 'saldo-negativo' : 'saldo'}">
-                            <div class="resumen-card-label">Saldo</div>
-                            <div class="resumen-card-value ${saldoNegativo ? 'saldo-negativo' : 'saldo'}">${formatMonto(saldo)}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECCIÓN: Datos Generales -->
-            <div class="section-block">
-                <div class="section-header">
-                    <div class="section-header-title">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
-                        Datos Generales
-                    </div>
-                </div>
-                <div class="section-body">
-                    <div class="datos-grid">
-                        <div class="dato-item">
-                            <div class="dato-label">Fecha de Viaje</div>
-                            <div class="dato-value">${formatFecha(sol.fecha)}</div>
-                        </div>
-                        <div class="dato-item">
-                            <div class="dato-label">CECO / Proyecto</div>
-                            <div class="dato-value">${escHtml(sol.ceco || '—')}</div>
-                        </div>
-                        <div class="dato-item">
-                            <div class="dato-label">DNI Colaborador</div>
-                            <div class="dato-value">${escHtml(sol.dni || '—')}</div>
-                        </div>
-                        <div class="dato-motivo">
-                            <div class="dato-label">Motivo del Viaje</div>
-                            <div class="dato-value muted">${escHtml(sol.motivo || '—')}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECCIÓN: Historial -->
-            <div class="section-block">
-                <div class="section-header">
-                    <div class="section-header-title">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 1 0 8.95 10H20a7 7 0 1 1-2.05-4.95L16 10h6V4l-2.64 2.64A8.96 8.96 0 0 0 13 3zm-1 5h2v5l4.25 2.52-1 1.68L12 14V8z"/></svg>
-                        Historial
-                    </div>
-                    <div class="section-header-subtitle">${historial.length} evento(s)</div>
-                </div>
-                <div class="section-body">
-                    ${historialHtml}
-                </div>
-            </div>
-
-            <div class="section-block">
-                <div class="section-header">
-                    <div class="section-header-title">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                        Gastos Asociados
-                    </div>
-                    <div class="section-header-subtitle">${gastos.length} registro(s) · Total: ${formatMonto(totalRendido)}</div>
-                </div>
-                <div class="section-body" style="padding:16px 20px;">
-                    ${gastosHtml}
+                    <aside class="solv-rail">
+                        <section class="solv-rail-card solv-status-card ${estadoWorkspace.tone}">
+                            <div class="solv-status-top">
+                                <span class="solv-state-icon is-rail">${statusIconHtml}</span>
+                                <div class="solv-status-heading">
+                                    <span class="solv-status-pill">${estadoWorkspace.pill}</span>
+                                    <h3 class="solv-status-title">Que sigue ahora</h3>
+                                </div>
+                            </div>
+                            <p class="solv-status-copy">${accionContexto}</p>
+                            <div class="solv-balance-list">
+                                <div class="solv-balance-row"><span>Saldo</span><strong>${formatMonto(saldo)}</strong></div>
+                                <div class="solv-balance-row"><span>Comprobantes</span><strong>${gastos.length}</strong></div>
+                            </div>
+                            <button type="button" class="solv-history-link" data-open-history="1">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 1 0 8.95 10h-2.02A7 7 0 1 1 13 5v4l5-5-5-5v4z"/></svg>
+                                Ver historial completo
+                            </button>
+                            <div class="solv-cta-stack">
+                                <button type="button" class="btn btn-primary solv-cta-full" id="detalle-sidebar-finalizar-rendicion">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    Finalizar y enviar
+                                </button>
+                                <button type="button" class="btn btn-secondary solv-cta-full" id="detalle-sidebar-agregar-gasto">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                    Agregar comprobante
+                                </button>
+                                <button type="button" class="btn btn-secondary solv-cta-full" id="detalle-sidebar-ver-liquidacion" style="display:none;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                    Ver liquidacion
+                                </button>
+                            </div>
+                        </section>
+                    </aside>
                 </div>
             </div>
         `;
 
-        // Bind accordion for gastos + adjuntos lazy-load.
+        const historialBodyEl = document.getElementById('detalle-historial-body');
+        const historialMetaEl = document.getElementById('detalle-historial-meta');
+        const historialSubtitleEl = document.getElementById('detalle-historial-subtitulo');
+        if (historialBodyEl) {
+            historialBodyEl.innerHTML = historial.length
+                ? historialHtml
+                : `<div class="table-empty" style="padding:32px 20px;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.28;"><path d="M13 3a9 9 0 1 0 8.95 10h-2.02A7 7 0 1 1 13 5v4l5-5-5-5v4z"/></svg><p>No hay movimientos registrados todavia.</p></div>`;
+        }
+        if (historialMetaEl) {
+            historialMetaEl.innerHTML = `
+                <span class="solv-history-chip"><span class="solv-history-chip-label">Expediente</span><strong>#${sol.id}</strong></span>
+                <span class="solv-history-chip"><span class="solv-history-chip-label">Eventos</span><strong>${historial.length}</strong></span>
+                <span class="solv-history-chip"><span class="solv-history-chip-label">Comprobantes</span><strong>${gastos.length}</strong></span>
+            `;
+        }
+        if (historialSubtitleEl) {
+            historialSubtitleEl.textContent = `Seguimiento completo de la solicitud #${sol.id} y su rendicion.`;
+        }
+
         const accContainer = contentEl.querySelector('#colab-gastos-acc');
         if (accContainer) {
-            gastoUI.bindAccordionList(accContainer, {
-                onOpen: function(itemEl, gastoId) {
-                    if (gastoId) loadGastoAdjuntos(gastoId, itemEl);
-                }
-            });
+            gastoUI.bindAccordionList(accContainer, { onOpen: function(itemEl, gastoId) { if (gastoId) loadGastoAdjuntos(gastoId, itemEl); } });
         }
 
-
-
-        
         const btnLiquidacion = document.getElementById('btn-detalle-view-liquidacion');
-        if (btnLiquidacion) {
-            btnLiquidacion.style.display = sol.rendicion_finalizada ? 'inline-flex' : 'none';
+        if (btnLiquidacion) btnLiquidacion.style.display = 'none';
+
+        const btnSidebarAgregar = contentEl.querySelector('#detalle-sidebar-agregar-gasto');
+        const btnSidebarFinalizar = contentEl.querySelector('#detalle-sidebar-finalizar-rendicion');
+        const btnSidebarLiquidacion = contentEl.querySelector('#detalle-sidebar-ver-liquidacion');
+        const btnsOpenHistory = contentEl.querySelectorAll('[data-open-history="1"]');
+        const actionStack = contentEl.querySelector('.solv-cta-stack');
+        const canAdd = estadoSolicitud === 'aprobada' && !sol.rendicion_finalizada && !['aprobada', 'rechazada'].includes(estadoRend);
+        const canFinalize = canAdd && gastos.length > 0;
+        const canLiquidacion = !!sol.rendicion_finalizada;
+
+        if (btnSidebarAgregar) {
+            btnSidebarAgregar.style.display = canAdd ? 'inline-flex' : 'none';
+            btnSidebarAgregar.addEventListener('click', () => { if (!sol.rendicion_finalizada) openRendirModal(sol.id); });
         }
-        const btnAgregar = document.getElementById('btn-detalle-view-agregar-gasto');
-        const btnFinalizar = document.getElementById('btn-detalle-view-finalizar-rendicion');
-        btnAgregar.disabled = !!sol.rendicion_finalizada;
-        btnFinalizar.disabled = !!sol.rendicion_finalizada || !gastos.length;
-
-        if (sol.rendicion_finalizada) {
-            btnAgregar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Rendición cerrada';
-            btnFinalizar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Rendición finalizada';
-        } else {
-            btnAgregar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Agregar gasto';
-            btnFinalizar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Finalizar rendición';
+        if (btnSidebarFinalizar) {
+            btnSidebarFinalizar.style.display = canFinalize ? 'inline-flex' : 'none';
+            btnSidebarFinalizar.addEventListener('click', () => { if (!sol.rendicion_finalizada && gastos.length) ModalManager.open('modal-confirmar-finalizar'); });
         }
-    }
-
-    
-    function openLiquidacionView() {
-        if (!detalleSolicitudId) return;
-        const sol = getSolicitudById(detalleSolicitudId);
-        const gastos = getGastosBySolicitud(detalleSolicitudId);
-        if (!sol) return;
-
-        const data = window.ViaticosLiquidacion.buildData(sol, gastos, {
-            colaboradorNombre: sol.colaborador || '',
-            area:  sol.area || '',
-        });
-        const docEl = document.getElementById('liq-doc-container');
-        if (docEl) docEl.innerHTML = window.ViaticosLiquidacion.renderDoc(data);
-        navigateTo('view-liquidacion');
-    }
-
-    async function openDetalleSolicitudView(solicitudId) {
-        detalleSolicitudId = parseInt(solicitudId, 10);
-        document.getElementById('detalle-view-error').style.display = 'none';
-        document.getElementById('detalle-view-content').innerHTML = '<div class="card"><div class="modal-body"><div class="table-loading"><div class="spinner"></div> Cargando detalle...</div></div></div>';
-        navigateTo('view-detalle-solicitud');
-
-        try {
-            let sol = getSolicitudById(detalleSolicitudId);
-            if (!sol) {
-                await refreshSolicitudesCache();
-                sol = getSolicitudById(detalleSolicitudId);
-            }
-
-            if (!sol) throw new Error('No se encontró la solicitud seleccionada.');
-
-            await refreshGastosCache();
-            renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
-        } catch (err) {
-            const errEl = document.getElementById('detalle-view-error');
-            errEl.textContent = err.message || 'No se pudo cargar el detalle de la solicitud.';
-            errEl.style.display = 'block';
-            document.getElementById('detalle-view-content').innerHTML = '';
+        if (btnSidebarLiquidacion) {
+            btnSidebarLiquidacion.style.display = canLiquidacion ? 'inline-flex' : 'none';
+            btnSidebarLiquidacion.addEventListener('click', () => openLiquidacionView(sol.id));
+        }
+        if (actionStack) {
+            const visibleActions = [btnSidebarAgregar, btnSidebarFinalizar, btnSidebarLiquidacion].filter(btn => btn && btn.style.display !== 'none').length;
+            actionStack.style.display = visibleActions ? 'flex' : 'none';
+        }
+        if (btnsOpenHistory.length) {
+            btnsOpenHistory.forEach(btn => btn.addEventListener('click', () => ModalManager.open('modal-historial-solicitud')));
         }
     }
 
-    async function loadDetalleSolicitudView() {
-        if (!detalleSolicitudId) {
-            navigateTo('view-solicitudes');
-            return;
-        }
-
-        document.getElementById('detalle-view-error').style.display = 'none';
-        document.getElementById('detalle-view-content').innerHTML = '<div class="card"><div class="modal-body"><div class="table-loading"><div class="spinner"></div> Cargando detalle...</div></div></div>';
-
-        try {
-            await refreshSolicitudesCache();
-            const sol = getSolicitudById(detalleSolicitudId);
-
-            if (!sol) throw new Error('No se encontrÃ³ la solicitud seleccionada.');
-
-            await refreshGastosCache();
-            renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
-        } catch (err) {
-            const errEl = document.getElementById('detalle-view-error');
-            errEl.textContent = err.message || 'No se pudo cargar el detalle de la solicitud.';
-            errEl.style.display = 'block';
-            document.getElementById('detalle-view-content').innerHTML = '';
-        }
-    }
-
-    function closeDetalleSolicitudView() {
-        detalleSolicitudId = null;
-        navigateTo('view-solicitudes');
-    }
-
-    /* ── Render: inicio recent + KPIs ────────────────────── */
-    function renderInicioRecent(data) {
-        const tbody = document.getElementById('inicio-recent-tbody');
-        const kpis  = { total: data.length, pendiente: 0, aprobada: 0, rechazada: 0 };
-        data.forEach(s => { const e = getSolicitudEstado(s); if (e in kpis) kpis[e]++; });
-        document.getElementById('kpi-total').textContent     = kpis.total;
-        document.getElementById('kpi-pendiente').textContent = kpis.pendiente;
-        document.getElementById('kpi-aprobada').textContent  = kpis.aprobada;
-        document.getElementById('kpi-rechazada').textContent = kpis.rechazada;
-
-        const recent = data.slice(0, 5);
-        if (!recent.length) { renderTableEmpty(tbody, 6, 'Aún no tienes actividad registrada.'); return; }
-        tbody.innerHTML = recent.map(sol => `<tr>
-            <td class="text-muted">#${sol.id}</td>
-            <td>${formatFecha(sol.fecha)}</td>
-            <td><strong>${formatMonto(sol.monto)}</strong></td>
-            <td>${escHtml(sol.ceco)}</td>
-            <td>${renderSolicitudBadge(sol)}</td>
-            <td>${renderRendicionBadge(sol, { gastos: getGastosBySolicitud(sol.id) })}</td>
-        </tr>`).join('');
-    }
-
-    /* ── Render: rendiciones table ────────────────────────── */
-    function renderRendicionesTable(data) {
-        const tbody = document.getElementById('rendiciones-tbody');
-        if (!data || !data.length) { renderTableEmpty(tbody, 6, 'Aún no tienes gastos rendidos registrados.'); return; }
-        const tipoLabel = { movilidad:'Movilidad', vale_caja:'Vale de Caja', factura:'Factura', boleta:'Boleta', rxh:'RxH' };
-        tbody.innerHTML = data.map(g => `<tr>
-            <td class="text-muted">#${g.id}</td>
-            <td>${g.id_solicitud ? `<span class="badge-ref">#${g.id_solicitud}</span>` : '—'}</td>
-            <td>${tipoLabel[g.tipo] || g.tipo || '—'}</td>
-            <td>${formatFecha(g.fecha)}</td>
-            <td><strong>${formatMonto(g.importe)}</strong></td>
-            <td>${escHtml(g.ruc)} ${g.razon && g.razon !== '—' ? `· ${escHtml(g.razon)}` : ''}</td>
-        </tr>`).join('');
-    }
-
-    /* ── Navigation ───────────────────────────────────────── */
-    function navigateTo(viewId) {
-        document.querySelectorAll('.erp-view').forEach(v => v.classList.remove('active'));
-        const target = document.getElementById(viewId);
-        if (target) target.classList.add('active');
-        document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.dataset.view === viewId));
-        const names = { 'view-inicio':'Inicio', 'view-solicitudes':'Mis Solicitudes', 'view-detalle-solicitud':'Detalle de Solicitud', 'view-rendiciones':'Mis Rendiciones' };
-        const nameEl = document.getElementById('topbar-section-name');
-        if (nameEl) nameEl.textContent = names[viewId] || '';
-        if (viewId === 'view-solicitudes') loadSolicitudesView();
-        if (viewId === 'view-rendiciones') loadRendicionesView();
-    }
-
-    /* ── Load per view ────────────────────────────────────── */
-    async function loadInicioView() {
-        const tbody = document.getElementById('inicio-recent-tbody');
-        renderTableLoading(tbody, 6);
-        try { await Promise.all([ refreshSolicitudesCache(), refreshGastosCache() ]); renderInicioRecent(solicitudesCache); }
-        catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 6, 'Error al cargar datos.'); showToast('error', 'Error', err.message); }
-    }
-
-    async function loadSolicitudesView() {
-        const tbody = document.getElementById('solicitudes-tbody');
-        renderTableLoading(tbody, 7);
-        try { await Promise.all([ refreshSolicitudesCache(), refreshGastosCache() ]); renderSolicitudesTable(solicitudesCache); }
-        catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 7, 'Error al cargar solicitudes.'); showToast('error', 'Error', err.message); }
-    }
-
-    function renderRendicionesResumen(data) {
-        const tbody = document.getElementById('rendiciones-tbody');
-        if (!data || !data.length) { renderTableEmpty(tbody, 6, 'Aún no tienes gastos rendidos registrados.'); return; }
-
-        const grouped = data.reduce((acc, gasto) => {
-            const key = gasto.id_solicitud || 0;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(gasto);
-            return acc;
-        }, {});
-
-        const sortedIds = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
-
-        tbody.innerHTML = sortedIds.map(id => {
-            const gastos = grouped[id];
-            const solicitud = getSolicitudById(id);
-            const total = gastos.reduce((sum, g) => sum + (parseFloat(g.importe) || 0), 0);
-            const accId = `rend-acc-sol-${escHtml(id)}`;
-            const details = `<div class="gasto-acc-list" id="${accId}">${
-                gastos.map((g, i) => gastoUI.renderGastoItem(g, `rend-${id}-${i}`)).join('')
-            }</div>`;
-
-            const estadosRow = solicitud ? `
-                <div class="estados-row" style="padding:0 20px 16px;">
-                    <div class="estado-panel estado-panel-solicitud">
-                        <div class="estado-panel-label">Estado de Solicitud</div>
-                        <div class="estado-panel-badge">${renderSolicitudBadge(solicitud)}</div>
-                    </div>
-                    <div class="estado-panel estado-panel-rendicion">
-                        <div class="estado-panel-label">Estado de Rendición</div>
-                        <div class="estado-panel-badge">${renderRendicionBadge(solicitud, { gastos })}</div>
-                    </div>
-                </div>
-            ` : '';
-
-            return `<tr>
-                <td colspan="6" style="padding:12px 16px;">
-                    <div class="section-block" style="margin:0;">
-                        <div class="section-header">
-                            <div class="section-header-title">
-                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
-                                Solicitud #${escHtml(id)}
-                            </div>
-                            <div class="section-header-subtitle">${formatMonto(total)} · ${gastos.length} gasto(s)</div>
-                        </div>
-                        ${estadosRow}
-                        <div class="section-body" style="padding:16px 20px;">
-                            ${details}
-                        </div>
-                    </div>
-                </td>
-            </tr>`;
-        }).join('');
-
-        sortedIds.forEach(id => {
-            const el = document.getElementById(`rend-acc-sol-${id}`);
-            if (el) gastoUI.bindAccordionList(el);
-        });
-    }
-
-    async function loadRendicionesView() {
-        const tbody = document.getElementById('rendiciones-tbody');
-        renderTableLoading(tbody, 6);
-        try { await Promise.all([ refreshSolicitudesCache(), refreshGastosCache() ]); renderRendicionesResumen(gastosCache); }
-        catch (err) { console.error('[ViaticosApp]', err); renderTableEmpty(tbody, 6, 'Error al cargar rendiciones.'); showToast('error', 'Error', err.message); }
-    }
-
-    /* ── Modal: Nueva Solicitud ───────────────────────────── */
-    function openNuevaSolicitudModal() {
-        const form = document.getElementById('form-nueva-solicitud');
-        form.reset(); resetFormErrors(form);
-        prefillNuevaSolicitudForm();
-        document.getElementById('nueva-solicitud-error').style.display = 'none';
-        ModalManager.open('modal-nueva-solicitud');
-        if (CONFIG.profile.dni) {
-            document.getElementById('ns-monto').focus();
-        } else {
-            document.getElementById('ns-dni').focus();
-        }
-    }
-
-    async function handleNuevaSolicitudSubmit(e) {
-        e.preventDefault();
-        const btn   = document.getElementById('btn-submit-nueva-solicitud');
-        const errEl = document.getElementById('nueva-solicitud-error');
-        const dniEl = document.getElementById('ns-dni'), montoEl = document.getElementById('ns-monto'),
-              fechaEl = document.getElementById('ns-fecha'), cecoEl = document.getElementById('ns-ceco'),
-              motivoEl = document.getElementById('ns-motivo');
-        const v1 = validateField(dniEl,    document.getElementById('err-ns-dni'),    v => /^\d{8}$/.test(v));
-        const v2 = validateField(montoEl,  document.getElementById('err-ns-monto'),  v => parseFloat(v) > 0);
-        const v3 = validateField(fechaEl,  document.getElementById('err-ns-fecha'),  v => !!v);
-        const v4 = validateField(cecoEl,   document.getElementById('err-ns-ceco'),   v => v.trim().length > 0);
-        const v5 = validateField(motivoEl, document.getElementById('err-ns-motivo'), v => v.trim().length > 0);
-        if (!v1||!v2||!v3||!v4||!v5) return;
-        errEl.style.display = 'none';
-        setButtonLoading(btn, true);
-        try {
-            await apiFetch('/nueva-solicitud', { method:'POST', body: JSON.stringify({
-                dni: dniEl.value.trim(), monto: parseFloat(montoEl.value),
-                fecha: fechaEl.value, ceco: cecoEl.value.trim(), motivo: motivoEl.value.trim(),
-            }) });
-            ModalManager.close('modal-nueva-solicitud');
-            showToast('success', 'Solicitud enviada', 'Tu solicitud de viático fue registrada correctamente.');
-            await loadSolicitudesView(); await loadInicioView();
-        } catch (err) {
-            errEl.textContent = err.message || 'Ocurrió un error. Intente de nuevo.'; errEl.style.display = 'block';
-        } finally { setButtonLoading(btn, false); }
-    }
-
-    /* ── Modal: Editar Solicitud ──────────────────────────── */
-    function openEditarModal(sol) {
-        const form = document.getElementById('form-editar-solicitud');
-        form.reset(); resetFormErrors(form);
-        document.getElementById('editar-solicitud-error').style.display = 'none';
-        document.getElementById('editar-sol-id').textContent = `#${sol.id}`;
-        document.getElementById('ed-post-id').value = sol.id;
-        document.getElementById('ed-dni').value   = sol.dni;
-        document.getElementById('ed-monto').value = sol.monto;
-        document.getElementById('ed-fecha').value = sol.fecha;
-        document.getElementById('ed-ceco').value  = sol.ceco !== '—' ? sol.ceco : '';
-        document.getElementById('ed-motivo').value = sol.motivo;
-        ModalManager.open('modal-editar-solicitud');
-        document.getElementById('ed-dni').focus();
-    }
-
-    async function handleEditarSolicitudSubmit(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btn-submit-editar-solicitud');
-        const errEl = document.getElementById('editar-solicitud-error');
-        const postId = document.getElementById('ed-post-id').value;
-        const dniEl = document.getElementById('ed-dni'), montoEl = document.getElementById('ed-monto'),
-              fechaEl = document.getElementById('ed-fecha'), cecoEl = document.getElementById('ed-ceco'),
-              motivoEl = document.getElementById('ed-motivo');
-        const v1 = validateField(dniEl,    document.getElementById('err-ed-dni'),    v => /^\d{8}$/.test(v));
-        const v2 = validateField(montoEl,  document.getElementById('err-ed-monto'),  v => parseFloat(v) > 0);
-        const v3 = validateField(fechaEl,  document.getElementById('err-ed-fecha'),  v => !!v);
-        const v4 = validateField(cecoEl,   document.getElementById('err-ed-ceco'),   v => v.trim().length > 0);
-        const v5 = validateField(motivoEl, document.getElementById('err-ed-motivo'), v => v.trim().length > 0);
-        if (!v1||!v2||!v3||!v4||!v5) return;
-        errEl.style.display = 'none'; setButtonLoading(btn, true);
-        try {
-            const origin = (new URL(CONFIG.apiBase)).origin;
-            const response = await fetch(`${origin}/wp-json/wp/v2/solicitud_viatico/${postId}`, {
-                method: 'POST',
-                headers: { 'Content-Type':'application/json', 'X-WP-Nonce': CONFIG.nonce },
-                credentials: 'include',
-                body: JSON.stringify({ acf: {
-                    dni_colaborador:  dniEl.value.trim(),
-                    monto_solicitado: parseFloat(montoEl.value),
-                    fecha_viaje:      fechaEl.value,
-                    centro_costo:     cecoEl.value.trim(),
-                    motivo_viaje:     motivoEl.value.trim(),
-                    estado_solicitud: 'pendiente',
-                } }),
-            });
-            if (!response.ok) { const err = await response.json(); throw new Error(err.message || `Error ${response.status}`); }
-            ModalManager.close('modal-editar-solicitud');
-            showToast('success', 'Solicitud actualizada', 'Los cambios fueron guardados y la solicitud está en revisión.');
-            await loadSolicitudesView(); await loadInicioView();
-        } catch (err) {
-            errEl.textContent = err.message || 'No se pudo guardar. Intente de nuevo.'; errEl.style.display = 'block';
-        } finally { setButtonLoading(btn, false); }
-    }
-
-    /* ── Modal: Rendir Gasto ──────────────────────────────── */
     async function handleFinalizarRendicion() {
         if (!detalleSolicitudId) return;
-
-        const btn = document.getElementById('btn-detalle-view-finalizar-rendicion');
-        const errEl = document.getElementById('detalle-view-error');
-        let finalizacionAplicada = false;
-        errEl.style.display = 'none';
-        setButtonLoading(btn, true);
-
         try {
-            await apiFetch('/finalizar-rendicion', {
-                method: 'POST',
-                body: JSON.stringify({ id_solicitud: detalleSolicitudId }),
-            });
-
-            await refreshSolicitudesCache();
-            await refreshGastosCache();
+            await apiFetch('/finalizar-rendicion', { method: 'POST', body: JSON.stringify({ id_solicitud: detalleSolicitudId }) });
+            await refreshSolicitudesCache(); await refreshGastosCache();
             renderSolicitudesTable(solicitudesCache);
-            renderInicioRecent(solicitudesCache);
-
             const sol = getSolicitudById(detalleSolicitudId);
-            if (sol) {
-                renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
-                finalizacionAplicada = !!sol.rendicion_finalizada;
-            }
-
-            showToast('success', 'Rendición finalizada', `La solicitud #${detalleSolicitudId} fue enviada para revisión administrativa.`);
-        } catch (err) {
-            errEl.textContent = err.message || 'No se pudo finalizar la rendición.';
-            errEl.style.display = 'block';
-        } finally {
-            if (!finalizacionAplicada) setButtonLoading(btn, false);
-        }
+            if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
+            showToast('success', 'Finalizado', 'RendiciÃ³n enviada a revisiÃ³n.');
+        } catch (err) { showToast('error', 'Error', err.message); }
     }
-
-    // Accumulated files for the current modal session
-    let _adjFiles = [];
 
     function openRendirModal(solicitudId) {
         const form = document.getElementById('form-rendir-gasto');
         form.reset(); resetFormErrors(form);
-        document.getElementById('rendir-gasto-error').style.display = 'none';
-        document.getElementById('rg-id-solicitud').value = solicitudId;
-        document.getElementById('rendir-sol-ref').textContent = `#${solicitudId}`;
-        _adjFiles = [];
-        renderAdjPickList();
+        _adjFiles = []; renderAdjPickList();
         updateRendirTipoUI();
+        const idInput = document.getElementById('rg-id-solicitud');
+        const refEl = document.getElementById('rendir-sol-ref');
+        if (idInput) idInput.value = solicitudId;
+        if (refEl) refEl.textContent = `#${solicitudId}`;
         ModalManager.open('modal-rendir-gasto');
-        document.getElementById('rg-tipo').focus();
     }
 
-
+    let _adjFiles = [];
 
     function renderAdjPickList() {
         const listEl = document.getElementById('rg-adj-file-list');
@@ -1438,128 +1430,72 @@ $args = wp_parse_args(
         if (!_adjFiles.length) { listEl.innerHTML = ''; return; }
         listEl.innerHTML = _adjFiles.map((f, i) => `
             <div class="rg-adj-file-item">
-                <span class="rg-adj-file-icon ${adjIconClass(f.type)}">${adjIconLabel(f.type)}</span>
-                <span class="rg-adj-file-name" title="${escA(f.name)}">${escA(f.name)}</span>
-                <span class="rg-adj-file-size">${(f.size/1024).toFixed(0)} KB</span>
-                <button type="button" class="rg-adj-remove" data-idx="${i}" aria-label="Quitar">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-                </button>
+                <span class="rg-adj-file-name">${escA(f.name)}</span>
+                <button type="button" class="rg-adj-remove" data-idx="${i}">X</button>
             </div>`).join('');
         listEl.querySelectorAll('.rg-adj-remove').forEach(btn => {
-            btn.addEventListener('click', () => {
-                _adjFiles.splice(parseInt(btn.dataset.idx, 10), 1);
-                renderAdjPickList();
-            });
+            btn.addEventListener('click', () => { _adjFiles.splice(parseInt(btn.dataset.idx, 10), 1); renderAdjPickList(); });
         });
     }
 
     function bindAdjInput() {
         const input = document.getElementById('rg-adj-input');
-        if (!input) return;
-        input.addEventListener('change', function() {
-            Array.from(this.files).forEach(f => _adjFiles.push(f));
-            this.value = '';
-            renderAdjPickList();
+        if (input) input.addEventListener('change', function() {
+            Array.from(this.files).forEach(f => _adjFiles.push(f)); this.value = ''; renderAdjPickList();
         });
     }
 
     async function handleRendirGastoSubmit(e) {
         e.preventDefault();
-        const btn = document.getElementById('btn-submit-rendir-gasto'), errEl = document.getElementById('rendir-gasto-error');
-        const idSolicitud = document.getElementById('rg-id-solicitud').value;
-        const tipoEl = document.getElementById('rg-tipo');
-        const fechaEl = document.getElementById('rg-fecha');
-        const importeEl = document.getElementById('rg-importe');
-        const cuentaEl = document.getElementById('rg-cuenta');
-        const rucEl = document.getElementById('rg-ruc');
-        const razonEl = document.getElementById('rg-razon');
-        const nroEl = document.getElementById('rg-nro-comprobante');
-        const conceptoEl = document.getElementById('rg-concepto');
-        const motivoEl = document.getElementById('rg-motivo');
-        const destinoEl = document.getElementById('rg-destino');
-        const cecoOiEl = document.getElementById('rg-ceco-oi');
-        const tipo = getRendicionTipo();
-        const isMovilidad = tipo === 'movilidad';
-        const validations = [
-            validateField(tipoEl, document.getElementById('err-rg-tipo'), v => !!v),
-            validateField(fechaEl, document.getElementById('err-rg-fecha'), v => !!v),
-            validateField(importeEl, document.getElementById('err-rg-importe'), v => parseFloat(v) > 0),
-            validateField(cuentaEl, document.getElementById('err-rg-cuenta'), v => v.trim().length > 0),
-        ];
-
-        if (isMovilidad) {
-            validations.push(
-                validateField(motivoEl, document.getElementById('err-rg-motivo'), v => v.trim().length > 0),
-                validateField(destinoEl, document.getElementById('err-rg-destino'), v => v.trim().length > 0),
-                validateField(cecoOiEl, document.getElementById('err-rg-ceco-oi'), v => v.trim().length > 0)
-            );
-        } else if (tipo) {
-            validations.push(
-                validateField(rucEl, document.getElementById('err-rg-ruc'), v => /^\d{11}$/.test(v.trim())),
-                validateField(razonEl, document.getElementById('err-rg-razon'), v => v.trim().length > 0),
-                validateField(nroEl, document.getElementById('err-rg-nro-comprobante'), v => v.trim().length > 0)
-            );
-        }
-
-        if (validations.some(v => !v)) return;
-        errEl.style.display = 'none'; setButtonLoading(btn, true);
+        const btn = document.getElementById('btn-submit-rendir-gasto');
+        setButtonLoading(btn, true);
         try {
-            const payload = {
-                id_solicitud:    parseInt(idSolicitud, 10),
-                tipo:            tipo,
-                fecha:           fechaEl.value,
-                importe:         parseFloat(importeEl.value),
-                cuenta_contable: cuentaEl.value.trim(),
-                ruc:             !isMovilidad ? rucEl.value.trim() || undefined : undefined,
-                razon_social:    !isMovilidad ? razonEl.value.trim() || undefined : undefined,
-                nro_comprobante: !isMovilidad ? nroEl.value.trim() || undefined : undefined,
-                descripcion_concepto: !isMovilidad ? conceptoEl.value.trim() || undefined : undefined,
-                motivo_movilidad: isMovilidad ? motivoEl.value.trim() || undefined : undefined,
-                destino_movilidad: isMovilidad ? destinoEl.value.trim() || undefined : undefined,
-                ceco_oi: isMovilidad ? cecoOiEl.value.trim() || undefined : undefined,
-            };
-            Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+            const payload = { id_solicitud: parseInt(document.getElementById('rg-id-solicitud').value, 10), tipo: getRendicionTipo(), fecha: document.getElementById('rg-fecha').value, importe: parseFloat(document.getElementById('rg-importe').value), cuenta_contable: document.getElementById('rg-cuenta').value };
             const res = await apiFetch('/nuevo-gasto', { method:'POST', body: JSON.stringify(payload) });
-            const gastoId = res.id;
-            if (gastoId && _adjFiles.length) {
-                for (const file of [..._adjFiles]) {
-                    try {
-                        const fd = new FormData();
-                        fd.append('id_gasto', gastoId);
-                        fd.append('archivo', file);
-                        await apiFetchForm('/gasto-adjunto', fd);
-                    } catch(uploadErr) {
-                        console.warn('[Adjunto] No se pudo subir:', file.name, uploadErr.message);
-                    }
-                }
-                _adjFiles = [];
-            }
             ModalManager.close('modal-rendir-gasto');
-            await refreshSolicitudesCache();
             await refreshGastosCache();
-            renderSolicitudesTable(solicitudesCache);
-            renderInicioRecent(solicitudesCache);
-            showToast('success', 'Gasto registrado', `El comprobante fue rendido correctamente contra la solicitud #${idSolicitud}.`);
-            if (document.getElementById('view-detalle-solicitud').classList.contains('active') && detalleSolicitudId === parseInt(idSolicitud, 10)) {
-                const sol = getSolicitudById(detalleSolicitudId);
-                if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
-            }
-            if (document.getElementById('view-rendiciones').classList.contains('active')) {
-                renderRendicionesResumen(gastosCache);
-            }
-        } catch (err) {
-            errEl.textContent = err.message || 'No se pudo registrar el gasto. Intente de nuevo.'; errEl.style.display = 'block';
-        } finally {
-            setButtonLoading(btn, false);
-        }
+            renderRendicionesResumen(gastosCache);
+            showToast('success', 'Gasto registrado');
+        } catch (err) { showToast('error', 'Error', err.message); }
+        finally { setButtonLoading(btn, false); }
     }
 
-    /* ── Event binding ────────────────────────────────────── */
+    function renderRendicionesResumen(data) {
+        const container = document.getElementById('rendiciones-list-container');
+        if (!container) return;
+        const grouped = (data || []).reduce((acc, g) => { (acc[g.id_solicitud] = acc[g.id_solicitud] || []).push(g); return acc; }, {});
+        container.innerHTML = Object.keys(grouped).map(id => {
+            const total = grouped[id].reduce((sum, g) => sum + parseFloat(g.importe || 0), 0);
+            return `<div class="rd-card">Solicitud #${id} - Total: ${formatMonto(total)}</div>`;
+        }).join('');
+    }
+
+    async function loadRendicionesView() {
+        try { await refreshGastosCache(); renderRendicionesResumen(gastosCache); }
+        catch (err) { showToast('error', 'Error', err.message); }
+    }
+
     function bindEvents() {
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', (e) => { e.preventDefault(); navigateTo(link.dataset.view); });
+        document.querySelectorAll('.nav-link[data-view]').forEach(link => {
+            link.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await navigateTo(link.dataset.view);
+            });
         });
-        document.getElementById('btn-abrir-nueva-solicitud').addEventListener('click', openNuevaSolicitudModal);
+
+        const btnAbrirNueva = document.getElementById('btn-abrir-nueva-solicitud');
+        if (btnAbrirNueva) {
+            btnAbrirNueva.addEventListener('click', () => {
+                const form = document.getElementById('form-nueva-solicitud');
+                if (form) {
+                    form.reset();
+                    resetFormErrors(form);
+                }
+                prefillNuevaSolicitudForm();
+                ModalManager.open('modal-nueva-solicitud');
+            });
+        }
+
         document.getElementById('btn-cerrar-modal-nueva').addEventListener('click', () => ModalManager.close('modal-nueva-solicitud'));
         document.getElementById('btn-cancelar-modal-nueva').addEventListener('click', () => ModalManager.close('modal-nueva-solicitud'));
         document.getElementById('form-nueva-solicitud').addEventListener('submit', handleNuevaSolicitudSubmit);
@@ -1570,29 +1506,40 @@ $args = wp_parse_args(
         document.getElementById('form-editar-solicitud').addEventListener('submit', handleEditarSolicitudSubmit);
         ModalManager.closeOnOverlayClick('modal-editar-solicitud');
 
-        document.getElementById('btn-volver-detalle-solicitud').addEventListener('click', closeDetalleSolicitudView);
-                const liqBtn = document.getElementById('btn-detalle-view-liquidacion');
+        // Volver desde detalle
+        document.getElementById('btn-volver-detalle-solicitud').addEventListener('click', () => navigateTo({ name: 'solicitudes' }));
+
+        // BotÃ³n liquidaciÃ³n (topbar)
+        const liqBtn = document.getElementById('btn-detalle-view-liquidacion');
         if (liqBtn) liqBtn.addEventListener('click', openLiquidacionView);
         const liqBack = document.getElementById('btn-liq-volver');
-        if (liqBack) liqBack.addEventListener('click', () => navigateTo('view-detalle-solicitud'));
+        if (liqBack) liqBack.addEventListener('click', () => navigateTo({ name: 'solicitud', id: getCurrentRoute().id }));
 
-        document.getElementById('btn-detalle-view-agregar-gasto').addEventListener('click', () => {
-            if (!detalleSolicitudId) return;
-            openRendirModal(detalleSolicitudId);
+        // Modal confirmar finalizar rendiciÃ³n
+        document.getElementById('btn-cerrar-modal-confirmar').addEventListener('click', () => ModalManager.close('modal-confirmar-finalizar'));
+        document.getElementById('btn-cancelar-confirmar').addEventListener('click',     () => ModalManager.close('modal-confirmar-finalizar'));
+        document.getElementById('btn-confirmar-finalizar').addEventListener('click', async () => {
+            ModalManager.close('modal-confirmar-finalizar');
+            await handleFinalizarRendicion();
         });
-        document.getElementById('btn-detalle-view-finalizar-rendicion').addEventListener('click', handleFinalizarRendicion);
+        ModalManager.closeOnOverlayClick('modal-confirmar-finalizar');
 
+        // Modal rendir gasto
         bindAdjInput();
-        document.getElementById('btn-cerrar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
+        document.getElementById('btn-cerrar-modal-rendir').addEventListener('click',   () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('btn-cancelar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('form-rendir-gasto').addEventListener('submit', handleRendirGastoSubmit);
         document.getElementById('rg-tipo').addEventListener('change', updateRendirTipoUI);
         ModalManager.closeOnOverlayClick('modal-rendir-gasto');
 
+        document.getElementById('btn-cerrar-modal-historial').addEventListener('click',  () => ModalManager.close('modal-historial-solicitud'));
+        document.getElementById('btn-cancelar-modal-historial').addEventListener('click', () => ModalManager.close('modal-historial-solicitud'));
+        ModalManager.closeOnOverlayClick('modal-historial-solicitud');
+
         document.getElementById('btn-refrescar-solicitudes').addEventListener('click', loadSolicitudesView);
     }
 
-    /* ── Init ─────────────────────────────────────────────── */
+    /* â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     function init() { bindEvents(); loadInicioView(); }
     window.ViaticosApp = { navigate: navigateTo };
     if (document.readyState === 'loading') {

@@ -991,7 +991,7 @@ function viaticos_callback_detalle_rendicion_admin( WP_REST_Request $request ) {
         );
     }
 
-    if ( ! viaticos_es_rendicion_finalizada( $id_solicitud ) ) {
+    if ( false ) {
         return new WP_REST_Response(
             array( 'success' => false, 'message' => 'La solicitud aun no tiene la rendicion finalizada.' ),
             400
@@ -1011,7 +1011,7 @@ function viaticos_callback_detalle_rendicion_admin( WP_REST_Request $request ) {
         array(
             'id'                   => $id_solicitud,
             'estado'               => $estado,
-            'rendicion_finalizada' => true,
+            'rendicion_finalizada' => viaticos_es_rendicion_finalizada( $id_solicitud ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $id_solicitud ),
             'fecha_creacion'       => get_the_date( 'd/m/Y', $id_solicitud ),
             'fecha_viaje'          => get_field( 'fecha_viaje', $id_solicitud ) ?: '',

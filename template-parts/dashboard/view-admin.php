@@ -24,13 +24,13 @@ $args = wp_parse_args(
     if (nav) {
         nav.innerHTML = `
             <li>
-                <a href="#" class="nav-link active" data-view="view-anticipos" id="nav-anticipos">
+                <a href="?view=anticipos" class="nav-link active" data-view="view-anticipos" data-route="anticipos" id="nav-anticipos">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12H7v-2h10v2zm0-4H7V9h10v2zm0-4H7V5h10v2z"/></svg>
                     Anticipos
                 </a>
             </li>
             <li>
-                <a href="#" class="nav-link" data-view="view-rendiciones" id="nav-rendiciones">
+                <a href="?view=rendiciones" class="nav-link" data-view="view-rendiciones" data-route="rendiciones" id="nav-rendiciones">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 6a9.77 9.77 0 0 1 8.82 6A9.77 9.77 0 0 1 12 18a9.77 9.77 0 0 1-8.82-6A9.77 9.77 0 0 1 12 6zm0 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0-2.2a1.8 1.8 0 1 1 0-3.6 1.8 1.8 0 0 1 0 3.6z"/></svg>
                     Rendiciones
                 </a>
@@ -175,6 +175,15 @@ $args = wp_parse_args(
     const timelineUI = window.ViaticosTimelineUI;
     const gastoUI = window.ViaticosGastoUI;
     const LIST_VIEWS = ['view-anticipos', 'view-rendiciones'];
+    const ROUTE_CONFIG = {
+        anticipos: { viewId: 'view-anticipos', breadcrumb: 'Anticipos' },
+        rendiciones: { viewId: 'view-rendiciones', breadcrumb: 'Rendiciones' },
+        solicitud: { viewId: 'view-solicitud-detalle', breadcrumb: 'Detalle de solicitud', requiresId: true }
+    };
+    const VIEW_TO_ROUTE = Object.keys(ROUTE_CONFIG).reduce((acc, routeName) => {
+        acc[ROUTE_CONFIG[routeName].viewId] = routeName;
+        return acc;
+    }, {});
     const VIEW_CONFIG = {
         'view-anticipos': {
             breadcrumb: 'Anticipos',
@@ -202,7 +211,6 @@ $args = wp_parse_args(
 
     let cache = [];
     let modalSolId = null;
-    let lastListView = 'view-anticipos';
 
     async function apiFetch(endpoint, options = {}) {
         const merged = Object.assign({ headers: {} }, options);
@@ -252,6 +260,86 @@ $args = wp_parse_args(
 
     function renderRendicionBadge(sol) {
         return estadoUI.renderBadgeEstado('rendicion', getRendicionEstado(sol));
+    }
+
+    function normalizeRouteName(value) {
+        return ROUTE_CONFIG[value] ? value : 'anticipos';
+    }
+
+    function normalizeListRouteName(value) {
+        return value === 'rendiciones' ? 'rendiciones' : 'anticipos';
+    }
+
+    function normalizeSolicitudId(value) {
+        const parsed = parseInt(value, 10);
+        return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+    }
+
+    function getCurrentRoute() {
+        const params = new URLSearchParams(window.location.search);
+        const routeName = normalizeRouteName(params.get('view'));
+        const fromRoute = normalizeListRouteName(params.get('from'));
+        const routeConfig = ROUTE_CONFIG[routeName];
+        const solicitudId = normalizeSolicitudId(params.get('id'));
+
+        if (routeConfig.requiresId && !solicitudId) {
+            return {
+                name: fromRoute,
+                viewId: ROUTE_CONFIG[fromRoute].viewId,
+                breadcrumb: ROUTE_CONFIG[fromRoute].breadcrumb,
+                id: null,
+                from: null,
+            };
+        }
+
+        return {
+            name: routeName,
+            viewId: routeConfig.viewId,
+            breadcrumb: routeConfig.breadcrumb,
+            id: solicitudId,
+            from: routeName === 'solicitud' ? fromRoute : null,
+        };
+    }
+
+    function buildRouteUrl(route) {
+        const routeName = normalizeRouteName(route.name);
+        const routeConfig = ROUTE_CONFIG[routeName];
+        const solicitudId = normalizeSolicitudId(route.id);
+        const fromRoute = normalizeListRouteName(route.from);
+        const url = new URL(window.location.href);
+
+        url.searchParams.set('view', routeName);
+
+        if (routeConfig.requiresId && solicitudId) {
+            url.searchParams.set('id', String(solicitudId));
+            url.searchParams.set('from', fromRoute);
+        } else {
+            url.searchParams.delete('id');
+            url.searchParams.delete('from');
+        }
+
+        return `${url.pathname}${url.search}`;
+    }
+
+    function updateHistory(route, historyMode) {
+        const url = buildRouteUrl(route);
+        if (historyMode === 'replace') {
+            window.history.replaceState(route, '', url);
+            return;
+        }
+        if (historyMode === 'push') {
+            window.history.pushState(route, '', url);
+        }
+    }
+
+    function updateRouteLinks() {
+        document.querySelectorAll('[data-route]').forEach(element => {
+            element.setAttribute('href', buildRouteUrl({
+                name: element.dataset.route,
+                id: element.dataset.routeId || null,
+                from: element.dataset.routeFrom || null,
+            }));
+        });
     }
 
     function showToast(type, title, message = '', duration = 4500) {
@@ -333,28 +421,29 @@ $args = wp_parse_args(
         return `<span class="worktray-note ${action.tone || ''}">${escHtml(action.label)}</span>`;
     }
 
-    function updateBackButton() {
+    function updateBackButton(route = getCurrentRoute()) {
         const text = document.getElementById('btn-volver-lista-texto');
         if (!text) return;
-        text.textContent = lastListView === 'view-rendiciones' ? 'Volver a Rendiciones' : 'Volver a Anticipos';
+        const originRoute = route.name === 'solicitud'
+            ? normalizeListRouteName(route.from)
+            : normalizeListRouteName(route.name);
+        text.textContent = originRoute === 'rendiciones' ? 'Volver a Rendiciones' : 'Volver a Anticipos';
     }
 
     function setActiveView(viewId) {
         document.querySelectorAll('.erp-view').forEach(view => view.classList.remove('active'));
         const target = document.getElementById(viewId);
         if (target) target.classList.add('active');
+        const activeRoute = VIEW_TO_ROUTE[viewId];
         document.querySelectorAll('.nav-link').forEach(link => {
-            link.classList.toggle('active', link.dataset.view === viewId);
+            link.classList.toggle('active', activeRoute && link.dataset.route === activeRoute);
         });
         const breadcrumb = document.getElementById('topbar-section-name');
         if (breadcrumb) {
-            if (viewId === 'view-solicitud-detalle') {
-                breadcrumb.textContent = 'Detalle de solicitud';
-            } else {
-                breadcrumb.textContent = VIEW_CONFIG[viewId] ? VIEW_CONFIG[viewId].breadcrumb : 'Anticipos';
-            }
+            breadcrumb.textContent = activeRoute && ROUTE_CONFIG[activeRoute]
+                ? ROUTE_CONFIG[activeRoute].breadcrumb
+                : 'Detalle de solicitud';
         }
-        updateBackButton();
     }
 
     function openRow(sol, viewId) {
@@ -451,6 +540,23 @@ $args = wp_parse_args(
 
     function renderAllTables() {
         LIST_VIEWS.forEach(viewId => renderTable(viewId, cache, getSearchValue(viewId)));
+    }
+
+    async function loadSolicitudDetailView(route = getCurrentRoute()) {
+        if (!route.id) {
+            await navigateTo({ name: normalizeListRouteName(route.from) }, { historyMode: 'replace' });
+            return;
+        }
+
+        const container = document.getElementById('solicitud-detalle-content');
+        container.innerHTML = `<div style="padding:20px;"><div class="tbl-loading"><div class="spinner"></div>Cargando detalle...</div></div>`;
+        try {
+            const detalle = await apiFetch(`/detalle-rendicion-admin/${route.id}`);
+            renderDetalle(detalle);
+        } catch (error) {
+            container.innerHTML = `<div style="padding:20px;"><div class="tbl-empty"><p>Error: ${escHtml(error.message)}</p></div></div>`;
+            showToast('error', 'No se pudo abrir el detalle', error.message);
+        }
     }
 
     async function loadSolicitudes() {
@@ -639,19 +745,11 @@ $args = wp_parse_args(
     }
 
     async function openSolicitudDetail(idSolicitud, fromView) {
-        if (fromView && VIEW_CONFIG[fromView]) {
-            lastListView = fromView;
-        }
-        setActiveView('view-solicitud-detalle');
-        const container = document.getElementById('solicitud-detalle-content');
-        container.innerHTML = `<div style="padding:20px;"><div class="tbl-loading"><div class="spinner"></div>Cargando detalle...</div></div>`;
-        try {
-            const detalle = await apiFetch(`/detalle-rendicion-admin/${idSolicitud}`);
-            renderDetalle(detalle);
-        } catch (error) {
-            container.innerHTML = `<div style="padding:20px;"><div class="tbl-empty"><p>Error: ${escHtml(error.message)}</p></div></div>`;
-            showToast('error', 'No se pudo abrir el detalle', error.message);
-        }
+        await navigateTo({
+            name: 'solicitud',
+            id: idSolicitud,
+            from: VIEW_TO_ROUTE[fromView] || fromView,
+        });
     }
 
     async function handleDecisionRendicion(idSolicitud, decision) {
@@ -682,18 +780,43 @@ $args = wp_parse_args(
         }
     }
 
-    function navigate(viewId) {
-        if (!VIEW_CONFIG[viewId]) return;
-        lastListView = viewId;
-        setActiveView(viewId);
-        renderTable(viewId, cache, getSearchValue(viewId));
+    async function renderRoute(route) {
+        setActiveView(route.viewId);
+        updateBackButton(route);
+
+        if (route.name === 'solicitud') {
+            await loadSolicitudDetailView(route);
+            return;
+        }
+
+        if (VIEW_CONFIG[route.viewId]) {
+            renderTable(route.viewId, cache, getSearchValue(route.viewId));
+        }
+    }
+
+    async function navigateTo(target, options = {}) {
+        const routeName = typeof target === 'string'
+            ? (VIEW_TO_ROUTE[target] || normalizeRouteName(target))
+            : normalizeRouteName(target.name || VIEW_TO_ROUTE[target.viewId]);
+        const route = {
+            name: routeName,
+            id: typeof target === 'object' ? target.id : options.id,
+            from: typeof target === 'object' ? target.from : options.from,
+        };
+
+        updateHistory(route, options.historyMode || 'push');
+        await renderRoute(getCurrentRoute());
     }
 
     function bindEvents() {
-        document.querySelectorAll('.nav-link').forEach(link => {
+        document.querySelectorAll('[data-route]').forEach(link => {
             link.addEventListener('click', event => {
                 event.preventDefault();
-                navigate(link.dataset.view);
+                navigateTo({
+                    name: link.dataset.route,
+                    id: link.dataset.routeId || null,
+                    from: link.dataset.routeFrom || null,
+                });
             });
         });
 
@@ -710,7 +833,10 @@ $args = wp_parse_args(
             });
         });
 
-        document.getElementById('btn-volver-lista').addEventListener('click', () => navigate(lastListView));
+        document.getElementById('btn-volver-lista').addEventListener('click', () => {
+            const route = getCurrentRoute();
+            navigateTo({ name: normalizeListRouteName(route.from || route.name) });
+        });
         document.getElementById('btn-cerrar-solicitud-modal').addEventListener('click', closeSolicitudModal);
         document.getElementById('btn-cancelar-solicitud-modal').addEventListener('click', closeSolicitudModal);
         document.getElementById('modal-solicitud').addEventListener('click', event => {
@@ -722,16 +848,22 @@ $args = wp_parse_args(
         document.getElementById('btn-modal-aprobar').addEventListener('click', () => handleSolicitudDecision('aprobada'));
         document.getElementById('btn-modal-observar').addEventListener('click', () => handleSolicitudDecision('observada'));
         document.getElementById('btn-modal-rechazar').addEventListener('click', () => handleSolicitudDecision('rechazada'));
+        window.addEventListener('popstate', () => {
+            renderRoute(getCurrentRoute());
+        });
     }
 
-    function init() {
+    async function init() {
         bindEvents();
-        setActiveView(lastListView);
-        loadSolicitudes();
+        updateRouteLinks();
+        const route = getCurrentRoute();
+        updateHistory(route, 'replace');
+        await loadSolicitudes();
+        await renderRoute(route);
     }
 
     window.AdminApp = {
-        navigate,
+        navigate: navigateTo,
         loadSolicitudes,
         refreshRows: loadSolicitudes,
         showToast,

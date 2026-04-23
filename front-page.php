@@ -1,9 +1,6 @@
 <?php
 /**
- * Main fallback template.
- *
- * Keeps "/" as the only front-end entrypoint when no static front page has
- * been configured yet.
+ * Front page template.
  *
  * @package ThemeAdministracion
  */
