@@ -860,7 +860,7 @@ function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
             'dni'                  => get_field( 'dni_colaborador',  $post->ID ) ?: '',
             'monto'                => (float) get_field( 'monto_solicitado', $post->ID ),
             'fecha'                => get_field( 'fecha_viaje',      $post->ID ) ?: '',
-            'motivo'               => get_field( 'motivo_viaje',     $post->ID ) ?: '',
+            'motivo'               => wp_strip_all_tags( get_field( 'motivo_viaje', $post->ID ) ?: '' ),
             'ceco'                 => get_field( 'centro_costo',     $post->ID ) ?: '',
             'estado'               => get_field( 'estado_solicitud', $post->ID ) ?: 'pendiente',
             'rendicion_finalizada' => viaticos_es_rendicion_finalizada( $post->ID ),
@@ -958,7 +958,7 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
             'dni'                  => get_field( 'dni_colaborador', $post->ID ) ?: '',
             'monto'                => (float) get_field( 'monto_solicitado', $post->ID ),
             'fecha'                => get_field( 'fecha_viaje', $post->ID ) ?: '',
-            'motivo'               => get_field( 'motivo_viaje', $post->ID ) ?: '',
+            'motivo'               => wp_strip_all_tags( get_field( 'motivo_viaje', $post->ID ) ?: '' ),
             'ceco'                 => get_field( 'centro_costo', $post->ID ) ?: '',
             'estado'               => $estado,
             'rendicion_finalizada' => $rendicion_finalizada,
@@ -1015,7 +1015,7 @@ function viaticos_callback_detalle_rendicion_admin( WP_REST_Request $request ) {
             'estado_rendicion'     => viaticos_get_estado_rendicion( $id_solicitud ),
             'fecha_creacion'       => get_the_date( 'd/m/Y', $id_solicitud ),
             'fecha_viaje'          => get_field( 'fecha_viaje', $id_solicitud ) ?: '',
-            'motivo'               => get_field( 'motivo_viaje', $id_solicitud ) ?: '',
+            'motivo'               => wp_strip_all_tags( get_field( 'motivo_viaje', $id_solicitud ) ?: '' ),
             'ceco'                 => get_field( 'centro_costo', $id_solicitud ) ?: '',
             'dni'                  => get_field( 'dni_colaborador', $id_solicitud ) ?: '',
             'monto'                => $monto,
@@ -1240,7 +1240,6 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
         'jpg'  => 'image/jpeg',
         'jpeg' => 'image/jpeg',
         'png'  => 'image/png',
-        'xml'  => 'text/xml',
     );
 
     $uploaded = wp_handle_upload( $_FILES['archivo'], array(

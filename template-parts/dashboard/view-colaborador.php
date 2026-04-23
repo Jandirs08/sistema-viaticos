@@ -1,6 +1,6 @@
-﻿<?php
+<?php
 /**
- * Template Part: Dashboard â€” Vista Colaborador
+ * Template Part: Dashboard — Vista Colaborador
  *
  * Renders the full Colaborador SPA: sidebar nav links, three views
  * (Inicio / Mis Solicitudes / Mis Rendiciones), three modals
@@ -28,30 +28,6 @@ $args = wp_parse_args(
 );
 ?>
 
-<!-- Inject sidebar nav items for the colaborador role -->
-<script>
-(function () {
-    var nav = document.getElementById('sidebar-nav-items');
-    if (nav) {
-        nav.innerHTML = `
-            <li>
-                <a href="#" id="nav-inicio" class="nav-link active" data-view="view-inicio">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-                    Inicio
-                </a>
-            </li>
-            <li>
-                <a href="#" id="nav-solicitudes" class="nav-link" data-view="view-solicitudes">
-                    <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                    Mis Solicitudes
-                </a>
-            </li>`;
-    }
-    var bc = document.getElementById('topbar-section-name');
-    if (bc) bc.textContent = 'Inicio';
-})();
-</script>
-
 
 <!-- ============================================================
      VISTA: INICIO
@@ -60,8 +36,8 @@ $args = wp_parse_args(
 
     <div class="welcome-banner">
         <div>
-            <h2>Â¡Bienvenido, <?php echo $args['user_name']; ?>!</h2>
-            <p>Panel de gestiÃ³n de viÃ¡ticos â€” FundaciÃ³n Romero</p>
+            <h2>¡Bienvenido, <?php echo esc_html( $args['user_name'] ); ?>!</h2>
+            <p>Panel de gestión de viáticos — Fundación Romero</p>
         </div>
         <button class="btn btn-white" onclick="ViaticosApp.navigate('view-solicitudes')" id="btn-inicio-nueva">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -76,7 +52,7 @@ $args = wp_parse_args(
                 <svg viewBox="0 0 24 24" fill="#da5b3e"><path d="M14 2H6c-1.1.0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1.0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
             </div>
             <div class="stat-body">
-                <div class="stat-num" id="kpi-total">â€”</div>
+                <div class="stat-num" id="kpi-total">—</div>
                 <div class="stat-label">Total Solicitudes</div>
             </div>
         </div>
@@ -85,7 +61,7 @@ $args = wp_parse_args(
                 <svg viewBox="0 0 24 24" fill="#D97706"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
             </div>
             <div class="stat-body">
-                <div class="stat-num" id="kpi-pendiente">â€”</div>
+                <div class="stat-num" id="kpi-pendiente">—</div>
                 <div class="stat-label">Pendientes</div>
             </div>
         </div>
@@ -94,7 +70,7 @@ $args = wp_parse_args(
                 <svg viewBox="0 0 24 24" fill="#059669"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
             </div>
             <div class="stat-body">
-                <div class="stat-num" id="kpi-aprobada">â€”</div>
+                <div class="stat-num" id="kpi-aprobada">—</div>
                 <div class="stat-label">Aprobadas</div>
             </div>
         </div>
@@ -103,7 +79,7 @@ $args = wp_parse_args(
                 <svg viewBox="0 0 24 24" fill="#DC2626"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </div>
             <div class="stat-body">
-                <div class="stat-num" id="kpi-rechazada">â€”</div>
+                <div class="stat-num" id="kpi-rechazada">—</div>
                 <div class="stat-label">Rechazadas</div>
             </div>
         </div>
@@ -113,7 +89,7 @@ $args = wp_parse_args(
         <div class="card-header">
             <div>
                 <div class="card-header-title">Actividad Reciente</div>
-                <div class="card-header-subtitle">Ãšltimas 5 solicitudes registradas</div>
+                <div class="card-header-subtitle">Últimas 5 solicitudes registradas</div>
             </div>
             <button class="btn btn-secondary btn-sm" onclick="ViaticosApp.navigate('view-solicitudes')" id="btn-ver-todas">Ver todas</button>
         </div>
@@ -121,7 +97,7 @@ $args = wp_parse_args(
             <table class="erp-table" aria-label="Actividad reciente">
                 <thead>
                     <tr>
-                        <th>ID</th><th>Fecha Viaje</th><th>Monto</th><th>CECO/Proyecto</th><th>Estado solicitud</th><th>Estado rendiciÃ³n</th>
+                        <th>ID</th><th>Fecha Viaje</th><th>Monto</th><th>CECO/Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th>
                     </tr>
                 </thead>
                 <tbody id="inicio-recent-tbody">
@@ -142,7 +118,7 @@ $args = wp_parse_args(
     <div class="page-header">
         <div class="page-header-left">
             <h1>Mis Solicitudes</h1>
-            <p>GestiÃ³n de solicitudes de viÃ¡ticos</p>
+            <p>Gestión de solicitudes de viáticos</p>
         </div>
         <button class="btn btn-primary" id="btn-abrir-nueva-solicitud">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -159,11 +135,11 @@ $args = wp_parse_args(
             </button>
         </div>
         <div class="table-wrapper">
-            <table class="erp-table" aria-label="Mis solicitudes de viÃ¡ticos">
+            <table class="erp-table" aria-label="Mis solicitudes de viáticos">
                 <thead>
                     <tr>
                         <th>ID</th><th>Fecha Viaje</th><th>Monto Solicitado</th>
-                        <th>CECO / Proyecto</th><th>Estado solicitud</th><th>Estado rendiciÃ³n</th><th>Acciones</th>
+                        <th>CECO / Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="solicitudes-tbody">
@@ -181,7 +157,7 @@ $args = wp_parse_args(
      ============================================================ -->
 <section id="view-detalle-solicitud" class="erp-view" aria-label="Detalle de Solicitud">
 
-    <!-- Topbar liviana â€” los CTAs viven en el rail derecho -->
+    <!-- Topbar liviana — los CTAs viven en el rail derecho -->
     <div class="rd-topbar">
         <button class="rd-back-btn" id="btn-volver-detalle-solicitud">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -189,13 +165,13 @@ $args = wp_parse_args(
         </button>
         <button class="btn btn-outline btn-sm" id="btn-detalle-view-liquidacion" style="display:none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-            Ver LiquidaciÃ³n
+            Ver Liquidación
         </button>
     </div>
 
-    <!-- Contenido dinÃ¡mico generado por renderDetalleSolicitudContent() -->
+    <!-- Contenido dinámico generado por renderDetalleSolicitudContent() -->
     <div id="detalle-view-content"></div>
-    <div id="detalle-view-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
+    <div id="detalle-view-error" class="erp-alert-error"></div>
 
 </section><!-- /#view-detalle-solicitud -->
 
@@ -212,7 +188,7 @@ $args = wp_parse_args(
         </div>
     </div>
 
-    <!-- El JS inyecta tarjetas aquÃ­ -->
+    <!-- El JS inyecta tarjetas aquí -->
     <div id="rendiciones-list-container">
         <div class="rd-list-loading"><div class="spinner"></div> Cargando rendiciones...</div>
     </div>
@@ -220,23 +196,23 @@ $args = wp_parse_args(
 </section><!-- /#view-rendiciones -->
 
 <!-- ============================================================
-     VIEW: LIQUIDACIÃ“N (read-only document)
+     VIEW: LIQUIDACIÓN (read-only document)
      ============================================================ -->
-<section id="view-liquidacion" class="erp-view" aria-label="LiquidaciÃ³n de RendiciÃ³n">
+<section id="view-liquidacion" class="erp-view" aria-label="Liquidación de Rendición">
     <div class="liq-view-toolbar">
         <button class="liq-back-btn" id="btn-liq-volver" type="button">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             Volver al detalle
         </button>
         <div class="liq-actions">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-liq-exportar" title="Exportar PDF (prÃ³ximamente)" disabled>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-liq-exportar" title="Exportar PDF (próximamente)" disabled>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg>
                 Exportar
             </button>
         </div>
     </div>
     <div id="liq-doc-container">
-        <div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidaciÃ³nâ€¦</div>
+        <div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidación…</div>
     </div>
 </section><!-- /#view-liquidacion -->
 
@@ -248,7 +224,7 @@ $args = wp_parse_args(
     <div class="modal">
         <div class="modal-header">
             <div class="modal-header-info">
-                <h2 id="modal-nueva-titulo">Nueva Solicitud de ViÃ¡tico</h2>
+                <h2 id="modal-nueva-titulo">Nueva Solicitud de Viático</h2>
                 <p>Complete todos los campos para enviar su solicitud.</p>
             </div>
             <button class="modal-close" id="btn-cerrar-modal-nueva" aria-label="Cerrar modal">
@@ -261,7 +237,7 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="ns-dni">DNI del Colaborador <span class="required">*</span></label>
                         <input type="text" id="ns-dni" name="dni" class="form-control" placeholder="Ej: 12345678" maxlength="8" pattern="\d{8}" required inputmode="numeric" autocomplete="off">
-                        <span class="form-error" id="err-ns-dni">El DNI debe tener exactamente 8 dÃ­gitos numÃ©ricos.</span>
+                        <span class="form-error" id="err-ns-dni">El DNI debe tener exactamente 8 dígitos numéricos.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ns-monto">Monto Solicitado <span class="required">*</span></label>
@@ -274,11 +250,11 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="ns-fecha">Fecha del Viaje <span class="required">*</span></label>
                         <input type="date" id="ns-fecha" name="fecha" class="form-control" required>
-                        <span class="form-error" id="err-ns-fecha">Seleccione una fecha vÃ¡lida.</span>
+                        <span class="form-error" id="err-ns-fecha">Seleccione una fecha válida.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ns-ceco">CECO / Proyecto <span class="required">*</span></label>
-                        <input type="text" id="ns-ceco" name="ceco" class="form-control" placeholder="Ej: CC-001 / ADMINISTRACIÃ“N" required autocomplete="off">
+                        <input type="text" id="ns-ceco" name="ceco" class="form-control" placeholder="Ej: CC-001 / ADMINISTRACIÓN" required autocomplete="off">
                         <span class="form-error" id="err-ns-ceco">Este campo es obligatorio.</span>
                     </div>
                     <div class="form-group col-full">
@@ -287,7 +263,7 @@ $args = wp_parse_args(
                         <span class="form-error" id="err-ns-motivo">Describa el motivo del viaje.</span>
                     </div>
                 </div>
-                <div id="nueva-solicitud-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
+                <div id="nueva-solicitud-error" class="erp-alert-error"></div>
             </form>
         </div>
         <div class="modal-footer">
@@ -309,7 +285,7 @@ $args = wp_parse_args(
         <div class="modal-header">
             <div class="modal-header-info">
                 <h2 id="modal-editar-titulo">Editar Solicitud <span id="editar-sol-id" style="color:var(--text-muted); font-weight:400;"></span></h2>
-                <p>Esta solicitud fue observada. Corrija los datos y reenvÃ­e.</p>
+                <p>Esta solicitud fue observada. Corrija los datos y reenvíe.</p>
             </div>
             <button class="modal-close" id="btn-cerrar-modal-editar" aria-label="Cerrar modal">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -322,7 +298,7 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="ed-dni">DNI del Colaborador <span class="required">*</span></label>
                         <input type="text" id="ed-dni" name="dni" class="form-control" maxlength="8" pattern="\d{8}" required inputmode="numeric">
-                        <span class="form-error" id="err-ed-dni">El DNI debe tener exactamente 8 dÃ­gitos numÃ©ricos.</span>
+                        <span class="form-error" id="err-ed-dni">El DNI debe tener exactamente 8 dígitos numéricos.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ed-monto">Monto Solicitado <span class="required">*</span></label>
@@ -335,7 +311,7 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="ed-fecha">Fecha del Viaje <span class="required">*</span></label>
                         <input type="date" id="ed-fecha" name="fecha" class="form-control" required>
-                        <span class="form-error" id="err-ed-fecha">Seleccione una fecha vÃ¡lida.</span>
+                        <span class="form-error" id="err-ed-fecha">Seleccione una fecha válida.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="ed-ceco">CECO / Proyecto <span class="required">*</span></label>
@@ -348,7 +324,7 @@ $args = wp_parse_args(
                         <span class="form-error" id="err-ed-motivo">Describa el motivo del viaje.</span>
                     </div>
                 </div>
-                <div id="editar-solicitud-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
+                <div id="editar-solicitud-error" class="erp-alert-error"></div>
             </form>
         </div>
         <div class="modal-footer">
@@ -363,14 +339,14 @@ $args = wp_parse_args(
 
 
 <!-- ============================================================
-     MODAL: DETALLE DE SOLICITUD / RENDICIÃ“N
+     MODAL: DETALLE DE SOLICITUD / RENDICIÓN
      ============================================================ -->
 <div class="modal-overlay" id="modal-detalle-solicitud" role="dialog" aria-modal="true" aria-labelledby="modal-detalle-titulo">
     <div class="modal modal-lg">
         <div class="modal-header">
             <div class="modal-header-info">
                 <h2 id="modal-detalle-titulo">Solicitud <span id="detalle-sol-id" style="color:var(--text-muted); font-weight:400;"></span></h2>
-                <p id="detalle-sol-subtitulo">Revisa el detalle de la solicitud y gestiona su rendiciÃ³n.</p>
+                <p id="detalle-sol-subtitulo">Revisa el detalle de la solicitud y gestiona su rendición.</p>
             </div>
             <button class="modal-close" id="btn-cerrar-modal-detalle" aria-label="Cerrar modal">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -380,7 +356,7 @@ $args = wp_parse_args(
             <div id="detalle-solicitud-content">
                 <div class="table-loading"><div class="spinner"></div> Cargando detalle...</div>
             </div>
-            <div id="detalle-solicitud-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
+            <div id="detalle-solicitud-error" class="erp-alert-error"></div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="btn-cancelar-modal-detalle">Cerrar</button>
@@ -390,7 +366,7 @@ $args = wp_parse_args(
             </button>
             <button type="button" class="btn btn-success" id="btn-detalle-finalizar-rendicion">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                Finalizar rendiciÃ³n
+                Finalizar rendición
             </button>
         </div>
     </div>
@@ -418,19 +394,19 @@ $args = wp_parse_args(
                     <div class="form-group">
                         <label class="form-label" for="rg-tipo">Tipo de Documento <span class="required">*</span></label>
                         <select id="rg-tipo" name="tipo" class="form-control" required>
-                            <option value="">â€” Seleccione â€”</option>
+                            <option value="">— Seleccione —</option>
                             <option value="movilidad">Movilidad</option>
                             <option value="vale_caja">Vale de Caja</option>
                             <option value="factura">Factura</option>
                             <option value="boleta">Boleta</option>
                             <option value="rxh">RxH</option>
                         </select>
-                        <span class="form-error" id="err-rg-tipo">Seleccione un tipo de rendiciÃƒÂ³n.</span>
+                        <span class="form-error" id="err-rg-tipo">Seleccione un tipo de rendición.</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="rg-fecha">Fecha de EmisiÃ³n <span class="required">*</span></label>
+                        <label class="form-label" for="rg-fecha">Fecha de Emisión <span class="required">*</span></label>
                         <input type="date" id="rg-fecha" name="fecha" class="form-control" required>
-                        <span class="form-error" id="err-rg-fecha">Seleccione la fecha de emisiÃ³n.</span>
+                        <span class="form-error" id="err-rg-fecha">Seleccione la fecha de emisión.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rg-importe">Importe <span class="required">*</span></label>
@@ -446,14 +422,14 @@ $args = wp_parse_args(
                         <span class="form-error" id="err-rg-ruc">Ingrese el RUC del proveedor.</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="rg-razon">RazÃ³n Social</label>
+                        <label class="form-label" for="rg-razon">Razón Social</label>
                         <input type="text" id="rg-razon" name="razon_social" class="form-control" placeholder="Ej: EMPRESA S.A.C.">
-                        <span class="form-error" id="err-rg-razon">Ingrese la razÃƒÂ³n social.</span>
+                        <span class="form-error" id="err-rg-razon">Ingrese la razón social.</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="rg-nro-comprobante">NÂ° Comprobante</label>
+                        <label class="form-label" for="rg-nro-comprobante">N° Comprobante</label>
                         <input type="text" id="rg-nro-comprobante" name="nro_comprobante" class="form-control" placeholder="Ej: F001-00123456">
-                        <span class="form-error" id="err-rg-nro-comprobante">Ingrese el nÃƒÂºmero de comprobante.</span>
+                        <span class="form-error" id="err-rg-nro-comprobante">Ingrese el número de comprobante.</span>
                     </div>
                     <div class="form-group col-full">
                         <label class="form-label" for="rg-cuenta">Cuenta Contable</label>
@@ -461,7 +437,7 @@ $args = wp_parse_args(
                         <span class="form-error" id="err-rg-cuenta">Ingrese la cuenta contable.</span>
                     </div>
                     <div class="form-group col-full" id="rg-group-concepto">
-                        <label class="form-label" for="rg-concepto">DescripciÃƒÂ³n / Concepto</label>
+                        <label class="form-label" for="rg-concepto">Descripción / Concepto</label>
                         <textarea id="rg-concepto" name="descripcion_concepto" class="form-control" placeholder="Describa el concepto del gasto..." rows="3"></textarea>
                     </div>
                     <div class="form-group" id="rg-group-motivo">
@@ -484,16 +460,16 @@ $args = wp_parse_args(
                 <div class="rg-adj-section">
                     <div class="rg-adj-header">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .28-.22.5-.5.5s-.5-.22-.5-.5V6H11v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S8 2.79 8 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-2.5z"/></svg>
-                        Adjuntos <span style="font-weight:400;color:var(--text-muted);">(opcional &mdash; PDF, JPG, PNG, XML)</span>
+                        Adjuntos <span style="font-weight:400;color:var(--text-muted);">(opcional &mdash; PDF, JPG, PNG)</span>
                     </div>
                     <div class="rg-adj-file-list" id="rg-adj-file-list"></div>
                     <label class="rg-adj-pick-btn">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                         Agregar archivo
-                        <input type="file" id="rg-adj-input" accept=".pdf,.jpg,.jpeg,.png,.xml" multiple style="display:none;">
+                        <input type="file" id="rg-adj-input" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none;">
                     </label>
                 </div>
-                <div id="rendir-gasto-error" style="display:none; margin-top:16px; padding:12px 14px; background:#FEF2F2; border:1px solid #FECACA; border-radius:var(--radius-sm); color:#DC2626; font-size:13px;"></div>
+                <div id="rendir-gasto-error" class="erp-alert-error"></div>
             </form>
         </div>
         <div class="modal-footer">
@@ -508,7 +484,7 @@ $args = wp_parse_args(
 
 
 <!-- ============================================================
-     JAVASCRIPT â€” ViaticosApp
+     JAVASCRIPT — ViaticosApp
      ============================================================ -->
 <div class="modal-overlay" id="modal-historial-solicitud" role="dialog" aria-modal="true" aria-labelledby="modal-historial-titulo">
     <div class="modal modal-lg solv-history-modal">
@@ -531,6 +507,33 @@ $args = wp_parse_args(
     </div>
 </div>
 
+<!-- ============================================================
+     MODAL: CONFIRMAR FINALIZAR RENDICIÓN
+     ============================================================ -->
+<div class="modal-overlay" id="modal-confirmar-finalizar" role="dialog" aria-modal="true" aria-labelledby="modal-confirmar-titulo">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <h2 id="modal-confirmar-titulo">Finalizar rendición</h2>
+                <p>Esta acción no se puede deshacer.</p>
+            </div>
+            <button class="modal-close" id="btn-cerrar-modal-confirmar" aria-label="Cerrar modal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>¿Confirmas que deseas enviar la rendición al administrador? Una vez finalizada no podrás agregar ni eliminar gastos.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-confirmar">Cancelar</button>
+            <button type="button" class="btn btn-success" id="btn-confirmar-finalizar">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                Sí, finalizar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 (function () {
     'use strict';
@@ -544,26 +547,17 @@ $args = wp_parse_args(
         },
     };
 
-    /* â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    async function apiFetch(endpoint, options = {}) {
-        const defaults = { headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': CONFIG.nonce } };
-        const merged = Object.assign({}, defaults, options);
-        if (options.headers) merged.headers = Object.assign({}, defaults.headers, options.headers);
-        const response = await fetch(CONFIG.apiBase + endpoint, merged);
-        const data     = await response.json();
-        if (!response.ok) throw new Error(data.message || `Error ${response.status}`);
-        return data;
-    }
+    /* ── Utilities ────────────────────────────────────────── */
+    const utils    = window.ViaticosUtils;
+    const apiFetch = utils.createApiFetch(CONFIG.apiBase, CONFIG.nonce);
 
     const estadoUI = window.ViaticosEstadoUI;
     const timelineUI = window.ViaticosTimelineUI;
-    const renderEstadoBadge = estadoUI.renderBadgeEstado;
-    const renderEstadoGrupo = estadoUI.renderEstadoGrupo;
-    const getLabelEstado = estadoUI.getLabelEstado;
-
-    function getSolicitudEstado(sol) {
-        return estadoUI.resolveEstadoSolicitud(sol && sol.estado);
-    }
+    const renderEstadoBadge    = estadoUI.renderBadgeEstado;
+    const renderEstadoGrupo    = estadoUI.renderEstadoGrupo;
+    const getLabelEstado       = estadoUI.getLabelEstado;
+    const getSolicitudEstado   = estadoUI.getSolicitudEstado;
+    const renderSolicitudBadge = estadoUI.renderSolicitudBadge;
 
     function getRendicionEstado(sol, extra = {}) {
         return estadoUI.resolveEstadoRendicion({
@@ -574,76 +568,26 @@ $args = wp_parse_args(
         });
     }
 
-
-    function formatMonto(value) {
-        const num = parseFloat(value);
-        return isNaN(num) ? 'â€”' : 'S/. ' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-
-    function formatFecha(isoStr) {
-        if (!isoStr) return 'â€”';
-        const parts = isoStr.split('-');
-        return parts.length !== 3 ? isoStr : `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-
-    function renderSolicitudBadge(sol) {
-        return renderEstadoBadge('solicitud', getSolicitudEstado(sol));
-    }
+    const formatMonto = utils.fmtMonto;
+    const formatFecha = utils.fmtFecha;
 
     function renderRendicionBadge(sol, extra = {}) {
         return renderEstadoBadge('rendicion', getRendicionEstado(sol, extra));
     }
 
+    const escHtml          = utils.escapeHtml;
+    const showToast        = utils.showToast.bind(utils);
+    const setButtonLoading = utils.setButtonLoading;
 
-    function escHtml(str) {
-        return String(str || '')
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-            .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
-
-    function showToast(type, title, message = '', duration = 4500) {
-        const icons = {
-            success: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`,
-            error:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2z"/></svg>`,
-            info:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 17h2v-6h-2zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41.0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>`,
-        };
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><div class="toast-body"><strong>${title}</strong>${message ? `<p>${message}</p>` : ''}</div>`;
-        document.getElementById('toast-container').appendChild(toast);
-        setTimeout(() => {
-            toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)'; toast.style.transition = 'all .3s ease';
-            setTimeout(() => toast.remove(), 320);
-        }, duration);
-    }
-
-    function setButtonLoading(btn, isLoading) {
-        if (isLoading) {
-            btn.disabled = true;
-            btn.dataset.origText = btn.innerHTML;
-            btn.innerHTML = `<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Procesando...`;
-        } else {
-            btn.disabled = false;
-            btn.innerHTML = btn.dataset.origText || '';
-        }
-    }
-
-    /* â”€â”€ Modal Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    const ModalManager = {
-        open(id)  { const o = document.getElementById(id); if (o) { o.classList.add('open'); document.body.style.overflow = 'hidden'; } },
-        close(id) { const o = document.getElementById(id); if (o) { o.classList.remove('open'); document.body.style.overflow = ''; } },
-        closeOnOverlayClick(id) {
-            const o = document.getElementById(id);
-            if (o) o.addEventListener('click', (e) => { if (e.target === o) this.close(id); });
-        },
-    };
+    /* ── Modal Manager ────────────────────────────────────── */
+    const ModalManager = utils.ModalManager;
 
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
         ['modal-nueva-solicitud','modal-editar-solicitud','modal-rendir-gasto','modal-confirmar-finalizar','modal-historial-solicitud'].forEach(id => ModalManager.close(id));
     });
 
-    /* â”€â”€ Form validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Form validation ──────────────────────────────────── */
     function validateField(inputEl, errorEl, customValidator) {
         let isValid = inputEl.checkValidity();
         if (isValid && customValidator) isValid = customValidator(inputEl.value);
@@ -688,7 +632,7 @@ $args = wp_parse_args(
         }
     }
 
-    /* â”€â”€ Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Data ─────────────────────────────────────────────── */
     let solicitudesCache = [];
     let gastosCache = [];
     let detalleSolicitudId = null;
@@ -991,7 +935,7 @@ $args = wp_parse_args(
         showToast('error', 'No disponible', 'La edicion de solicitudes observadas no esta conectada en esta version.');
     }
 
-    /* â”€â”€ Render helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Render helpers ───────────────────────────────────── */
     function renderTableEmpty(tbody, colSpan, message = 'No se encontraron registros.') {
         tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="table-empty">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
@@ -1002,10 +946,10 @@ $args = wp_parse_args(
         tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="table-loading"><div class="spinner"></div>Cargando datos...</div></td></tr>`;
     }
 
-    /* â”€â”€ Render: solicitudes table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Render: solicitudes table ────────────────────────── */
     function renderSolicitudesTable(data) {
         const tbody = document.getElementById('solicitudes-tbody');
-        if (!data || !data.length) { renderTableEmpty(tbody, 7, 'AÃºn no tienes solicitudes registradas.'); return; }
+        if (!data || !data.length) { renderTableEmpty(tbody, 7, 'Aún no tienes solicitudes registradas.'); return; }
         tbody.innerHTML = data.map(sol => {
             const gastosSolicitud = getGastosBySolicitud(sol.id);
             const acciones = buildAcciones(sol);
@@ -1036,7 +980,7 @@ $args = wp_parse_args(
         if (estado === 'aprobada') {
             const verSolo = [ 'en_revision', 'aprobada', 'observada', 'rechazada' ].includes(estadoRend);
             if (verSolo) {
-                btns += `<button class="btn btn-secondary btn-sm action-ver-rendir" data-id="${sol.id}" title="Ver detalle de la rendiciÃ³n">
+                btns += `<button class="btn btn-secondary btn-sm action-ver-rendir" data-id="${sol.id}" title="Ver detalle de la rendición">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76.0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66.0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
                     Ver</button>`;
             } else {
@@ -1073,329 +1017,59 @@ $args = wp_parse_args(
 
     const gastoUI = window.ViaticosGastoUI;
 
-    /* â”€â”€ Adjuntos helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    function adjIconClass(mime) {
-        if (!mime) return 'file';
-        if (mime.includes('pdf')) return 'pdf';
-        if (mime.includes('xml')) return 'xml';
-        if (mime.includes('image')) return 'img';
-        return 'file';
-    }
-    function adjIconLabel(mime) {
-        if (!mime) return 'FILE';
-        if (mime.includes('pdf')) return 'PDF';
-        if (mime.includes('xml')) return 'XML';
-        if (mime.includes('image')) return mime.includes('png') ? 'PNG' : 'JPG';
-        return 'FILE';
-    }
-    function escA(v) {
-        return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+    /* ── Adjuntos helpers ──────────────────────────────────────────── */
+    const escA = utils.escapeHtml;
 
-    function renderAdjuntosList(adjuntos, gastoId, canDelete) {
-        if (!adjuntos.length) {
-            return '<span style="font-size:12px;color:var(--text-muted);">Sin adjuntos.</span>';
-        }
-        return adjuntos.map(adj => `
-            <div class="gasto-adj-item" data-adj-id="${escA(adj.id)}">
-                <div class="gasto-adj-icon ${adjIconClass(adj.mime)}">${adjIconLabel(adj.mime)}</div>
-                <span class="gasto-adj-name" title="${escA(adj.name)}">${escA(adj.name)}</span>
-                <div class="gasto-adj-actions">
-                    <a class="gasto-adj-btn" href="${escA(adj.url)}" target="_blank" rel="noopener">Ver</a>
-                    ${canDelete ? `<button class="gasto-adj-btn del js-adj-delete" data-adj-id="${escA(adj.id)}" data-gasto-id="${escA(gastoId)}">Eliminar</button>` : ''}
-                </div>
-            </div>`).join('');
-    }
-
-
-    async function loadGastoAdjuntos(gastoId, itemEl) {
-        const panel = itemEl.querySelector('.gasto-adj-panel[data-adj-gasto-id="' + gastoId + '"]');
-        if (!panel || panel.dataset.adjLoaded === '1') return;
-        panel.dataset.adjLoaded = '1';
-
-        const listEl = panel.querySelector('.gasto-adj-list');
-        listEl.innerHTML = '<span class="gasto-adj-loading">Cargando adjuntos\u2026</span>';
-        try {
-            const { adjuntos = [] } = await apiFetch('/gasto-adjuntos/' + gastoId);
-            if (!adjuntos.length) {
-                listEl.innerHTML = '<span class="gasto-adj-empty">Sin adjuntos.</span>';
-                return;
-            }
-            listEl.innerHTML = renderAdjuntosList(adjuntos, gastoId, true);
-            listEl.addEventListener('click', async function(e) {
-                const btn = e.target.closest('.js-adj-delete');
-                if (!btn || btn.disabled) return;
-                btn.disabled = true; btn.textContent = '\u2026';
-                try {
-                    await apiFetch('/gasto-adjunto/' + btn.dataset.adjId, { method: 'DELETE' });
-                    panel.dataset.adjLoaded = '0';
-                    await loadGastoAdjuntos(gastoId, itemEl);
-                } catch(err) {
-                    btn.textContent = 'Error';
-                    setTimeout(() => { btn.textContent = 'Eliminar'; btn.disabled = false; }, 2000);
-                }
-            }, { once: true });
-        } catch (err) {
-            listEl.innerHTML = '<span class="gasto-adj-empty" style="color:#C53030;">Error al cargar adjuntos.</span>';
-        }
-    }
-
-    async function apiFetchForm(endpoint, formData) {
-        const url = CONFIG.apiBase.replace(/\/$/, '') + endpoint;
-        const resp = await fetch(url, {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'X-WP-Nonce': CONFIG.nonce },
-            body: formData,
-        });
-        const json = await resp.json();
-        if (!resp.ok || !json.success) throw new Error(json.message || 'Error en la solicitud.');
-        return json;
-    }
+    const apiFetchForm = utils.createApiFetchForm(CONFIG.apiBase, CONFIG.nonce);
 
     function renderDetalleSolicitudContent(sol, gastos) {
-        const contentEl = document.getElementById('detalle-view-content');
-        const totalSolicitado = parseFloat(sol.monto) || 0;
-        const totalRendido = gastos.reduce((sum, g) => sum + (parseFloat(g.importe) || 0), 0);
-        const saldo = totalSolicitado - totalRendido;
+        const contentEl       = document.getElementById('detalle-view-content');
         const estadoSolicitud = getSolicitudEstado(sol);
-        const estadoRend = getRendicionEstado(sol, { gastos });
-        const saldoNegativo = saldo < 0;
-        const historial = Array.isArray(sol.historial) ? sol.historial : [];
-        const historialHtml = timelineUI.renderTimeline(historial);
-        const solicitudBadgeHtml = renderSolicitudBadge(sol);
-        const rendicionBadgeHtml = renderRendicionBadge(sol, { gastos });
-        const fechaViaje = formatFecha(sol.fecha);
-        const cecoLabel = escHtml(sol.ceco || '-');
-        const dniLabel = escHtml(sol.dni || '-');
-        const motivoLabel = escHtml(sol.motivo || 'Sin detalle registrado.');
-        const avancePct = totalSolicitado > 0 ? Math.max(0, Math.min(100, Math.round((totalRendido / totalSolicitado) * 100))) : (gastos.length ? 100 : 0);
+        const estadoRend      = getRendicionEstado(sol, { gastos });
+        const canAdd          = estadoSolicitud === 'aprobada' && !sol.rendicion_finalizada && !['aprobada', 'rechazada'].includes(estadoRend);
+        const canFinalize     = canAdd && gastos.length > 0;
+        const canLiquidacion  = !!sol.rendicion_finalizada;
 
-        const accionContexto = (() => {
-            if (estadoRend === 'aprobada') return 'Todo esta cerrado. Solo queda consultar la liquidacion o el historial.';
-            if (estadoRend === 'rechazada') return 'Revisa el historial para entender el motivo del rechazo antes de continuar.';
-            if (estadoRend === 'observada') return 'Hay ajustes pendientes. Corrige lo necesario y vuelve a enviarla.';
-            if (sol.rendicion_finalizada) return 'La rendicion ya fue enviada. Por ahora solo queda esperar la revision.';
-            if (estadoSolicitud === 'observada') return 'Primero corrige la solicitud observada antes de seguir con la rendicion.';
-            if (estadoSolicitud === 'rechazada') return 'Esta solicitud no puede continuar. Necesitaras registrar una nueva.';
-            if (estadoSolicitud !== 'aprobada') return 'Aun no puedes rendir gastos hasta que la solicitud sea aprobada.';
-            if (gastos.length) return saldoNegativo ? 'Ya superaste el monto solicitado. Revisa los comprobantes antes de enviarla.' : 'Ya empezaste la rendicion. Puedes seguir cargando gastos o enviarla a revision.';
-            return 'Aun no registras gastos. Empieza con el primer comprobante del viaje.';
-        })();
+        const accionesHtml =
+            '<button type="button" class="btn btn-primary solv-cta-full" id="detalle-sidebar-finalizar-rendicion"' + (canFinalize ? '' : ' style="display:none;"') + '><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Finalizar y enviar</button>' +
+            '<button type="button" class="btn btn-secondary solv-cta-full" id="detalle-sidebar-agregar-gasto"' + (canAdd ? '' : ' style="display:none;"') + '><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Agregar comprobante</button>' +
+            '<button type="button" class="btn btn-secondary solv-cta-full" id="detalle-sidebar-ver-liquidacion"' + (canLiquidacion ? '' : ' style="display:none;"') + '><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>Ver liquidacion</button>';
 
-        const estadoWorkspace = (() => {
-            if (estadoRend === 'aprobada') return { tone: 'is-ok', pill: 'Aprobada', title: 'Tu rendicion fue aprobada', copy: 'No tienes nada pendiente. Puedes revisar la liquidacion cuando la necesites.', icon: 'check' };
-            if (estadoRend === 'rechazada') return { tone: 'is-danger', pill: 'Rechazada', title: 'Tu rendicion fue rechazada', copy: 'Revisa el historial para ver la observacion y coordina el siguiente paso.', icon: 'alert' };
-            if (estadoRend === 'observada') return { tone: 'is-warning', pill: 'Observada', title: 'Tu rendicion necesita ajustes', copy: 'Hay observaciones pendientes. Revisa el historial y completa lo necesario antes de enviarla otra vez.', icon: 'edit' };
-            if (sol.rendicion_finalizada) return { tone: 'is-review', pill: 'En revision', title: 'Tu rendicion esta en revision', copy: 'Ya la enviaste. Por ahora no necesitas hacer nada mas.', icon: 'clock' };
-            if (estadoSolicitud === 'observada') return { tone: 'is-warning', pill: 'Solicitud observada', title: 'Tu solicitud necesita correccion', copy: 'Corrige la solicitud observada antes de continuar con la rendicion.', icon: 'edit' };
-            if (estadoSolicitud === 'rechazada') return { tone: 'is-danger', pill: 'Solicitud rechazada', title: 'Tu solicitud fue rechazada', copy: 'No podras rendir gastos con esta solicitud.', icon: 'alert' };
-            if (estadoSolicitud !== 'aprobada') return { tone: 'is-idle', pill: 'Pendiente', title: 'Tu solicitud aun espera aprobacion', copy: 'Cuando la aprueben podras registrar los gastos del viaje.', icon: 'clock' };
-            if (!gastos.length) return { tone: 'is-active', pill: 'Lista para rendir', title: 'Ya puedes registrar tus gastos', copy: 'Empieza con el primer comprobante del viaje.', icon: 'wallet' };
-            return { tone: 'is-active', pill: 'En progreso', title: 'Completa tu rendicion', copy: saldoNegativo ? 'Ya superaste el monto solicitado. Revisa tus comprobantes antes de enviarla.' : (saldo > 0 ? `Tienes ${formatMonto(saldo)} pendientes por sustentar.` : 'Revisa tus comprobantes y enviala cuando todo este listo.'), icon: 'wallet' };
-        })();
+        const { historialHtml } = window.ViaticosDetalleUI.render(contentEl, sol, gastos, { apiFetch, canDelete: true, accionesHtml });
 
-        const statusIconHtml = (() => {
-            if (estadoWorkspace.icon === 'check') return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-            if (estadoWorkspace.icon === 'alert') return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
-            if (estadoWorkspace.icon === 'edit') return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm14.71-9.04c.39-.39.39-1.02.0-1.41l-2.5-2.5a.9959.9959.0 0 0-1.41.0l-1.96 1.96 3.75 3.75 2.15-2.26z"/></svg>';
-            if (estadoWorkspace.icon === 'wallet') return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 7H5C3.89 7 3 7.89 3 9v8c0 1.11.89 2 2 2h16c1.11.0 2-.89 2-2V9c0-1.11-.89-2-2-2zm0 10H5V9h16v8zm-3-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM5 6h13V4H5c-1.11.0-2 .89-2 2v1h2V6z"/></svg>';
-            return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 11H11V7h2zm0 4H11v-2h2z"/></svg>';
-        })();
-
-        const flowSteps = [
-            { state: 'is-done', label: 'Etapa 1', title: 'Solicitud', meta: `#${sol.id} registrada` },
-            {
-                state: estadoSolicitud === 'aprobada' ? 'is-done' : (['observada','rechazada'].includes(estadoSolicitud) ? 'is-warning' : 'is-current'),
-                label: 'Etapa 2', title: 'Aprobacion',
-                meta: estadoSolicitud === 'aprobada' ? 'Aprobada' : (estadoSolicitud === 'observada' ? 'Observada' : (estadoSolicitud === 'rechazada' ? 'Rechazada' : 'Pendiente'))
-            },
-            {
-                state: sol.rendicion_finalizada || ['aprobada','rechazada','observada'].includes(estadoRend) ? 'is-done' : (estadoSolicitud === 'aprobada' ? 'is-current' : ''),
-                label: 'Etapa 3', title: 'Gastos',
-                meta: gastos.length ? `${gastos.length} registro(s)` : 'Sin registros'
-            },
-            {
-                state: ['aprobada','rechazada','observada'].includes(estadoRend) ? (estadoRend === 'aprobada' ? 'is-done' : 'is-warning') : (sol.rendicion_finalizada ? 'is-current' : ''),
-                label: 'Etapa 4', title: 'Revision',
-                meta: estadoRend === 'aprobada' ? 'Aprobada' : (estadoRend === 'rechazada' ? 'Rechazada' : (estadoRend === 'observada' ? 'Observada' : (sol.rendicion_finalizada ? 'En revision' : 'Pendiente')))
-            }
-        ];
-        const flowStepsHtml = flowSteps.map(s => `
-            <div class="solv-stage-card ${s.state}">
-                <span class="solv-stage-index">${escHtml(s.label.replace('Etapa ', ''))}</span>
-                <div class="solv-stage-copy">
-                    <div class="solv-stage-title">${s.title}</div>
-                    <div class="solv-stage-meta">${escHtml(s.meta)}</div>
-                </div>
-            </div>`).join('');
-
-        const gastosHtml = gastos.length
-            ? `<div class="gasto-acc-list" id="colab-gastos-acc">${gastos.map((g, i) => gastoUI.renderGastoItem(g, `col-${sol.id}-${i}`)).join('')}</div>`
-            : `<div class="table-empty" style="padding:36px 20px;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.28;"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>Aun no registraste gastos para esta solicitud.</p></div>`;
-
-        const alertaBanner = (() => {
-            if (!['observada', 'rechazada', 'aprobada'].includes(estadoRend)) return '';
-            const m = { observada: ['estado-alerta-observada','Rendicion observada','El administrador devolvio observaciones.'], rechazada: ['estado-alerta-rechazada','Rendicion rechazada','Comunicate con el area de finanzas.'], aprobada: ['estado-alerta-aprobada','Rendicion aprobada','Tu rendicion fue aprobada correctamente.'] };
-            const [cls, tit, msg] = m[estadoRend];
-            return `<div class="estado-alerta ${cls}"><div class="estado-alerta-content"><strong>${tit}</strong><p>${msg}</p></div></div>`;
-        })();
-
-        contentEl.innerHTML = `
-            ${alertaBanner}
-            <div class="solv-shell">
-                <section class="solv-hero ${estadoWorkspace.tone}">
-                    <div class="solv-hero-main">
-                        <div class="solv-hero-eyebrow">Expediente #${sol.id}</div>
-                        <div class="solv-hero-state">
-                            <span class="solv-state-icon">${statusIconHtml}</span>
-                            <div class="solv-hero-intro">
-                                <span class="solv-state-pill">${estadoWorkspace.pill}</span>
-                                <h1 class="solv-hero-title">${estadoWorkspace.title}</h1>
-                            </div>
-                        </div>
-                        <p class="solv-hero-copy">${estadoWorkspace.copy}</p>
-                        <div class="solv-hero-badges">${solicitudBadgeHtml}${rendicionBadgeHtml}</div>
-                    </div>
-                    <div class="solv-hero-stats">
-                        <div class="solv-hero-stat is-primary"><span class="solv-hero-stat-label">Monto solicitado</span><strong class="solv-hero-stat-value">${formatMonto(totalSolicitado)}</strong><span class="solv-hero-stat-note">Anticipo aprobado</span></div>
-                        <div class="solv-hero-stat is-positive"><span class="solv-hero-stat-label">Total rendido</span><strong class="solv-hero-stat-value">${formatMonto(totalRendido)}</strong><span class="solv-hero-stat-note">${gastos.length} comprobante(s)</span></div>
-                        <div class="solv-hero-stat ${saldoNegativo ? 'is-warning' : 'is-neutral'}"><span class="solv-hero-stat-label">Saldo</span><strong class="solv-hero-stat-value">${formatMonto(saldo)}</strong><span class="solv-hero-stat-note">${saldoNegativo ? 'Monto excedido' : 'Disponible por rendir'}</span></div>
-                    </div>
-                </section>
-                <div class="solv-stage-strip">${flowStepsHtml}</div>
-                <div class="solv-grid">
-                    <div class="solv-main">
-                        <section class="solv-panel solv-panel-primary">
-                            <div class="solv-panel-head">
-                                <div>
-                                    <div class="solv-kicker">Rendicion</div>
-                                    <h2 class="solv-panel-title">Comprobantes</h2>
-                                    <p class="solv-panel-copy">Aqui registras y revisas los gastos del viaje.</p>
-                                </div>
-                                <div class="solv-toolbar">
-                                    <div class="solv-chip-stat"><span class="solv-chip-stat-label">Registros</span><strong class="solv-chip-stat-value">${gastos.length}</strong></div>
-                                    <div class="solv-chip-stat"><span class="solv-chip-stat-label">Avance</span><strong class="solv-chip-stat-value">${avancePct}%</strong></div>
-                                </div>
-                            </div>
-                            <div class="solv-context-strip">
-                                <div class="solv-context-item"><span class="solv-context-label">Fecha de viaje</span><strong class="solv-context-value">${fechaViaje}</strong></div>
-                                <div class="solv-context-item"><span class="solv-context-label">Centro de costo</span><strong class="solv-context-value">${cecoLabel}</strong></div>
-                                <div class="solv-context-item"><span class="solv-context-label">DNI</span><strong class="solv-context-value">${dniLabel}</strong></div>
-                            </div>
-                            <div class="solv-panel-body solv-panel-body-gastos">${gastosHtml}</div>
-                        </section>
-                        <section class="solv-panel">
-                            <div class="solv-panel-head">
-                                <div>
-                                    <div class="solv-kicker">Detalle del viaje</div>
-                                    <h2 class="solv-panel-title">Lo esencial de esta solicitud</h2>
-                                </div>
-                            </div>
-                            <div class="solv-panel-body">
-                                    <div class="solv-data-grid">
-                                    <div class="solv-data-item"><span class="solv-data-label">Expediente</span><span class="solv-data-value">#${sol.id}</span></div>
-                                    <div class="solv-data-item"><span class="solv-data-label">Historial</span><span class="solv-data-value">${historial.length} evento(s)</span></div>
-                                    <div class="solv-data-item"><span class="solv-data-label">Estado solicitud</span><span class="solv-data-value">${escHtml(estadoSolicitud)}</span></div>
-                                    <div class="solv-data-item"><span class="solv-data-label">Estado rendicion</span><span class="solv-data-value">${escHtml(estadoRend)}</span></div>
-                                    <div class="solv-data-item is-wide"><span class="solv-data-label">Motivo del viaje</span><span class="solv-data-value is-muted">${motivoLabel}</span></div>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-                    <aside class="solv-rail">
-                        <section class="solv-rail-card solv-status-card ${estadoWorkspace.tone}">
-                            <div class="solv-status-top">
-                                <span class="solv-state-icon is-rail">${statusIconHtml}</span>
-                                <div class="solv-status-heading">
-                                    <span class="solv-status-pill">${estadoWorkspace.pill}</span>
-                                    <h3 class="solv-status-title">Que sigue ahora</h3>
-                                </div>
-                            </div>
-                            <p class="solv-status-copy">${accionContexto}</p>
-                            <div class="solv-balance-list">
-                                <div class="solv-balance-row"><span>Saldo</span><strong>${formatMonto(saldo)}</strong></div>
-                                <div class="solv-balance-row"><span>Comprobantes</span><strong>${gastos.length}</strong></div>
-                            </div>
-                            <button type="button" class="solv-history-link" data-open-history="1">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 1 0 8.95 10h-2.02A7 7 0 1 1 13 5v4l5-5-5-5v4z"/></svg>
-                                Ver historial completo
-                            </button>
-                            <div class="solv-cta-stack">
-                                <button type="button" class="btn btn-primary solv-cta-full" id="detalle-sidebar-finalizar-rendicion">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                                    Finalizar y enviar
-                                </button>
-                                <button type="button" class="btn btn-secondary solv-cta-full" id="detalle-sidebar-agregar-gasto">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                                    Agregar comprobante
-                                </button>
-                                <button type="button" class="btn btn-secondary solv-cta-full" id="detalle-sidebar-ver-liquidacion" style="display:none;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                                    Ver liquidacion
-                                </button>
-                            </div>
-                        </section>
-                    </aside>
-                </div>
-            </div>
-        `;
-
-        const historialBodyEl = document.getElementById('detalle-historial-body');
-        const historialMetaEl = document.getElementById('detalle-historial-meta');
+        const historial           = Array.isArray(sol.historial) ? sol.historial : [];
+        const historialBodyEl     = document.getElementById('detalle-historial-body');
+        const historialMetaEl     = document.getElementById('detalle-historial-meta');
         const historialSubtitleEl = document.getElementById('detalle-historial-subtitulo');
         if (historialBodyEl) {
             historialBodyEl.innerHTML = historial.length
                 ? historialHtml
-                : `<div class="table-empty" style="padding:32px 20px;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.28;"><path d="M13 3a9 9 0 1 0 8.95 10h-2.02A7 7 0 1 1 13 5v4l5-5-5-5v4z"/></svg><p>No hay movimientos registrados todavia.</p></div>`;
+                : '<div class="table-empty" style="padding:32px 20px;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.28;"><path d="M13 3a9 9 0 1 0 8.95 10h-2.02A7 7 0 1 1 13 5v4l5-5-5-5v4z"/></svg><p>No hay movimientos registrados todavia.</p></div>';
         }
         if (historialMetaEl) {
-            historialMetaEl.innerHTML = `
-                <span class="solv-history-chip"><span class="solv-history-chip-label">Expediente</span><strong>#${sol.id}</strong></span>
-                <span class="solv-history-chip"><span class="solv-history-chip-label">Eventos</span><strong>${historial.length}</strong></span>
-                <span class="solv-history-chip"><span class="solv-history-chip-label">Comprobantes</span><strong>${gastos.length}</strong></span>
-            `;
+            historialMetaEl.innerHTML =
+                '<span class="solv-history-chip"><span class="solv-history-chip-label">Expediente</span><strong>#' + sol.id + '</strong></span>' +
+                '<span class="solv-history-chip"><span class="solv-history-chip-label">Eventos</span><strong>' + historial.length + '</strong></span>' +
+                '<span class="solv-history-chip"><span class="solv-history-chip-label">Comprobantes</span><strong>' + gastos.length + '</strong></span>';
         }
-        if (historialSubtitleEl) {
-            historialSubtitleEl.textContent = `Seguimiento completo de la solicitud #${sol.id} y su rendicion.`;
-        }
+        if (historialSubtitleEl) historialSubtitleEl.textContent = 'Seguimiento completo de la solicitud #' + sol.id + ' y su rendicion.';
 
-        const accContainer = contentEl.querySelector('#colab-gastos-acc');
-        if (accContainer) {
-            gastoUI.bindAccordionList(accContainer, { onOpen: function(itemEl, gastoId) { if (gastoId) loadGastoAdjuntos(gastoId, itemEl); } });
-        }
+        const btnAgregar     = contentEl.querySelector('#detalle-sidebar-agregar-gasto');
+        const btnFinalizar   = contentEl.querySelector('#detalle-sidebar-finalizar-rendicion');
+        const btnLiquidacion = contentEl.querySelector('#detalle-sidebar-ver-liquidacion');
+        const actionStack    = contentEl.querySelector('.solv-cta-stack');
 
-        const btnLiquidacion = document.getElementById('btn-detalle-view-liquidacion');
-        if (btnLiquidacion) btnLiquidacion.style.display = 'none';
-
-        const btnSidebarAgregar = contentEl.querySelector('#detalle-sidebar-agregar-gasto');
-        const btnSidebarFinalizar = contentEl.querySelector('#detalle-sidebar-finalizar-rendicion');
-        const btnSidebarLiquidacion = contentEl.querySelector('#detalle-sidebar-ver-liquidacion');
-        const btnsOpenHistory = contentEl.querySelectorAll('[data-open-history="1"]');
-        const actionStack = contentEl.querySelector('.solv-cta-stack');
-        const canAdd = estadoSolicitud === 'aprobada' && !sol.rendicion_finalizada && !['aprobada', 'rechazada'].includes(estadoRend);
-        const canFinalize = canAdd && gastos.length > 0;
-        const canLiquidacion = !!sol.rendicion_finalizada;
-
-        if (btnSidebarAgregar) {
-            btnSidebarAgregar.style.display = canAdd ? 'inline-flex' : 'none';
-            btnSidebarAgregar.addEventListener('click', () => { if (!sol.rendicion_finalizada) openRendirModal(sol.id); });
-        }
-        if (btnSidebarFinalizar) {
-            btnSidebarFinalizar.style.display = canFinalize ? 'inline-flex' : 'none';
-            btnSidebarFinalizar.addEventListener('click', () => { if (!sol.rendicion_finalizada && gastos.length) ModalManager.open('modal-confirmar-finalizar'); });
-        }
-        if (btnSidebarLiquidacion) {
-            btnSidebarLiquidacion.style.display = canLiquidacion ? 'inline-flex' : 'none';
-            btnSidebarLiquidacion.addEventListener('click', () => openLiquidacionView(sol.id));
-        }
+        if (btnAgregar)     btnAgregar.addEventListener('click',     () => { if (!sol.rendicion_finalizada) openRendirModal(sol.id); });
+        if (btnFinalizar)   btnFinalizar.addEventListener('click',   () => { if (!sol.rendicion_finalizada && gastos.length) ModalManager.open('modal-confirmar-finalizar'); });
+        if (btnLiquidacion) btnLiquidacion.addEventListener('click', () => openLiquidacionView(sol.id));
         if (actionStack) {
-            const visibleActions = [btnSidebarAgregar, btnSidebarFinalizar, btnSidebarLiquidacion].filter(btn => btn && btn.style.display !== 'none').length;
-            actionStack.style.display = visibleActions ? 'flex' : 'none';
+            const visible = [btnAgregar, btnFinalizar, btnLiquidacion].filter(b => b && b.style.display !== 'none').length;
+            actionStack.style.display = visible ? 'flex' : 'none';
         }
-        if (btnsOpenHistory.length) {
-            btnsOpenHistory.forEach(btn => btn.addEventListener('click', () => ModalManager.open('modal-historial-solicitud')));
-        }
+        contentEl.querySelectorAll('[data-open-history="1"]').forEach(btn => btn.addEventListener('click', () => ModalManager.open('modal-historial-solicitud')));
+
+        const btnLiqView = document.getElementById('btn-detalle-view-liquidacion');
+        if (btnLiqView) btnLiqView.style.display = 'none';
     }
 
     async function handleFinalizarRendicion() {
@@ -1406,7 +1080,7 @@ $args = wp_parse_args(
             renderSolicitudesTable(solicitudesCache);
             const sol = getSolicitudById(detalleSolicitudId);
             if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(detalleSolicitudId));
-            showToast('success', 'Finalizado', 'RendiciÃ³n enviada a revisiÃ³n.');
+            showToast('success', 'Finalizado', 'Rendición enviada a revisión.');
         } catch (err) { showToast('error', 'Error', err.message); }
     }
 
@@ -1509,13 +1183,13 @@ $args = wp_parse_args(
         // Volver desde detalle
         document.getElementById('btn-volver-detalle-solicitud').addEventListener('click', () => navigateTo({ name: 'solicitudes' }));
 
-        // BotÃ³n liquidaciÃ³n (topbar)
+        // Botón liquidación (topbar)
         const liqBtn = document.getElementById('btn-detalle-view-liquidacion');
         if (liqBtn) liqBtn.addEventListener('click', openLiquidacionView);
         const liqBack = document.getElementById('btn-liq-volver');
         if (liqBack) liqBack.addEventListener('click', () => navigateTo({ name: 'solicitud', id: getCurrentRoute().id }));
 
-        // Modal confirmar finalizar rendiciÃ³n
+        // Modal confirmar finalizar rendición
         document.getElementById('btn-cerrar-modal-confirmar').addEventListener('click', () => ModalManager.close('modal-confirmar-finalizar'));
         document.getElementById('btn-cancelar-confirmar').addEventListener('click',     () => ModalManager.close('modal-confirmar-finalizar'));
         document.getElementById('btn-confirmar-finalizar').addEventListener('click', async () => {
@@ -1539,7 +1213,7 @@ $args = wp_parse_args(
         document.getElementById('btn-refrescar-solicitudes').addEventListener('click', loadSolicitudesView);
     }
 
-    /* â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Init ─────────────────────────────────────────────── */
     function init() { bindEvents(); loadInicioView(); }
     window.ViaticosApp = { navigate: navigateTo };
     if (document.readyState === 'loading') {
