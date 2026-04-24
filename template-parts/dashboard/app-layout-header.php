@@ -260,7 +260,7 @@ window.ViaticosGastoUI = (function () {
         }
     }
 
-    return { renderGastoItem, bindAccordionList, adjIconClass, adjIconLabel, renderAdjuntosList, loadAdjuntos };
+    return { renderGastoItem, bindAccordionList, adjIconClass, adjIconLabel, renderAdjuntosList, loadAdjuntos, buildFields, summaryText, TIPO_LABEL, escHtml: esc, fmtFecha, fmtMonto };
 })();
 </script>
 <script>
@@ -648,7 +648,24 @@ window.ViaticosLiquidacion = (function () {
 </div>`;
     }
 
-    return { buildData, renderDoc };
+    function renderTo(containerEl, sol, gastos, opts) {
+        containerEl.innerHTML = renderDoc(buildData(sol, gastos, opts));
+    }
+
+    function print(containerId) {
+        const el = document.getElementById(containerId);
+        if (!el) return;
+        const root = document.createElement('div');
+        root.className = 'liq-print-root';
+        root.innerHTML = el.innerHTML;
+        document.body.appendChild(root);
+        document.body.classList.add('liq-printing');
+        window.print();
+        document.body.classList.remove('liq-printing');
+        document.body.removeChild(root);
+    }
+
+    return { buildData, renderDoc, renderTo, print };
 })();
 </script>
 <script>
@@ -764,55 +781,35 @@ window.ViaticosDetalleUI = (function () {
     const fmtMonto   = utils.fmtMonto;
     const fmtFecha   = utils.fmtFecha;
 
-    const ICONS = {
-        check:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>',
-        alert:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>',
-        edit:   '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm14.71-9.04c.39-.39.39-1.02.0-1.41l-2.5-2.5a.9959.9959.0 0 0-1.41.0l-1.96 1.96 3.75 3.75 2.15-2.26z"/></svg>',
-        wallet: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 7H5C3.89 7 3 7.89 3 9v8c0 1.11.89 2 2 2h16c1.11.0 2-.89 2-2V9c0-1.11-.89-2-2-2zm0 10H5V9h16v8zm-3-6a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM5 6h13V4H5c-1.11.0-2 .89-2 2v1h2V6z"/></svg>',
-        clock:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 11H11V7h2zm0 4H11v-2h2z"/></svg>',
-    };
-
-    function resolveWorkspace(estadoSolicitud, estadoRend, sol, gastos, saldo, saldoNegativo) {
-        if (estadoRend === 'aprobada')       return { tone: 'is-ok',      pill: 'Aprobada',           title: 'Tu rendicion fue aprobada',           copy: 'No tienes nada pendiente. Puedes revisar la liquidacion cuando la necesites.',     guidance: 'Todo esta cerrado. Solo queda consultar la liquidacion o el historial.',                                                                                        icon: 'check'  };
-        if (estadoRend === 'rechazada')      return { tone: 'is-danger',  pill: 'Rechazada',           title: 'Tu rendicion fue rechazada',           copy: 'Revisa el historial para ver la observacion y coordina el siguiente paso.',        guidance: 'Revisa el historial para entender el motivo del rechazo antes de continuar.',                                                                                  icon: 'alert'  };
-        if (estadoRend === 'observada')      return { tone: 'is-warning', pill: 'Observada',           title: 'Tu rendicion necesita ajustes',        copy: 'Hay observaciones pendientes. Revisa el historial y completa lo necesario antes de enviarla otra vez.',  guidance: 'Hay ajustes pendientes. Corrige lo necesario y vuelve a enviarla.',                                                                        icon: 'edit'   };
-        if (sol.rendicion_finalizada)        return { tone: 'is-review',  pill: 'En revision',         title: 'Tu rendicion esta en revision',        copy: 'Ya la enviaste. Por ahora no necesitas hacer nada mas.',                           guidance: 'La rendicion ya fue enviada. Por ahora solo queda esperar la revision.',                                                                                        icon: 'clock'  };
-        if (estadoSolicitud === 'observada') return { tone: 'is-warning', pill: 'Solicitud observada', title: 'Tu solicitud necesita correccion',     copy: 'Corrige la solicitud observada antes de continuar con la rendicion.',              guidance: 'Primero corrige la solicitud observada antes de seguir con la rendicion.',                                                                                       icon: 'edit'   };
-        if (estadoSolicitud === 'rechazada') return { tone: 'is-danger',  pill: 'Solicitud rechazada', title: 'Tu solicitud fue rechazada',           copy: 'No podras rendir gastos con esta solicitud.',                                      guidance: 'Esta solicitud no puede continuar. Necesitaras registrar una nueva.',                                                                                            icon: 'alert'  };
-        if (estadoSolicitud !== 'aprobada')  return { tone: 'is-idle',    pill: 'Pendiente',           title: 'Tu solicitud aun espera aprobacion',   copy: 'Cuando la aprueben podras registrar los gastos del viaje.',                        guidance: 'Aun no puedes rendir gastos hasta que la solicitud sea aprobada.',                                                                                               icon: 'clock'  };
-        if (!gastos.length)                  return { tone: 'is-active',  pill: 'Lista para rendir',   title: 'Ya puedes registrar tus gastos',       copy: 'Empieza con el primer comprobante del viaje.',                                     guidance: 'Aun no registras gastos. Empieza con el primer comprobante del viaje.',                                                                                         icon: 'wallet' };
-        const pendiente = saldo > 0 ? 'Tienes ' + fmtMonto(saldo) + ' pendientes por sustentar.' : 'Revisa tus comprobantes y enviala cuando todo este listo.';
-        return                               { tone: 'is-active',  pill: 'En progreso',         title: 'Completa tu rendicion',                copy: saldoNegativo ? 'Ya superaste el monto solicitado. Revisa tus comprobantes antes de enviarla.' : pendiente,  guidance: saldoNegativo ? 'Ya superaste el monto solicitado. Revisa los comprobantes antes de enviarla.' : 'Ya empezaste la rendicion. Puedes seguir cargando gastos o enviarla a revision.', icon: 'wallet' };
-    }
-
-    function buildFlowStepsHtml(sol, estadoSolicitud, estadoRend, gastos) {
+    function buildStepperHtml(sol, estadoSolicitud, estadoRend) {
+        const s2 = estadoSolicitud === 'aprobada' ? 'is-done' : (['observada','rechazada'].includes(estadoSolicitud) ? 'is-warning' : 'is-current');
+        const s3 = sol.rendicion_finalizada || ['aprobada','rechazada','observada'].includes(estadoRend) ? 'is-done' : (estadoSolicitud === 'aprobada' ? 'is-current' : '');
+        const s4 = estadoRend === 'aprobada' ? 'is-done' : (['rechazada','observada'].includes(estadoRend) ? 'is-warning' : (sol.rendicion_finalizada ? 'is-current' : ''));
         const steps = [
-            { n: '1', title: 'Solicitud',  state: 'is-done',   meta: '#' + sol.id + ' registrada' },
-            { n: '2', title: 'Aprobacion', state: estadoSolicitud === 'aprobada' ? 'is-done' : (['observada','rechazada'].includes(estadoSolicitud) ? 'is-warning' : 'is-current'), meta: estadoSolicitud === 'aprobada' ? 'Aprobada' : (estadoSolicitud === 'observada' ? 'Observada' : (estadoSolicitud === 'rechazada' ? 'Rechazada' : 'Pendiente')) },
-            { n: '3', title: 'Gastos',     state: sol.rendicion_finalizada || ['aprobada','rechazada','observada'].includes(estadoRend) ? 'is-done' : (estadoSolicitud === 'aprobada' ? 'is-current' : ''), meta: gastos.length ? gastos.length + ' registro(s)' : 'Sin registros' },
-            { n: '4', title: 'Revision',   state: ['aprobada','rechazada','observada'].includes(estadoRend) ? (estadoRend === 'aprobada' ? 'is-done' : 'is-warning') : (sol.rendicion_finalizada ? 'is-current' : ''), meta: estadoRend === 'aprobada' ? 'Aprobada' : (estadoRend === 'rechazada' ? 'Rechazada' : (estadoRend === 'observada' ? 'Observada' : (sol.rendicion_finalizada ? 'En revision' : 'Pendiente'))) },
+            { n: 1, label: 'Solicitud',  state: 'is-done' },
+            { n: 2, label: 'Aprobación', state: s2 },
+            { n: 3, label: 'Gastos',     state: s3 },
+            { n: 4, label: 'Revisión',   state: s4 },
         ];
         return steps.map(function (s) {
-            return '<div class="solv-stage-card ' + s.state + '"><span class="solv-stage-index">' + s.n + '</span><div class="solv-stage-copy"><div class="solv-stage-title">' + s.title + '</div><div class="solv-stage-meta">' + esc(s.meta) + '</div></div></div>';
+            return '<div class="solv-step ' + s.state + '"><span class="solv-step-dot">' + s.n + '</span><span class="solv-step-label">' + s.label + '</span></div>';
         }).join('');
     }
 
-    function buildAlertaBanner(estadoRend) {
-        const map = {
-            observada: ['estado-alerta-observada', 'Rendicion observada', 'El administrador devolvio observaciones.'],
-            rechazada: ['estado-alerta-rechazada', 'Rendicion rechazada', 'Comunicate con el area de finanzas.'],
-            aprobada:  ['estado-alerta-aprobada',  'Rendicion aprobada',  'Tu rendicion fue aprobada correctamente.'],
-        };
-        if (!map[estadoRend]) return '';
-        const m = map[estadoRend];
-        return '<div class="estado-alerta ' + m[0] + '"><div class="estado-alerta-content"><strong>' + m[1] + '</strong><p>' + m[2] + '</p></div></div>';
+    function buildBannerHtml(estadoSolicitud, estadoRend) {
+        if (estadoRend === 'rechazada')      return '<div class="solv-banner is-danger"><strong>Rendición rechazada.</strong> Revisa el historial.</div>';
+        if (estadoRend === 'observada')      return '<div class="solv-banner is-warn"><strong>Rendición observada.</strong> Corrige y reenvía.</div>';
+        if (estadoRend === 'aprobada')       return '<div class="solv-banner is-ok"><strong>Rendición aprobada.</strong></div>';
+        if (estadoSolicitud === 'rechazada') return '<div class="solv-banner is-danger"><strong>Solicitud rechazada.</strong></div>';
+        if (estadoSolicitud === 'observada') return '<div class="solv-banner is-warn"><strong>Solicitud observada.</strong> Corrige y reenvía.</div>';
+        return '';
     }
 
     /**
      * render(containerEl, sol, gastos, opts)
      *   opts.apiFetch      fn   – API fetch (required for accordion lazy-load)
      *   opts.canDelete     bool – adjuntos deletable (colaborador only)
-     *   opts.accionesHtml  str  – HTML injected into .solv-cta-stack slot
+     *   opts.accionesHtml  str  – HTML injected into header actions slot
      * Returns { historialHtml, estadoRend, estadoSolicitud }
      */
     function render(containerEl, sol, gastos, opts) {
@@ -834,87 +831,120 @@ window.ViaticosDetalleUI = (function () {
         });
         const historial     = Array.isArray(sol.historial) ? sol.historial : [];
         const historialHtml = timelineUI.renderTimeline(historial);
-        const ws            = resolveWorkspace(estadoSolicitud, estadoRend, sol, gastos, saldo, saldoNegativo);
-        const iconHtml      = ICONS[ws.icon] || ICONS.clock;
-        const avancePct     = totalSolicitado > 0 ? Math.max(0, Math.min(100, Math.round((totalRendido / totalSolicitado) * 100))) : (gastos.length ? 100 : 0);
         const accId         = 'solv-gastos-acc-' + sol.id;
 
         const gastosBodyHtml = gastos.length
-            ? '<div class="gasto-acc-list" id="' + accId + '">' + gastos.map(function (g, i) { return gastoUI.renderGastoItem(g, 'solv-' + sol.id + '-' + i); }).join('') + '</div>'
-            : '<div class="table-empty" style="padding:36px 20px;"><svg viewBox="0 0 24 24" fill="currentColor" style="width:40px;height:40px;opacity:.28;"><path d="M19 5v14H5V5h14m0-2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>No hay gastos registrados.</p></div>';
+            ? (function () {
+                var chevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/></svg>';
+                var rows = gastos.map(function (g, i) {
+                    var itemId = 'solv-' + sol.id + '-' + i;
+                    var tipoLabel = gastoUI.TIPO_LABEL[g.tipo] || g.tipo || 'Gasto';
+                    var summary = gastoUI.summaryText(g);
+                    var fields = gastoUI.buildFields(g);
+                    var gastoIdAttr = g.id ? String(g.id) : '';
+                    var adjuntosHtml = gastoIdAttr
+                        ? '<div class="gasto-adj-panel" data-adj-gasto-id="' + gastoIdAttr + '"><div class="gasto-adj-title"><span style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#4A5568;"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .28-.22.5-.5.5s-.5-.22-.5-.5V6H11v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S8 2.79 8 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-2.5z"/></svg>Adjuntos</span></div><div class="gasto-adj-list"><span class="gasto-adj-loading">Cargando adjuntos...</span></div></div>'
+                        : '';
+                    return (
+                        '<tr class="solv-gtbl-row" data-acc-id="' + itemId + '" data-gasto-id="' + gastoIdAttr + '" tabindex="0" role="button" aria-expanded="false">' +
+                            '<td class="solv-gtbl-chev">' + chevron + '</td>' +
+                            '<td><span class="solv-gtbl-tipo">' + gastoUI.escHtml(tipoLabel) + '</span></td>' +
+                            '<td class="solv-gtbl-concept">' + gastoUI.escHtml(summary) + '</td>' +
+                            '<td class="solv-gtbl-fecha">' + gastoUI.escHtml(gastoUI.fmtFecha(g.fecha)) + '</td>' +
+                            '<td class="solv-gtbl-amount">' + gastoUI.escHtml(gastoUI.fmtMonto(g.importe)) + '</td>' +
+                        '</tr>' +
+                        '<tr class="solv-gtbl-detail" data-detail-for="' + itemId + '" hidden>' +
+                            '<td colspan="5">' +
+                                '<div class="solv-gtbl-fields">' + fields + '</div>' +
+                                adjuntosHtml +
+                            '</td>' +
+                        '</tr>'
+                    );
+                }).join('');
+                return (
+                    '<table class="solv-gtbl" id="' + accId + '">' +
+                        '<thead><tr>' +
+                            '<th style="width:36px;"></th>' +
+                            '<th style="width:120px;">Tipo</th>' +
+                            '<th>Concepto</th>' +
+                            '<th style="width:110px;">Fecha</th>' +
+                            '<th style="width:140px;" class="num">Importe</th>' +
+                        '</tr></thead>' +
+                        '<tbody>' + rows + '</tbody>' +
+                    '</table>'
+                );
+            })()
+            : '<div class="solv-empty"><p>Sin comprobantes registrados.</p></div>';
+
+        const stepperHtml = buildStepperHtml(sol, estadoSolicitud, estadoRend);
+        const bannerHtml  = buildBannerHtml(estadoSolicitud, estadoRend);
 
         containerEl.innerHTML =
-            buildAlertaBanner(estadoRend) +
             '<div class="solv-shell">' +
-                '<section class="solv-hero ' + ws.tone + '">' +
-                    '<div class="solv-hero-main">' +
-                        '<div class="solv-hero-eyebrow">Expediente #' + sol.id + '</div>' +
-                        '<div class="solv-hero-state">' +
-                            '<span class="solv-state-icon">' + iconHtml + '</span>' +
-                            '<div class="solv-hero-intro">' +
-                                '<span class="solv-state-pill">' + ws.pill + '</span>' +
-                                '<h1 class="solv-hero-title">' + ws.title + '</h1>' +
-                            '</div>' +
-                        '</div>' +
-                        '<p class="solv-hero-copy">' + ws.copy + '</p>' +
-                        '<div class="solv-hero-badges">' + estadoUI.renderSolicitudBadge(sol) + estadoUI.renderBadgeEstado('rendicion', estadoRend) + '</div>' +
+                '<header class="solv-exp-head">' +
+                    '<div class="solv-exp-id">' +
+                        '<span class="solv-exp-num">#' + sol.id + '</span>' +
+                        '<span class="solv-exp-sep">·</span>' +
+                        '<span class="solv-exp-date">' + esc(fmtFecha(sol.fecha)) + '</span>' +
                     '</div>' +
-                    '<div class="solv-hero-stats">' +
-                        '<div class="solv-hero-stat is-primary"><span class="solv-hero-stat-label">Monto solicitado</span><strong class="solv-hero-stat-value">' + fmtMonto(totalSolicitado) + '</strong><span class="solv-hero-stat-note">Anticipo aprobado</span></div>' +
-                        '<div class="solv-hero-stat is-positive"><span class="solv-hero-stat-label">Total rendido</span><strong class="solv-hero-stat-value">' + fmtMonto(totalRendido) + '</strong><span class="solv-hero-stat-note">' + gastos.length + ' comprobante(s)</span></div>' +
-                        '<div class="solv-hero-stat ' + (saldoNegativo ? 'is-warning' : 'is-neutral') + '"><span class="solv-hero-stat-label">Saldo</span><strong class="solv-hero-stat-value">' + fmtMonto(saldo) + '</strong><span class="solv-hero-stat-note">' + (saldoNegativo ? 'Monto excedido' : 'Disponible por rendir') + '</span></div>' +
-                    '</div>' +
-                '</section>' +
-                '<div class="solv-stage-strip">' + buildFlowStepsHtml(sol, estadoSolicitud, estadoRend, gastos) + '</div>' +
-                '<div class="solv-grid">' +
-                    '<div class="solv-main">' +
-                        '<section class="solv-panel solv-panel-primary">' +
-                            '<div class="solv-panel-head">' +
-                                '<div><div class="solv-kicker">Rendicion</div><h2 class="solv-panel-title">Comprobantes</h2><p class="solv-panel-copy">Aqui registras y revisas los gastos del viaje.</p></div>' +
-                                '<div class="solv-toolbar"><div class="solv-chip-stat"><span class="solv-chip-stat-label">Registros</span><strong class="solv-chip-stat-value">' + gastos.length + '</strong></div><div class="solv-chip-stat"><span class="solv-chip-stat-label">Avance</span><strong class="solv-chip-stat-value">' + avancePct + '%</strong></div></div>' +
-                            '</div>' +
-                            '<div class="solv-context-strip">' +
-                                '<div class="solv-context-item"><span class="solv-context-label">Fecha de viaje</span><strong class="solv-context-value">' + fmtFecha(sol.fecha) + '</strong></div>' +
-                                '<div class="solv-context-item"><span class="solv-context-label">Centro de costo</span><strong class="solv-context-value">' + esc(sol.ceco || '-') + '</strong></div>' +
-                                '<div class="solv-context-item"><span class="solv-context-label">DNI</span><strong class="solv-context-value">' + esc(sol.dni || '-') + '</strong></div>' +
-                            '</div>' +
-                            '<div class="solv-panel-body solv-panel-body-gastos">' + gastosBodyHtml + '</div>' +
-                        '</section>' +
-                        '<section class="solv-panel">' +
-                            '<div class="solv-panel-head"><div><div class="solv-kicker">Detalle del viaje</div><h2 class="solv-panel-title">Lo esencial de esta solicitud</h2></div></div>' +
-                            '<div class="solv-panel-body"><div class="solv-data-grid">' +
-                                '<div class="solv-data-item"><span class="solv-data-label">Expediente</span><span class="solv-data-value">#' + sol.id + '</span></div>' +
-                                '<div class="solv-data-item"><span class="solv-data-label">Historial</span><span class="solv-data-value">' + historial.length + ' evento(s)</span></div>' +
-                                '<div class="solv-data-item"><span class="solv-data-label">Estado solicitud</span><span class="solv-data-value">' + esc(estadoSolicitud) + '</span></div>' +
-                                '<div class="solv-data-item"><span class="solv-data-label">Estado rendicion</span><span class="solv-data-value">' + esc(estadoRend) + '</span></div>' +
-                                '<div class="solv-data-item is-wide"><span class="solv-data-label">Motivo del viaje</span><span class="solv-data-value is-muted">' + esc(sol.motivo || 'Sin detalle registrado.') + '</span></div>' +
-                            '</div></div>' +
-                        '</section>' +
-                    '</div>' +
-                    '<aside class="solv-rail">' +
-                        '<section class="solv-rail-card solv-status-card ' + ws.tone + '">' +
-                            '<div class="solv-status-top">' +
-                                '<span class="solv-state-icon is-rail">' + iconHtml + '</span>' +
-                                '<div class="solv-status-heading"><span class="solv-status-pill">' + ws.pill + '</span><h3 class="solv-status-title">Que sigue ahora</h3></div>' +
-                            '</div>' +
-                            '<p class="solv-status-copy">' + ws.guidance + '</p>' +
-                            '<div class="solv-balance-list">' +
-                                '<div class="solv-balance-row"><span>Saldo</span><strong>' + fmtMonto(saldo) + '</strong></div>' +
-                                '<div class="solv-balance-row"><span>Comprobantes</span><strong>' + gastos.length + '</strong></div>' +
-                            '</div>' +
-                            '<button type="button" class="solv-history-link" data-open-history="1"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 1 0 8.95 10h-2.02A7 7 0 1 1 13 5v4l5-5-5-5v4z"/></svg>Ver historial completo</button>' +
-                            '<div class="solv-cta-stack">' + accionesHtml + '</div>' +
-                        '</section>' +
-                    '</aside>' +
+                    '<nav class="solv-exp-stepper" aria-label="Flujo">' + stepperHtml + '</nav>' +
+                    '<div class="solv-exp-actions">' + accionesHtml + '</div>' +
+                '</header>' +
+                bannerHtml +
+                '<div class="solv-fin">' +
+                    '<div class="solv-fin-cell is-anticipo"><span class="solv-fin-k">Anticipo</span><strong class="solv-fin-v">' + fmtMonto(totalSolicitado) + '</strong></div>' +
+                    '<div class="solv-fin-cell is-rendido"><span class="solv-fin-k">Rendido</span><strong class="solv-fin-v is-ok">' + fmtMonto(totalRendido) + '</strong></div>' +
+                    '<div class="solv-fin-cell' + (saldoNegativo ? ' is-warn' : ' is-saldo') + '"><span class="solv-fin-k">Saldo</span><strong class="solv-fin-v' + (saldoNegativo ? ' is-warn' : '') + '">' + fmtMonto(saldo) + '</strong></div>' +
                 '</div>' +
+                '<section class="solv-section">' +
+                    '<header class="solv-section-head"><h2 class="solv-section-title">Expediente</h2></header>' +
+                    '<table class="solv-meta">' +
+                        '<tbody>' +
+                            '<tr><th scope="row">Fecha viaje</th><td>' + esc(fmtFecha(sol.fecha)) + '</td></tr>' +
+                            '<tr><th scope="row">CECO</th><td>' + esc(sol.ceco || '—') + '</td></tr>' +
+                            '<tr><th scope="row">DNI</th><td>' + esc(sol.dni || '—') + '</td></tr>' +
+                            '<tr><th scope="row">Motivo</th><td>' + esc(sol.motivo || '—') + '</td></tr>' +
+                        '</tbody>' +
+                    '</table>' +
+                '</section>' +
+                '<section class="solv-section">' +
+                    '<header class="solv-section-head">' +
+                        '<h2 class="solv-section-title">Comprobantes</h2>' +
+                        '<span class="solv-section-count">' + gastos.length + '</span>' +
+                    '</header>' +
+                    '<div class="solv-section-body">' + gastosBodyHtml + '</div>' +
+                '</section>' +
             '</div>';
 
-        const accContainer = containerEl.querySelector('#' + accId);
-        if (accContainer && apiFetch) {
-            gastoUI.bindAccordionList(accContainer, {
-                onOpen: function (itemEl, gastoId) {
-                    if (gastoId) gastoUI.loadAdjuntos(gastoId, itemEl, { apiFetch: apiFetch, canDelete: canDelete });
-                },
+        const tableEl = containerEl.querySelector('#' + accId);
+        if (tableEl && apiFetch) {
+            tableEl.addEventListener('click', function (e) {
+                var row = e.target.closest('.solv-gtbl-row');
+                if (!row || !tableEl.contains(row)) return;
+                var id = row.dataset.accId;
+                var gastoId = row.dataset.gastoId || null;
+                var detailRow = tableEl.querySelector('.solv-gtbl-detail[data-detail-for="' + id + '"]');
+                var wasOpen = row.classList.contains('is-open');
+                tableEl.querySelectorAll('.solv-gtbl-row.is-open').forEach(function (r) {
+                    r.classList.remove('is-open');
+                    r.setAttribute('aria-expanded', 'false');
+                });
+                tableEl.querySelectorAll('.solv-gtbl-detail').forEach(function (d) { d.hidden = true; });
+                if (!wasOpen) {
+                    row.classList.add('is-open');
+                    row.setAttribute('aria-expanded', 'true');
+                    if (detailRow) {
+                        detailRow.hidden = false;
+                        if (gastoId) {
+                            gastoUI.loadAdjuntos(gastoId, detailRow, { apiFetch: apiFetch, canDelete: canDelete });
+                        }
+                    }
+                }
+            });
+            tableEl.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                var row = e.target.closest('.solv-gtbl-row');
+                if (row) { e.preventDefault(); row.click(); }
             });
         }
 

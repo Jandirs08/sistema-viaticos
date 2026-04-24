@@ -97,11 +97,11 @@ $args = wp_parse_args(
             <table class="erp-table" aria-label="Actividad reciente">
                 <thead>
                     <tr>
-                        <th>ID</th><th>Fecha Viaje</th><th>Monto</th><th>CECO/Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th>
+                        <th>ID</th><th>Fecha Viaje</th><th>Monto</th><th>CECO/Proyecto</th><th>Estado</th>
                     </tr>
                 </thead>
                 <tbody id="inicio-recent-tbody">
-                    <tr><td colspan="6"><div class="table-loading"><div class="spinner"></div> Cargando...</div></td></tr>
+                    <tr><td colspan="5"><div class="table-loading"><div class="spinner"></div> Cargando...</div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -139,11 +139,11 @@ $args = wp_parse_args(
                 <thead>
                     <tr>
                         <th>ID</th><th>Fecha Viaje</th><th>Monto Solicitado</th>
-                        <th>CECO / Proyecto</th><th>Estado solicitud</th><th>Estado rendición</th><th>Acciones</th>
+                        <th>CECO / Proyecto</th><th>Estado</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="solicitudes-tbody">
-                    <tr><td colspan="7"><div class="table-loading"><div class="spinner"></div> Cargando solicitudes...</div></td></tr>
+                    <tr><td colspan="6"><div class="table-loading"><div class="spinner"></div> Cargando solicitudes...</div></td></tr>
                 </tbody>
             </table>
         </div>
@@ -162,10 +162,6 @@ $args = wp_parse_args(
         <button class="rd-back-btn" id="btn-volver-detalle-solicitud">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             Volver
-        </button>
-        <button class="btn btn-outline btn-sm" id="btn-detalle-view-liquidacion" style="display:none;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-            Ver Liquidación
         </button>
     </div>
 
@@ -195,26 +191,28 @@ $args = wp_parse_args(
 
 </section><!-- /#view-rendiciones -->
 
-<!-- ============================================================
-     VIEW: LIQUIDACIÓN (read-only document)
-     ============================================================ -->
-<section id="view-liquidacion" class="erp-view" aria-label="Liquidación de Rendición">
-    <div class="liq-view-toolbar">
-        <button class="liq-back-btn" id="btn-liq-volver" type="button">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-            Volver al detalle
-        </button>
-        <div class="liq-actions">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-liq-exportar" title="Exportar PDF (próximamente)" disabled>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/></svg>
-                Exportar
+<!-- MODAL: liquidación colaborador -->
+<div class="modal-overlay" id="modal-colab-liquidacion" role="dialog" aria-modal="true" aria-labelledby="modal-colab-liq-titulo">
+    <div class="modal modal-xl liq-modal">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <h2 id="modal-colab-liq-titulo">Liquidación de Rendición</h2>
+                <p>Documento de solo lectura</p>
+            </div>
+            <button class="modal-close" id="btn-cerrar-colab-liq" aria-label="Cerrar modal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
         </div>
+        <div class="modal-body" id="colab-liq-container"></div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-imprimir-colab-liq">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                Imprimir / Exportar
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-colab-liq">Cerrar</button>
+        </div>
     </div>
-    <div id="liq-doc-container">
-        <div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidación…</div>
-    </div>
-</section><!-- /#view-liquidacion -->
+</div>
 
 
 <!-- ============================================================
@@ -418,17 +416,17 @@ $args = wp_parse_args(
                     </div>
                     <div class="form-group" data-rendir-group="documento">
                         <label class="form-label" for="rg-ruc">RUC del Proveedor <span class="required">*</span></label>
-                        <input type="text" id="rg-ruc" name="ruc" class="form-control" maxlength="11" placeholder="Ej: 20123456789" inputmode="numeric">
-                        <span class="form-error" id="err-rg-ruc">Ingrese el RUC del proveedor.</span>
+                        <input type="text" id="rg-ruc" name="ruc" class="form-control" maxlength="11" placeholder="Ej: 20123456789" inputmode="numeric" required>
+                        <span class="form-error" id="err-rg-ruc">Ingrese el RUC del proveedor (11 dígitos).</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="rg-razon">Razón Social</label>
-                        <input type="text" id="rg-razon" name="razon_social" class="form-control" placeholder="Ej: EMPRESA S.A.C.">
+                        <label class="form-label" for="rg-razon">Razón Social <span class="required">*</span></label>
+                        <input type="text" id="rg-razon" name="razon_social" class="form-control" placeholder="Ej: EMPRESA S.A.C." required>
                         <span class="form-error" id="err-rg-razon">Ingrese la razón social.</span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="rg-nro-comprobante">N° Comprobante</label>
-                        <input type="text" id="rg-nro-comprobante" name="nro_comprobante" class="form-control" placeholder="Ej: F001-00123456">
+                        <label class="form-label" for="rg-nro-comprobante">N° Comprobante <span class="required">*</span></label>
+                        <input type="text" id="rg-nro-comprobante" name="nro_comprobante" class="form-control" placeholder="Ej: F001-00123456" required>
                         <span class="form-error" id="err-rg-nro-comprobante">Ingrese el número de comprobante.</span>
                     </div>
                     <div class="form-group col-full">
@@ -441,18 +439,18 @@ $args = wp_parse_args(
                         <textarea id="rg-concepto" name="descripcion_concepto" class="form-control" placeholder="Describa el concepto del gasto..." rows="3"></textarea>
                     </div>
                     <div class="form-group" id="rg-group-motivo">
-                        <label class="form-label" for="rg-motivo">Motivo de Movilidad</label>
-                        <textarea id="rg-motivo" name="motivo_movilidad" class="form-control" placeholder="Indique el motivo del traslado..." rows="3"></textarea>
+                        <label class="form-label" for="rg-motivo">Motivo de Movilidad <span class="required">*</span></label>
+                        <textarea id="rg-motivo" name="motivo_movilidad" class="form-control" placeholder="Indique el motivo del traslado..." rows="3" required></textarea>
                         <span class="form-error" id="err-rg-motivo">Ingrese el motivo de movilidad.</span>
                     </div>
                     <div class="form-group" id="rg-group-destino">
-                        <label class="form-label" for="rg-destino">Destino de Movilidad</label>
-                        <input type="text" id="rg-destino" name="destino_movilidad" class="form-control" placeholder="Ej: Oficina central / cliente / sede">
+                        <label class="form-label" for="rg-destino">Destino de Movilidad <span class="required">*</span></label>
+                        <input type="text" id="rg-destino" name="destino_movilidad" class="form-control" placeholder="Ej: Oficina central / cliente / sede" required>
                         <span class="form-error" id="err-rg-destino">Ingrese el destino de movilidad.</span>
                     </div>
                     <div class="form-group col-full" id="rg-group-ceco-oi">
-                        <label class="form-label" for="rg-ceco-oi">CECO / OI</label>
-                        <input type="text" id="rg-ceco-oi" name="ceco_oi" class="form-control" placeholder="Ej: CC-001 / OI-123">
+                        <label class="form-label" for="rg-ceco-oi">CECO / OI <span class="required">*</span></label>
+                        <input type="text" id="rg-ceco-oi" name="ceco_oi" class="form-control" placeholder="Ej: CC-001 / OI-123" required>
                         <span class="form-error" id="err-rg-ceco-oi">Ingrese el CECO / OI.</span>
                     </div>
                 </div>
@@ -659,7 +657,6 @@ $args = wp_parse_args(
             solicitudes: 'Mis Solicitudes',
             solicitud: 'Detalle de Solicitud',
             rendiciones: 'Mis Rendiciones',
-            liquidacion: 'Liquidacion',
         };
         titleEl.textContent = labels[routeName] || 'Viaticos';
     }
@@ -672,7 +669,7 @@ $args = wp_parse_args(
         document.querySelectorAll('.nav-link').forEach(link => {
             const target = link.dataset.view;
             const isActive = target === viewId || (
-                target === 'view-solicitudes' && (viewId === 'view-detalle-solicitud' || viewId === 'view-liquidacion')
+                target === 'view-solicitudes' && viewId === 'view-detalle-solicitud'
             );
             link.classList.toggle('active', isActive);
         });
@@ -687,7 +684,6 @@ $args = wp_parse_args(
                 'view-solicitudes': { name: 'solicitudes' },
                 'view-rendiciones': { name: 'rendiciones' },
                 'view-detalle-solicitud': { name: 'solicitud', id: detalleSolicitudId },
-                'view-liquidacion': { name: 'liquidacion', id: detalleSolicitudId },
             };
             return mapping[target] || { name: target };
         }
@@ -721,7 +717,7 @@ $args = wp_parse_args(
             .slice(0, 5);
 
         if (!recent.length) {
-            renderTableEmpty(tbody, 6, 'Aun no tienes solicitudes registradas.');
+            renderTableEmpty(tbody, 5, 'Aun no tienes solicitudes registradas.');
             return;
         }
 
@@ -731,8 +727,7 @@ $args = wp_parse_args(
                 <td>${formatFecha(sol.fecha)}</td>
                 <td><strong>${formatMonto(sol.monto)}</strong></td>
                 <td>${escHtml(sol.ceco || '-')}</td>
-                <td>${renderSolicitudBadge(sol)}</td>
-                <td>${renderRendicionBadge(sol, { gastos: getGastosBySolicitud(sol.id) })}</td>
+                <td class="estado-stack">${renderSolicitudBadge(sol)}${renderRendicionBadge(sol, { gastos: getGastosBySolicitud(sol.id) })}</td>
             </tr>
         `).join('');
     }
@@ -740,7 +735,7 @@ $args = wp_parse_args(
     async function loadInicioView() {
         showView('view-inicio', 'inicio');
         const recentTbody = document.getElementById('inicio-recent-tbody');
-        if (recentTbody) renderTableLoading(recentTbody, 6);
+        if (recentTbody) renderTableLoading(recentTbody, 5);
         try {
             await Promise.all([refreshSolicitudesCache(), refreshGastosCache()]);
             renderInicioStats(solicitudesCache);
@@ -753,7 +748,7 @@ $args = wp_parse_args(
     async function loadSolicitudesView() {
         showView('view-solicitudes', 'solicitudes');
         const tbody = document.getElementById('solicitudes-tbody');
-        if (tbody) renderTableLoading(tbody, 7);
+        if (tbody) renderTableLoading(tbody, 6);
         try {
             await Promise.all([refreshSolicitudesCache(), refreshGastosCache()]);
             renderSolicitudesTable(solicitudesCache);
@@ -787,53 +782,27 @@ $args = wp_parse_args(
         }
     }
 
-    function renderLiquidacionView(sol, gastos) {
-        const container = document.getElementById('liq-doc-container');
-        if (!container || !window.ViaticosLiquidacion) return;
-
-        const liqData = window.ViaticosLiquidacion.buildData(
-            {
-                id: sol.id,
-                monto: sol.monto,
-                fecha: sol.fecha,
-                motivo: sol.motivo,
-                ceco: sol.ceco,
-                dni: sol.dni,
-                estado_rendicion: getLabelEstado('rendicion', getRendicionEstado(sol, { gastos })),
-                rendicion_finalizada: sol.rendicion_finalizada
-            },
-            gastos,
-            {
-                colaboradorNombre: CONFIG.profile.name || '',
-                fechaRendicion: sol.fecha_creacion || ''
-            }
-        );
-
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'margin:20px;';
-        wrap.innerHTML = window.ViaticosLiquidacion.renderDoc(liqData);
-        container.innerHTML = '';
-        container.appendChild(wrap);
-    }
-
-    async function openLiquidacionView(solicitudId = null) {
-        const id = parseInt(solicitudId || detalleSolicitudId || getCurrentRoute().id, 10);
+    async function openLiquidacionModal(solicitudId = null) {
+        const id = parseInt(solicitudId || detalleSolicitudId, 10);
         if (!id) return;
-        detalleSolicitudId = id;
-        setCurrentRoute('liquidacion', id);
-        showView('view-liquidacion', 'liquidacion');
-
-        const container = document.getElementById('liq-doc-container');
-        if (container) container.innerHTML = `<div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidacion...</div>`;
-
+        const container = document.getElementById('colab-liq-container');
+        if (!container) return;
+        container.innerHTML = '<div class="liq-doc-empty"><div class="spinner"></div> Cargando liquidación…</div>';
+        ModalManager.open('modal-colab-liquidacion');
         try {
             if (!solicitudesCache.length) await refreshSolicitudesCache();
             if (!gastosCache.length) await refreshGastosCache();
             const sol = getSolicitudById(id);
-            if (!sol) throw new Error('No se encontro la solicitud para la liquidacion.');
-            renderLiquidacionView(sol, getGastosBySolicitud(id));
+            if (!sol) throw new Error('No se encontró la solicitud para la liquidación.');
+            const gastos = getGastosBySolicitud(id);
+            window.ViaticosLiquidacion.renderTo(
+                container,
+                Object.assign({}, sol, { estado_rendicion: window.ViaticosEstadoUI.getLabelEstado('rendicion', getRendicionEstado(sol, { gastos })) }),
+                gastos,
+                { colaboradorNombre: CONFIG.profile.name || '', fechaRendicion: sol.fecha_creacion || '' }
+            );
         } catch (err) {
-            if (container) container.innerHTML = `<div class="liq-doc-empty" style="color:#C53030;">${escHtml(err.message)}</div>`;
+            container.innerHTML = `<div class="liq-doc-empty" style="color:#C53030;">${escHtml(err.message)}</div>`;
             showToast('error', 'Error', err.message);
         }
     }
@@ -858,9 +827,6 @@ $args = wp_parse_args(
                 break;
             case 'solicitud':
                 await openDetalleSolicitudView(route.id);
-                break;
-            case 'liquidacion':
-                await openLiquidacionView(route.id);
                 break;
             default:
                 if (route.name.startsWith('view-')) {
@@ -949,7 +915,7 @@ $args = wp_parse_args(
     /* ── Render: solicitudes table ────────────────────────── */
     function renderSolicitudesTable(data) {
         const tbody = document.getElementById('solicitudes-tbody');
-        if (!data || !data.length) { renderTableEmpty(tbody, 7, 'Aún no tienes solicitudes registradas.'); return; }
+        if (!data || !data.length) { renderTableEmpty(tbody, 6, 'Aún no tienes solicitudes registradas.'); return; }
         tbody.innerHTML = data.map(sol => {
             const gastosSolicitud = getGastosBySolicitud(sol.id);
             const acciones = buildAcciones(sol);
@@ -958,8 +924,7 @@ $args = wp_parse_args(
                 <td>${formatFecha(sol.fecha)}</td>
                 <td><strong>${formatMonto(sol.monto)}</strong></td>
                 <td>${escHtml(sol.ceco)}</td>
-                <td>${renderSolicitudBadge(sol)}</td>
-                <td>${renderRendicionBadge(sol, { gastos: gastosSolicitud })}</td>
+                <td class="estado-stack">${renderSolicitudBadge(sol)}${renderRendicionBadge(sol, { gastos: gastosSolicitud })}</td>
                 <td>${acciones}</td>
             </tr>`;
         }).join('');
@@ -1029,11 +994,22 @@ $args = wp_parse_args(
         const canAdd          = estadoSolicitud === 'aprobada' && !sol.rendicion_finalizada && !['aprobada', 'rechazada'].includes(estadoRend);
         const canFinalize     = canAdd && gastos.length > 0;
         const canLiquidacion  = !!sol.rendicion_finalizada;
+        const canEditSolicitud = estadoSolicitud === 'observada';
+        const canFixRendicion  = estadoRend === 'observada';
+
+        const editIcon     = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02.0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41.0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
+        const checkIcon    = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+        const plusIcon     = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
+        const docIcon      = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>';
+        const timelineIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><rect x="4.25" y="6.5" width="1.5" height="4"/><rect x="4.25" y="13.5" width="1.5" height="4"/><rect x="9" y="4" width="11" height="2" rx="1"/><rect x="9" y="11" width="8" height="2" rx="1"/><rect x="9" y="18" width="10" height="2" rx="1"/></svg>';
 
         const accionesHtml =
-            '<button type="button" class="btn btn-primary solv-cta-full" id="detalle-sidebar-finalizar-rendicion"' + (canFinalize ? '' : ' style="display:none;"') + '><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Finalizar y enviar</button>' +
-            '<button type="button" class="btn btn-secondary solv-cta-full" id="detalle-sidebar-agregar-gasto"' + (canAdd ? '' : ' style="display:none;"') + '><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>Agregar comprobante</button>' +
-            '<button type="button" class="btn btn-secondary solv-cta-full" id="detalle-sidebar-ver-liquidacion"' + (canLiquidacion ? '' : ' style="display:none;"') + '><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>Ver liquidacion</button>';
+            '<button type="button" class="btn btn-primary" id="detalle-hero-editar-solicitud"' + (canEditSolicitud ? '' : ' style="display:none;"') + '>' + editIcon + 'Corregir solicitud</button>' +
+            '<button type="button" class="btn btn-primary" id="detalle-hero-fix-rendicion"' + (canFixRendicion ? '' : ' style="display:none;"') + '>' + editIcon + 'Corregir rendicion</button>' +
+            '<button type="button" class="btn btn-primary" id="detalle-hero-finalizar-rendicion"' + (canFinalize ? '' : ' style="display:none;"') + '>' + checkIcon + 'Finalizar y enviar</button>' +
+            '<button type="button" class="btn btn-secondary" id="detalle-hero-agregar-gasto"' + (canAdd ? '' : ' style="display:none;"') + '>' + plusIcon + 'Agregar comprobante</button>' +
+            '<button type="button" class="btn btn-secondary" id="detalle-hero-ver-liquidacion"' + (canLiquidacion ? '' : ' style="display:none;"') + '>' + docIcon + 'Ver liquidación</button>' +
+            '<button type="button" class="btn btn-ghost" data-open-history="1">' + timelineIcon + 'Historial</button>';
 
         const { historialHtml } = window.ViaticosDetalleUI.render(contentEl, sol, gastos, { apiFetch, canDelete: true, accionesHtml });
 
@@ -1054,22 +1030,19 @@ $args = wp_parse_args(
         }
         if (historialSubtitleEl) historialSubtitleEl.textContent = 'Seguimiento completo de la solicitud #' + sol.id + ' y su rendicion.';
 
-        const btnAgregar     = contentEl.querySelector('#detalle-sidebar-agregar-gasto');
-        const btnFinalizar   = contentEl.querySelector('#detalle-sidebar-finalizar-rendicion');
-        const btnLiquidacion = contentEl.querySelector('#detalle-sidebar-ver-liquidacion');
-        const actionStack    = contentEl.querySelector('.solv-cta-stack');
+        const btnAgregar     = contentEl.querySelector('#detalle-hero-agregar-gasto');
+        const btnFinalizar   = contentEl.querySelector('#detalle-hero-finalizar-rendicion');
+        const btnLiquidacion = contentEl.querySelector('#detalle-hero-ver-liquidacion');
+        const btnEditar      = contentEl.querySelector('#detalle-hero-editar-solicitud');
+        const btnFixRend     = contentEl.querySelector('#detalle-hero-fix-rendicion');
 
         if (btnAgregar)     btnAgregar.addEventListener('click',     () => { if (!sol.rendicion_finalizada) openRendirModal(sol.id); });
         if (btnFinalizar)   btnFinalizar.addEventListener('click',   () => { if (!sol.rendicion_finalizada && gastos.length) ModalManager.open('modal-confirmar-finalizar'); });
-        if (btnLiquidacion) btnLiquidacion.addEventListener('click', () => openLiquidacionView(sol.id));
-        if (actionStack) {
-            const visible = [btnAgregar, btnFinalizar, btnLiquidacion].filter(b => b && b.style.display !== 'none').length;
-            actionStack.style.display = visible ? 'flex' : 'none';
-        }
+        if (btnLiquidacion) btnLiquidacion.addEventListener('click', () => openLiquidacionModal(sol.id));
+        if (btnEditar)      btnEditar.addEventListener('click',      () => openEditarModal(sol));
+        if (btnFixRend)     btnFixRend.addEventListener('click',     () => openRendirModal(sol.id));
         contentEl.querySelectorAll('[data-open-history="1"]').forEach(btn => btn.addEventListener('click', () => ModalManager.open('modal-historial-solicitud')));
 
-        const btnLiqView = document.getElementById('btn-detalle-view-liquidacion');
-        if (btnLiqView) btnLiqView.style.display = 'none';
     }
 
     async function handleFinalizarRendicion() {
@@ -1122,13 +1095,56 @@ $args = wp_parse_args(
     async function handleRendirGastoSubmit(e) {
         e.preventDefault();
         const btn = document.getElementById('btn-submit-rendir-gasto');
+        const tipo = getRendicionTipo();
+
+        // Client-side validation
+        let isValid = true;
+        isValid &= validateField(document.getElementById('rg-tipo'), document.getElementById('err-rg-tipo'));
+        isValid &= validateField(document.getElementById('rg-fecha'), document.getElementById('err-rg-fecha'));
+        isValid &= validateField(document.getElementById('rg-importe'), document.getElementById('err-rg-importe'));
+        isValid &= validateField(document.getElementById('rg-cuenta'), document.getElementById('err-rg-cuenta'));
+
+        if (tipo === 'movilidad') {
+            isValid &= validateField(document.getElementById('rg-motivo'), document.getElementById('err-rg-motivo'));
+            isValid &= validateField(document.getElementById('rg-destino'), document.getElementById('err-rg-destino'));
+            isValid &= validateField(document.getElementById('rg-ceco-oi'), document.getElementById('err-rg-ceco-oi'));
+        } else if (tipo) {
+            isValid &= validateField(document.getElementById('rg-ruc'), document.getElementById('err-rg-ruc'), (v) => /^\d{11}$/.test(v));
+            isValid &= validateField(document.getElementById('rg-razon'), document.getElementById('err-rg-razon'));
+            isValid &= validateField(document.getElementById('rg-nro-comprobante'), document.getElementById('err-rg-nro-comprobante'));
+        }
+
+        if (!isValid) return;
+
         setButtonLoading(btn, true);
         try {
-            const payload = { id_solicitud: parseInt(document.getElementById('rg-id-solicitud').value, 10), tipo: getRendicionTipo(), fecha: document.getElementById('rg-fecha').value, importe: parseFloat(document.getElementById('rg-importe').value), cuenta_contable: document.getElementById('rg-cuenta').value };
+            const payload = {
+                id_solicitud: parseInt(document.getElementById('rg-id-solicitud').value, 10),
+                tipo: tipo,
+                fecha: document.getElementById('rg-fecha').value,
+                importe: parseFloat(document.getElementById('rg-importe').value),
+                cuenta_contable: document.getElementById('rg-cuenta').value
+            };
+
+            if (tipo === 'movilidad') {
+                payload.motivo_movilidad = document.getElementById('rg-motivo').value;
+                payload.destino_movilidad = document.getElementById('rg-destino').value;
+                payload.ceco_oi = document.getElementById('rg-ceco-oi').value;
+            } else {
+                payload.ruc = document.getElementById('rg-ruc').value;
+                payload.razon_social = document.getElementById('rg-razon').value;
+                payload.nro_comprobante = document.getElementById('rg-nro-comprobante').value;
+                payload.descripcion_concepto = document.getElementById('rg-concepto').value;
+            }
+
             const res = await apiFetch('/nuevo-gasto', { method:'POST', body: JSON.stringify(payload) });
             ModalManager.close('modal-rendir-gasto');
             await refreshGastosCache();
             renderRendicionesResumen(gastosCache);
+            
+            const sol = getSolicitudById(payload.id_solicitud);
+            if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(payload.id_solicitud));
+            
             showToast('success', 'Gasto registrado');
         } catch (err) { showToast('error', 'Error', err.message); }
         finally { setButtonLoading(btn, false); }
@@ -1183,11 +1199,12 @@ $args = wp_parse_args(
         // Volver desde detalle
         document.getElementById('btn-volver-detalle-solicitud').addEventListener('click', () => navigateTo({ name: 'solicitudes' }));
 
-        // Botón liquidación (topbar)
-        const liqBtn = document.getElementById('btn-detalle-view-liquidacion');
-        if (liqBtn) liqBtn.addEventListener('click', openLiquidacionView);
-        const liqBack = document.getElementById('btn-liq-volver');
-        if (liqBack) liqBack.addEventListener('click', () => navigateTo({ name: 'solicitud', id: getCurrentRoute().id }));
+        ['btn-cerrar-colab-liq', 'btn-cancelar-colab-liq'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', () => ModalManager.close('modal-colab-liquidacion'));
+        });
+        document.getElementById('btn-imprimir-colab-liq').addEventListener('click', () => window.ViaticosLiquidacion.print('colab-liq-container'));
+        ModalManager.closeOnOverlayClick('modal-colab-liquidacion');
 
         // Modal confirmar finalizar rendición
         document.getElementById('btn-cerrar-modal-confirmar').addEventListener('click', () => ModalManager.close('modal-confirmar-finalizar'));

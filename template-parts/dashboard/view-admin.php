@@ -91,21 +91,62 @@ $args = wp_parse_args(
 </section>
 
 <section id="view-solicitud-detalle" class="erp-view">
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1>Detalle de solicitud</h1>
-            <p>Revision completa de solicitud, historial y rendicion.</p>
-        </div>
-        <button class="btn btn-secondary btn-sm" id="btn-volver-lista">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.58-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    <div class="rd-topbar">
+        <button class="rd-back-btn" id="btn-volver-lista">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
             <span id="btn-volver-lista-texto">Volver a Anticipos</span>
         </button>
     </div>
 
-    <div id="solicitud-detalle-content" class="card">
-        <div style="padding:20px;"><div class="table-loading"><div class="spinner"></div>Cargando detalle...</div></div>
+    <div id="solicitud-detalle-content">
+        <div class="table-loading" style="padding:40px;"><div class="spinner"></div>Cargando detalle...</div>
     </div>
 </section>
+
+<!-- MODAL: historial admin -->
+<div class="modal-overlay" id="modal-admin-historial" role="dialog" aria-modal="true" aria-labelledby="modal-admin-historial-titulo">
+    <div class="modal modal-lg solv-history-modal">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <h2 id="modal-admin-historial-titulo">Historial del expediente</h2>
+                <p id="admin-historial-subtitulo">Seguimiento del expediente.</p>
+            </div>
+            <button class="modal-close" id="btn-cerrar-admin-historial" aria-label="Cerrar modal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="solv-history-meta" id="admin-historial-meta"></div>
+        <div class="solv-history-body" id="admin-historial-body">
+            <div class="table-loading"><div class="spinner"></div> Cargando historial...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-admin-historial">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: liquidación admin -->
+<div class="modal-overlay" id="modal-admin-liquidacion" role="dialog" aria-modal="true" aria-labelledby="modal-admin-liq-titulo">
+    <div class="modal modal-xl liq-modal">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <h2 id="modal-admin-liq-titulo">Liquidación de Rendición</h2>
+                <p>Documento de solo lectura</p>
+            </div>
+            <button class="modal-close" id="btn-cerrar-admin-liq" aria-label="Cerrar modal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="modal-body" id="admin-liq-container"></div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-imprimir-admin-liq">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                Imprimir / Exportar
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-admin-liq">Cerrar</button>
+        </div>
+    </div>
+</div>
 
 <div class="modal-overlay" id="modal-solicitud" role="dialog" aria-modal="true" aria-labelledby="modal-solicitud-titulo">
     <div class="modal" style="max-width:720px;">
@@ -564,46 +605,87 @@ $args = wp_parse_args(
         }
     }
 
-    function buildDecisionAcciones(estadoRend) {
-        const errDiv = '<div id="rendicion-decision-error" class="erp-alert-error" style="display:none;margin-bottom:8px;"></div>';
-        if (estadoRend !== 'en_revision') {
-            return errDiv + '<span style="font-size:12px;color:var(--text-muted);">' + escHtml(estadoUI.getLabelEstado('rendicion', estadoRend)) + '</span>';
+    const ICON = {
+        check:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>',
+        warn:     '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>',
+        close:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+        doc:      '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>',
+        timeline: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><rect x="4.25" y="6.5" width="1.5" height="4"/><rect x="4.25" y="13.5" width="1.5" height="4"/><rect x="9" y="4" width="11" height="2" rx="1"/><rect x="9" y="11" width="8" height="2" rx="1"/><rect x="9" y="18" width="10" height="2" rx="1"/></svg>'
+    };
+
+    function buildAdminAcciones(detalle, estadoRend) {
+        const errDiv = '<div id="rendicion-decision-error" class="erp-alert-error" style="display:none;margin-bottom:8px;width:100%;"></div>';
+        const buttons = [];
+        if (detalle.rendicion_finalizada) {
+            buttons.push('<button type="button" class="btn btn-secondary js-view-liquidacion">' + ICON.doc + 'Ver liquidación</button>');
         }
-        return errDiv +
-            '<span style="font-size:12px;font-weight:600;margin-bottom:4px;display:block;">Decision:</span>' +
-            '<button class="btn btn-success solv-cta-full js-decidir-rendicion" data-decision="aprobada"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Aprobar</button>' +
-            '<button class="btn btn-warning solv-cta-full js-decidir-rendicion" data-decision="observada"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>Observar</button>' +
-            '<button class="btn btn-danger solv-cta-full js-decidir-rendicion" data-decision="rechazada"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>Rechazar</button>';
+        buttons.push('<button type="button" class="btn btn-ghost js-view-historial">' + ICON.timeline + 'Historial</button>');
+        if (estadoRend === 'en_revision') {
+            buttons.push('<button type="button" class="btn btn-success js-decidir-rendicion" data-decision="aprobada">' + ICON.check + 'Aprobar</button>');
+            buttons.push('<button type="button" class="btn btn-warning js-decidir-rendicion" data-decision="observada">' + ICON.warn + 'Observar</button>');
+            buttons.push('<button type="button" class="btn btn-danger js-decidir-rendicion" data-decision="rechazada">' + ICON.close + 'Rechazar</button>');
+        }
+        return errDiv + buttons.join('');
     }
+
+    function openHistorialModal(detalle) {
+        const body = document.getElementById('admin-historial-body');
+        const meta = document.getElementById('admin-historial-meta');
+        const sub  = document.getElementById('admin-historial-subtitulo');
+        const gastos = Array.isArray(detalle.gastos) ? detalle.gastos : [];
+        const historial = Array.isArray(detalle.historial) ? detalle.historial : [];
+        if (body) {
+            body.innerHTML = historial.length
+                ? timelineUI.renderTimeline(historial)
+                : '<div class="table-empty" style="padding:32px 20px;"><p>No hay movimientos registrados.</p></div>';
+        }
+        if (meta) {
+            meta.innerHTML =
+                '<span class="solv-history-chip"><span class="solv-history-chip-label">Expediente</span><strong>#' + detalle.id + '</strong></span>' +
+                '<span class="solv-history-chip"><span class="solv-history-chip-label">Eventos</span><strong>' + historial.length + '</strong></span>' +
+                '<span class="solv-history-chip"><span class="solv-history-chip-label">Comprobantes</span><strong>' + gastos.length + '</strong></span>';
+        }
+        if (sub) sub.textContent = 'Seguimiento del expediente #' + detalle.id + '.';
+        ModalManager.open('modal-admin-historial');
+    }
+
+    function openLiquidacionModal(detalle) {
+        const container = document.getElementById('admin-liq-container');
+        if (!container) return;
+        const gastos = Array.isArray(detalle.gastos) ? detalle.gastos : [];
+        window.ViaticosLiquidacion.renderTo(
+            container,
+            Object.assign({}, detalle, { estado_rendicion: window.ViaticosEstadoUI.getLabelEstado('rendicion', detalle.estado_rendicion) }),
+            gastos,
+            { colaboradorNombre: (detalle.colaborador || {}).display_name || '', fechaRendicion: detalle.fecha_creacion || '' }
+        );
+        ModalManager.open('modal-admin-liquidacion');
+    }
+
+    let currentDetalle = null;
 
     function renderDetalle(detalle) {
         const container = document.getElementById('solicitud-detalle-content');
         if (!container) return;
-        const gastos      = Array.isArray(detalle.gastos) ? detalle.gastos : [];
-        const colaborador = detalle.colaborador || {};
-        const sol         = Object.assign({}, detalle, { fecha: detalle.fecha_viaje });
+        currentDetalle = detalle;
+        const gastos = Array.isArray(detalle.gastos) ? detalle.gastos : [];
+        const sol    = Object.assign({}, detalle, { fecha: detalle.fecha_viaje });
 
         window.ViaticosDetalleUI.render(container, sol, gastos, {
             apiFetch,
             canDelete: false,
-            accionesHtml: buildDecisionAcciones(getRendicionEstado(detalle)),
+            accionesHtml: buildAdminAcciones(detalle, getRendicionEstado(detalle)),
         });
 
         container.querySelectorAll('.js-decidir-rendicion').forEach(btn => {
             btn.addEventListener('click', () => handleDecisionRendicion(detalle.id, btn.dataset.decision));
         });
-
-        if (detalle.rendicion_finalizada) {
-            const liqData = window.ViaticosLiquidacion.buildData(
-                { id: detalle.id, monto: detalle.monto, fecha: detalle.fecha_viaje, motivo: detalle.motivo, ceco: detalle.ceco, dni: detalle.dni, estado_rendicion: detalle.estado_rendicion, rendicion_finalizada: detalle.rendicion_finalizada },
-                gastos,
-                { colaboradorNombre: colaborador.display_name || '', fechaRendicion: detalle.fecha_creacion || '' }
-            );
-            const wrap = document.createElement('div');
-            wrap.style.cssText = 'margin:20px;';
-            wrap.innerHTML = window.ViaticosLiquidacion.renderDoc(liqData);
-            container.appendChild(wrap);
-        }
+        container.querySelectorAll('.js-view-historial').forEach(btn => {
+            btn.addEventListener('click', () => openHistorialModal(currentDetalle || detalle));
+        });
+        container.querySelectorAll('.js-view-liquidacion').forEach(btn => {
+            btn.addEventListener('click', () => openLiquidacionModal(currentDetalle || detalle));
+        });
     }
 
     async function openSolicitudDetail(idSolicitud, fromView) {
@@ -710,6 +792,21 @@ $args = wp_parse_args(
         document.getElementById('btn-modal-aprobar').addEventListener('click', () => handleSolicitudDecision('aprobada'));
         document.getElementById('btn-modal-observar').addEventListener('click', () => handleSolicitudDecision('observada'));
         document.getElementById('btn-modal-rechazar').addEventListener('click', () => handleSolicitudDecision('rechazada'));
+        ['btn-cerrar-admin-historial','btn-cancelar-admin-historial'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', () => ModalManager.close('modal-admin-historial'));
+        });
+        ['btn-cerrar-admin-liq','btn-cancelar-admin-liq'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', () => ModalManager.close('modal-admin-liquidacion'));
+        });
+        document.getElementById('btn-imprimir-admin-liq').addEventListener('click', () => window.ViaticosLiquidacion.print('admin-liq-container'));
+        ['modal-admin-historial','modal-admin-liquidacion'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', event => {
+                if (event.target === el) ModalManager.close(id);
+            });
+        });
         window.addEventListener('popstate', () => {
             renderRoute(getCurrentRoute());
         });
