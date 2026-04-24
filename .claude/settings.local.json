@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(php *)",
+      "Bash(grep -E \":\\\\s*\\\\d{3,}px\")"
     ]
   }
 }

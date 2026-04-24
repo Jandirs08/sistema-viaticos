@@ -47,6 +47,7 @@ function viaticos_register_acf_fields() {
     viaticos_acf_group_solicitud();
     viaticos_acf_group_gasto();
     viaticos_acf_group_usuario();
+    viaticos_acf_group_categoria_gasto();
 }
 add_action( 'acf/init', 'viaticos_register_acf_fields' );
 
@@ -202,7 +203,22 @@ function viaticos_acf_group_solicitud() {
             ),
 
             // ------------------------------------------------------------------
-            // Campo 6: Estado de la Solicitud
+            // Campo 6: Nombre del Aprobador
+            // ------------------------------------------------------------------
+            array(
+                'key'           => 'field_sol_nombre_aprobador',
+                'label'         => 'Nombre del Aprobador',
+                'name'          => 'nombre_aprobador',
+                'type'          => 'text',
+                'instructions'  => 'Director o jefe inmediato que aprueba la solicitud.',
+                'required'      => 0,
+                'placeholder'   => 'Nombre del director o jefe',
+                'maxlength'     => '',
+                'wrapper'       => array( 'width' => '50', 'class' => '', 'id' => '' ),
+            ),
+
+            // ------------------------------------------------------------------
+            // Campo 7: Estado de la Solicitud
             // ------------------------------------------------------------------
             array(
                 'key'           => 'field_sol_estado_solicitud',
@@ -247,13 +263,11 @@ function viaticos_acf_group_solicitud() {
  *
  * Campos:
  *  - id_solicitud_padre    : Post Object (filtra por 'solicitud_viatico'), requerido.
- *  - tipo_plantilla        : Select (Vale de Caja / Vale de Movilidad / Modelo Liquidación).
  *  - fecha_emision         : Date Picker, requerido.
  *  - importe_comprobante   : Número, mín. 0.1, requerido.
  *  - ruc_proveedor         : Texto, máx. 11 caracteres.
  *  - razon_social          : Texto.
  *  - nro_comprobante       : Texto.
- *  - cuenta_contable       : Texto.
  *  - archivos_adjuntos     : File (URL, acepta pdf / jpg / xml).
  *
  * @return void
@@ -312,36 +326,7 @@ function viaticos_acf_group_gasto() {
             ),
 
             // ------------------------------------------------------------------
-            // Campo 2: Tipo de Plantilla / Documento
-            // ------------------------------------------------------------------
-            array(
-                'key'           => 'field_gas_tipo_plantilla',
-                'label'         => 'Tipo de Plantilla',
-                'name'          => 'tipo_plantilla',
-                'type'          => 'select',
-                'instructions'  => 'Seleccione el tipo de documento contable que sustenta el gasto.',
-                'required'      => 0,
-                'choices'       => array(
-                    'movilidad' => 'Movilidad',
-                    'vale_caja' => 'Vale de Caja',
-                    'factura'   => 'Factura',
-                    'boleta'    => 'Boleta',
-                    'rxh'       => 'RxH',
-                ),
-                'default_value' => '',
-                'allow_null'    => 1,               // Permite no seleccionar ninguna opción.
-                'multiple'      => 0,
-                'ui'            => 1,
-                'return_format' => 'value',
-                'wrapper'       => array(
-                    'width' => '50',
-                    'class' => '',
-                    'id'    => '',
-                ),
-            ),
-
-            // ------------------------------------------------------------------
-            // Campo 3: Fecha de Emisión del Comprobante
+            // Campo 2: Fecha de Emisión del Comprobante
             // ------------------------------------------------------------------
             array(
                 'key'               => 'field_gas_fecha_emision',
@@ -395,15 +380,6 @@ function viaticos_acf_group_gasto() {
                 'required'      => 0,
                 'maxlength'     => 11,
                 'placeholder'   => 'Ej: 20123456789',
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field'    => 'field_gas_tipo_plantilla',
-                            'operator' => '!=',
-                            'value'    => 'movilidad',
-                        ),
-                    ),
-                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -423,15 +399,6 @@ function viaticos_acf_group_gasto() {
                 'required'      => 0,
                 'maxlength'     => '',
                 'placeholder'   => 'Ej: TRANSPORTES RÁPIDOS SAC',
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field'    => 'field_gas_tipo_plantilla',
-                            'operator' => '!=',
-                            'value'    => 'movilidad',
-                        ),
-                    ),
-                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -451,15 +418,6 @@ function viaticos_acf_group_gasto() {
                 'required'      => 0,
                 'maxlength'     => '',
                 'placeholder'   => 'Ej: F001-00123456',
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field'    => 'field_gas_tipo_plantilla',
-                            'operator' => '!=',
-                            'value'    => 'movilidad',
-                        ),
-                    ),
-                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -479,15 +437,6 @@ function viaticos_acf_group_gasto() {
                 'required'      => 0,
                 'rows'          => 3,
                 'new_lines'     => 'br',
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field'    => 'field_gas_tipo_plantilla',
-                            'operator' => '!=',
-                            'value'    => 'movilidad',
-                        ),
-                    ),
-                ),
                 'wrapper'       => array(
                     'width' => '100',
                     'class' => '',
@@ -507,15 +456,6 @@ function viaticos_acf_group_gasto() {
                 'required'      => 0,
                 'rows'          => 3,
                 'new_lines'     => 'br',
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field'    => 'field_gas_tipo_plantilla',
-                            'operator' => '==',
-                            'value'    => 'movilidad',
-                        ),
-                    ),
-                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -534,15 +474,6 @@ function viaticos_acf_group_gasto() {
                 'instructions'  => 'Indique el destino o ruta principal del traslado.',
                 'required'      => 0,
                 'placeholder'   => 'Ej: Oficina central / cliente / sede',
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field'    => 'field_gas_tipo_plantilla',
-                            'operator' => '==',
-                            'value'    => 'movilidad',
-                        ),
-                    ),
-                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -561,15 +492,6 @@ function viaticos_acf_group_gasto() {
                 'instructions'  => 'Ingrese el CECO u orden interna asociada al gasto.',
                 'required'      => 0,
                 'placeholder'   => 'Ej: CC-001 / OI-123',
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field'    => 'field_gas_tipo_plantilla',
-                            'operator' => '==',
-                            'value'    => 'movilidad',
-                        ),
-                    ),
-                ),
                 'wrapper'       => array(
                     'width' => '50',
                     'class' => '',
@@ -578,26 +500,7 @@ function viaticos_acf_group_gasto() {
             ),
 
             // ------------------------------------------------------------------
-            // Campo 12: Cuenta Contable
-            // ------------------------------------------------------------------
-            array(
-                'key'           => 'field_gas_cuenta_contable',
-                'label'         => 'Cuenta Contable',
-                'name'          => 'cuenta_contable',
-                'type'          => 'text',
-                'instructions'  => 'Ingrese el código de cuenta contable del Plan de Cuentas.',
-                'required'      => 0,
-                'maxlength'     => '',
-                'placeholder'   => 'Ej: 63.1.1',
-                'wrapper'       => array(
-                    'width' => '50',
-                    'class' => '',
-                    'id'    => '',
-                ),
-            ),
-
-            // ------------------------------------------------------------------
-            // Campo 13: Archivos Adjuntos (File)
+            // Campo 12: Archivos Adjuntos (File)
             // ------------------------------------------------------------------
             array(
                 'key'           => 'field_gas_archivos_adjuntos',
@@ -739,6 +642,58 @@ function viaticos_acf_group_usuario() {
                     'class' => '',
                     'id'    => '',
                 ),
+            ),
+        ),
+
+    ) );
+}
+
+
+// =============================================================================
+// GRUPO 4: CAMPOS PARA TAXONOMY 'categoria_gasto'
+// =============================================================================
+
+function viaticos_acf_group_categoria_gasto() {
+
+    acf_add_local_field_group( array(
+
+        'key'                   => 'group_categoria_gasto',
+        'title'                 => 'Datos Contables de la Categoría',
+        'menu_order'            => 10,
+        'position'              => 'normal',
+        'style'                 => 'default',
+        'label_placement'       => 'top',
+        'instruction_placement' => 'label',
+        'active'                => true,
+
+        'location' => array(
+            array(
+                array(
+                    'param'    => 'taxonomy',
+                    'operator' => '==',
+                    'value'    => 'categoria_gasto',
+                ),
+            ),
+        ),
+
+        'fields' => array(
+            array(
+                'key'         => 'field_cat_cta_contable',
+                'label'       => 'Cuenta Contable',
+                'name'        => 'cta_contable',
+                'type'        => 'text',
+                'required'    => 1,
+                'placeholder' => 'Ej: 631310001',
+                'wrapper'     => array( 'width' => '50', 'class' => '', 'id' => '' ),
+            ),
+            array(
+                'key'         => 'field_cat_clase_doc',
+                'label'       => 'Clase de Documento',
+                'name'        => 'clase_doc',
+                'type'        => 'text',
+                'required'    => 1,
+                'placeholder' => 'Ej: VALE MOVILIDAD',
+                'wrapper'     => array( 'width' => '50', 'class' => '', 'id' => '' ),
             ),
         ),
 

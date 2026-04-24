@@ -85,6 +85,10 @@ function viaticos_enqueue_assets()
 }
 add_action('wp_enqueue_scripts', 'viaticos_enqueue_assets');
 
+add_action('wp_head', function () {
+    echo '<link rel="icon" type="image/x-icon" href="' . esc_url(get_template_directory_uri() . '/images/favicon.ico') . '">' . "\n";
+}, 1);
+
 
 // =============================================================================
 // 3. CONFIGURACIÓN BÁSICA DEL TEMA
@@ -115,6 +119,41 @@ function viaticos_theme_setup()
     load_theme_textdomain('theme-administracion', get_template_directory() . '/languages');
 }
 add_action('after_setup_theme', 'viaticos_theme_setup');
+
+/**
+ * Oculta la barra superior nativa de WordPress para colaboradores en frontend.
+ *
+ * @param bool $show_admin_bar
+ * @return bool
+ */
+function theme_administracion_hide_admin_bar_for_colaboradores($show_admin_bar)
+{
+    if (!is_user_logged_in() || is_admin()) {
+        return $show_admin_bar;
+    }
+
+    $current_user = wp_get_current_user();
+    $user_roles = (array) $current_user->roles;
+
+    if (
+        in_array('administrator', $user_roles, true) ||
+        in_array('admin_viaticos', $user_roles, true) ||
+        current_user_can('edit_others_posts')
+    ) {
+        return $show_admin_bar;
+    }
+
+    if (
+        in_array('colaborador_viaticos', $user_roles, true) ||
+        in_array('contributor', $user_roles, true) ||
+        in_array('subscriber', $user_roles, true)
+    ) {
+        return false;
+    }
+
+    return $show_admin_bar;
+}
+add_filter('show_admin_bar', 'theme_administracion_hide_admin_bar_for_colaboradores');
 
 // =============================================================================
 // 4. FRONT DOOR: HOME, LOGIN AND LOGOUT
@@ -153,6 +192,15 @@ function theme_administracion_get_dashboard_args()
     $user_cargo = !is_wp_error($user_cargo_terms) && !empty($user_cargo_terms) ? (string) $user_cargo_terms[0] : '';
     $user_area = !is_wp_error($user_area_terms) && !empty($user_area_terms) ? (string) $user_area_terms[0] : '';
 
+    $user_director_id = function_exists('get_field') ? (int) get_field('director_responsable', $user_acf_context) : 0;
+    $user_aprobador = '';
+    if ($user_director_id > 0) {
+        $director = get_userdata($user_director_id);
+        if ($director && !empty($director->display_name)) {
+            $user_aprobador = (string) $director->display_name;
+        }
+    }
+
     return [
         'user_name' => esc_html($display_name),
         'user_initials' => $user_initials,
@@ -163,6 +211,8 @@ function theme_administracion_get_dashboard_args()
         'user_dni' => sanitize_text_field($user_dni),
         'user_cargo' => sanitize_text_field($user_cargo),
         'user_area' => sanitize_text_field($user_area),
+        'user_aprobador' => sanitize_text_field($user_aprobador),
+        'logo_url' => esc_url(get_template_directory_uri() . '/images/fr-logo1.png'),
     ];
 }
 
@@ -304,6 +354,13 @@ function theme_administracion_render_login_screen()
 
         .login-card__head {
             padding: 32px 32px 20px;
+        }
+
+        .login-logo {
+            display: block;
+            max-width: 160px;
+            height: auto;
+            margin-bottom: 16px;
         }
 
         .login-eyebrow {
@@ -456,7 +513,7 @@ function theme_administracion_render_login_screen()
 <div class="login-shell">
     <div class="login-card">
         <div class="login-card__head">
-            <span class="login-eyebrow"><?php echo esc_html($site_name); ?></span>
+            <img src="<?php echo esc_url(get_template_directory_uri() . '/images/fr-logo1.png'); ?>" alt="Fundación Romero" class="login-logo">
             <h1>Acceso al sistema</h1>
             <p>
                 <?php

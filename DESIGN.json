@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-04-24T00:00:00Z",
+  "title": "Design System: Viáticos ERP",
+  "extensions": {
+    "colorMeta": {
+      "terracotta-flame": {
+        "role": "primary",
+        "displayName": "Terracotta Flame",
+        "canonical": "oklch(62% 0.15 38)",
+        "tonalRamp": [
+          "oklch(20% 0.08 38)",
+          "oklch(30% 0.11 38)",
+          "oklch(40% 0.14 38)",
+          "oklch(50% 0.16 38)",
+          "oklch(62% 0.15 38)",
+          "oklch(72% 0.12 38)",
+          "oklch(82% 0.08 38)",
+          "oklch(94% 0.03 38)"
+        ]
+      },
+      "terracotta-ember": {
+        "role": "primary",
+        "displayName": "Terracotta Ember",
+        "canonical": "oklch(52% 0.15 36)",
+        "tonalRamp": [
+          "oklch(18% 0.08 36)",
+          "oklch(28% 0.11 36)",
+          "oklch(38% 0.14 36)",
+          "oklch(52% 0.15 36)",
+          "oklch(62% 0.14 36)",
+          "oklch(72% 0.11 36)",
+          "oklch(84% 0.07 36)",
+          "oklch(94% 0.03 36)"
+        ]
+      },
+      "terracotta-mist": {
+        "role": "primary",
+        "displayName": "Terracotta Mist",
+        "canonical": "oklch(93% 0.03 30)"
+      },
+      "terracotta-ink": {
+        "role": "primary",
+        "displayName": "Terracotta Ink",
+        "canonical": "oklch(33% 0.10 32)"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "oklch(96% 0.008 250)"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface White",
+        "canonical": "oklch(100% 0 0)"
+      },
+      "surface-strong": {
+        "role": "neutral",
+        "displayName": "Surface Strong",
+        "canonical": "oklch(97% 0.006 250)"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "canonical": "oklch(91% 0.005 250)"
+      },
+      "border-light": {
+        "role": "neutral",
+        "displayName": "Border Light",
+        "canonical": "oklch(95% 0.004 250)"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(21% 0.03 250)"
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "oklch(52% 0.02 250)"
+      },
+      "ink-light": {
+        "role": "neutral",
+        "displayName": "Ink Light",
+        "canonical": "oklch(68% 0.02 250)"
+      },
+      "archive-navy": {
+        "role": "neutral",
+        "displayName": "Archive Navy",
+        "canonical": "oklch(22% 0.02 250)",
+        "tonalRamp": [
+          "oklch(12% 0.02 250)",
+          "oklch(17% 0.02 250)",
+          "oklch(22% 0.02 250)",
+          "oklch(28% 0.02 250)",
+          "oklch(35% 0.02 250)",
+          "oklch(50% 0.02 250)",
+          "oklch(70% 0.01 250)",
+          "oklch(90% 0.005 250)"
+        ]
+      },
+      "archive-navy-hover": {
+        "role": "neutral",
+        "displayName": "Archive Navy Hover",
+        "canonical": "oklch(28% 0.02 250)"
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Sora)", "purpose": "Título de página y liquidación formal. Peso 400 deliberado." },
+      "title": { "displayName": "Title (Manrope 600)", "purpose": "Header de cards, modales, secciones." },
+      "body": { "displayName": "Body (Manrope 400)", "purpose": "Texto general, tablas, formularios." },
+      "label": { "displayName": "Label (Manrope 700 UPPER)", "purpose": "Meta-labels de campos y secciones. Señal, no lectura." },
+      "mono": { "displayName": "Mono", "purpose": "Cta. contable, montos alineados, RUC, N° documento." }
+    },
+    "shadows": [
+      { "name": "shadow-sm", "value": "0 1px 2px rgba(35,31,27,.04), 0 1px 1px rgba(35,31,27,.03)", "purpose": "Descanso. Cards, topbar, filas destacadas." },
+      { "name": "shadow-md", "value": "0 6px 18px rgba(35,31,27,.06), 0 2px 4px rgba(35,31,27,.03)", "purpose": "Hover de card, hero premium de detalle." },
+      { "name": "shadow-lg", "value": "0 16px 40px rgba(35,31,27,.08), 0 4px 10px rgba(35,31,27,.05)", "purpose": "Modales, overlays elevados." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "0.2s ease", "purpose": "Transición por defecto de estado (hover, focus)." },
+      { "name": "reveal-collapse", "value": "0.22s cubic-bezier(0.25,0,0,1)", "purpose": "Colapso de secciones (toolbar-dates, rg-cat-panel)." },
+      { "name": "accordion", "value": "0.25s ease", "purpose": "Accordion de gasto abriendo/cerrando max-height." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "600px" },
+      { "name": "tablet", "value": "768px" },
+      { "name": "short-viewport", "value": "720px", "axis": "height" },
+      { "name": "wide", "value": "1240px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción irreversible del flujo: Aprobar, Finalizar, Guardar. Terracota como sello.",
+      "html": "<button class=\"ds-btn-primary\">Aprobar</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #da5b3e; color: #fff; border: 1px solid #da5b3e; border-radius: 8px; font-family: Manrope, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; } .ds-btn-primary:hover { background: #b84930; border-color: #b84930; box-shadow: 0 2px 8px rgba(186,76,51,0.22); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(218,91,62,0.3); } .ds-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acción reversible o Cancelar. Surface + border neutro.",
+      "html": "<button class=\"ds-btn-secondary\">Cancelar</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #ffffff; color: #101828; border: 1px solid #e4e7ec; border-radius: 8px; font-family: Manrope, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; } .ds-btn-secondary:hover { background: #f3f6f9; border-color: #CBD5E0; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(218,91,62,0.15); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Acción menor en toolbar. Transparente, hover paper.",
+      "html": "<button class=\"ds-btn-ghost\">Limpiar</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: transparent; color: #667085; border: 1px solid transparent; border-radius: 8px; font-family: Manrope, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; } .ds-btn-ghost:hover { background: #f3f6f9; color: #101828; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Input de formulario. Focus terracota con anillo suave.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Motivo del viaje\" />",
+      "css": ".ds-input { width: 100%; padding: 9px 12px; background: #ffffff; color: #101828; border: 1px solid #CBD5E0; border-radius: 8px; font-family: Manrope, sans-serif; font-size: 13.5px; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; } .ds-input::placeholder { color: #98a2b3; } .ds-input:focus { border-color: #da5b3e; box-shadow: 0 0 0 3px rgba(218,91,62,0.15); } .ds-input:invalid:not(:placeholder-shown) { border-color: #FC8181; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Badge pill de estado con dot. Ejemplo: Anticipo Aprobado (hue 150). Leading dot asegura accesibilidad sin depender solo de color.",
+      "html": "<span class=\"ds-badge ds-badge-approved\">Anticipo Aprobado</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-family: Manrope, sans-serif; font-size: 0.6875rem; font-weight: 700; white-space: nowrap; border: 1px solid transparent; } .ds-badge::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; } .ds-badge-approved { background: oklch(95% 0.06 150); color: oklch(32% 0.10 150); border-color: oklch(80% 0.12 150); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Contenedor de sección. Surface blanco sobre paper, border suave, sombra ambiental mínima.",
+      "html": "<article class=\"ds-card\"><header class=\"ds-card-header\"><h3>Expediente #1042</h3></header><div class=\"ds-card-body\">Contenido de la sección.</div></article>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #e4e7ec; border-radius: 12px; box-shadow: 0 1px 2px rgba(35,31,27,0.04), 0 1px 1px rgba(35,31,27,0.03); overflow: hidden; font-family: Manrope, sans-serif; } .ds-card-header { padding: 16px 20px; border-bottom: 1px solid #edf1f5; } .ds-card-header h3 { margin: 0; font-size: 0.975rem; font-weight: 600; color: #101828; } .ds-card-body { padding: 20px; color: #101828; font-size: 0.875rem; line-height: 1.6; }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "sidebar",
+      "description": "Item de navegación del sidebar navy. Activo pinta terracota suave (único punto donde terracota entra al archivador).",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item-active\" href=\"#\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"currentColor\" width=\"18\" height=\"18\"><path d=\"M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 12H7v-2h10v2zm0-4H7V9h10v2zm0-4H7V5h10v2z\"/></svg>Anticipos</a><a class=\"ds-nav-item\" href=\"#\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"currentColor\" width=\"18\" height=\"18\"><path d=\"M12 6a9.77 9.77 0 0 1 8.82 6A9.77 9.77 0 0 1 12 18a9.77 9.77 0 0 1-8.82-6A9.77 9.77 0 0 1 12 6zm0 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z\"/></svg>Rendiciones</a></nav>",
+      "css": ".ds-nav { background: #17202b; padding: 16px 8px; width: 240px; font-family: Manrope, sans-serif; } .ds-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; color: rgba(255,255,255,0.62); text-decoration: none; font-size: 13.5px; font-weight: 500; margin-bottom: 2px; transition: background 0.2s ease, color 0.2s ease; } .ds-nav-item .ds-nav-icon { opacity: 0.7; flex-shrink: 0; transition: opacity 0.2s ease; } .ds-nav-item:hover { background: #223042; color: #ffffff; } .ds-nav-item:hover .ds-nav-icon { opacity: 1; } .ds-nav-item-active { background: rgba(218,91,62,0.18); color: #f4a58f; } .ds-nav-item-active .ds-nav-icon { opacity: 1; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Chip filtro de toolbar de tabla. Inactivo transparente con border, activo invierte a ink oscuro con texto claro.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-active\">Pendientes<span class=\"ds-chip-count\">12</span></button><button class=\"ds-chip\">Aprobadas</button></div>",
+      "css": ".ds-chips { display: flex; gap: 4px; flex-wrap: wrap; } .ds-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 20px; border: 1.5px solid #e4e7ec; background: transparent; color: #667085; font-family: Manrope, sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; line-height: 1.45; transition: background 0.12s, border-color 0.12s, color 0.12s; } .ds-chip:hover { background: #f7f8fb; border-color: oklch(55% 0.01 250); color: #101828; } .ds-chip-active { background: oklch(23% 0.035 250); border-color: oklch(23% 0.035 250); color: oklch(97% 0.005 250); } .ds-chip-count { background: oklch(88% 0.014 250); color: oklch(32% 0.04 250); border-radius: 10px; padding: 0 6px; font-size: 11px; font-weight: 600; line-height: 1.6; } .ds-chip-active .ds-chip-count { background: oklch(38% 0.06 250); color: oklch(95% 0.01 250); }"
+    },
+    {
+      "name": "Timeline Event",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Componente firma del expediente: historial auditable con dots terracota y línea vertical.",
+      "html": "<ol class=\"ds-timeline\"><li class=\"ds-timeline-item\"><span class=\"ds-timeline-dot\"></span><div><div class=\"ds-timeline-title\">Solicitud aprobada</div><div class=\"ds-timeline-meta\">24/04/2026 10:32 · Por María L.</div></div></li><li class=\"ds-timeline-item\"><span class=\"ds-timeline-dot\"></span><div><div class=\"ds-timeline-title\">Rendición iniciada</div><div class=\"ds-timeline-meta\">25/04/2026 14:08 · Por Juan C.</div></div></li></ol>",
+      "css": ".ds-timeline { list-style: none; padding: 0; margin: 0; font-family: Manrope, sans-serif; } .ds-timeline-item { position: relative; display: grid; grid-template-columns: 14px 1fr; gap: 12px; padding: 12px 0 12px 4px; } .ds-timeline-item::before { content: ''; position: absolute; top: 22px; bottom: -12px; left: 7px; width: 2px; background: #edf1f5; } .ds-timeline-item:last-child::before { display: none; } .ds-timeline-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 6px; background: linear-gradient(180deg, #da5b3e 0%, #b84930 100%); box-shadow: 0 0 0 3px #ffffff, 0 0 0 4px rgba(218,91,62,0.18); position: relative; z-index: 1; } .ds-timeline-title { font-size: 0.9rem; font-weight: 800; color: #101828; } .ds-timeline-meta { font-size: 0.8rem; color: #667085; margin-top: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Expediente Formal",
+    "overview": "Cada solicitud de viático es un expediente: tiene carátula (badge de estado), contenido (monto, motivo, gastos), historial auditable y una decisión final. El sistema se comporta como un archivador premium, no como un dashboard SaaS. El archivador es oscuro (navy), el papel es claro (cool gray tintado), y el sello administrativo es terracota: marca quien aprueba, marca qué está pendiente, marca dónde mirar primero.\n\nLa densidad es alta pero no hostil. Admin ve la bandeja completa de una sola vista; colaborador ve su solicitud con jerarquía obvia. La paleta es Restrained: una sola familia cromática (terracota) carga la acción; todo lo demás son neutros tintados y estados codificados por hue. Sin gradientes decorativos, sin tarjetas-clichés, sin hero-metrics.",
+    "keyCharacteristics": [
+      "Sidebar navy fija (240px) + topbar claro (60px) + área de contenido con scroll único.",
+      "Terracota aparece solo en: acciones primarias, estados activos de navegación, sellos de aprobación. ≤10% de superficie.",
+      "Badges pill con dot de color y 6+ estados documentados por flujo (solicitud + rendición).",
+      "Tipografía: Sora para títulos (display, expediente, secciones), Manrope para todo lo demás.",
+      "Sombras cálidas tintadas (rgba 35,31,27) en vez de negro neutro.",
+      "Radius escalonado: 8 / 12 / 18 px. Pill 999px para badges y chips."
+    ],
+    "rules": [
+      { "name": "The One Sello Rule", "body": "Terracota aparece en ≤10% de cualquier pantalla. Su rareza es el punto: cuando el usuario la ve, sabe que es una acción o un estado que le concierne. Jamás usarla como fondo decorativo, gradiente de hero ni stripe accent.", "section": "colors" },
+      { "name": "The Hue-Per-Estado Rule", "body": "Cada estado de flujo tiene un hue único y estable en OKLCH. Nunca se pinta un estado con un hue prestado de otro. Agregar un estado nuevo obliga a registrar su terna bg/text/border en app-layout-header.php Y su label en ViaticosEstadoUI.", "section": "colors" },
+      { "name": "The Warm Neutral Rule", "body": "Ninguna sombra usa negro puro. Todas tintan hacia rgba(35,31,27, α) para preservar la calidez del sistema sobre el cool-gray del fondo.", "section": "colors" },
+      { "name": "The Tabular Money Rule", "body": "Todo monto se renderiza con font-variant-numeric: tabular-nums. En tablas alineadas a la derecha, la coma decimal cae siempre en el mismo píxel sin importar la cifra.", "section": "typography" },
+      { "name": "The Label As Signal Rule", "body": "Los labels uppercase 0.6875rem no son texto de lectura; son señales visuales. Nunca encadenar dos labels seguidos sin contenido entre ellos: rompe la jerarquía.", "section": "typography" },
+      { "name": "The Warm-Shadow Rule", "body": "Todas las sombras se tintan hacia rgba(35,31,27, α). Negro puro (rgba(0,0,0, α)) está prohibido: rompe la calidez sobre el fondo paper.", "section": "elevation" },
+      { "name": "The Flat-By-Default Rule", "body": "Al reposo, solo cards llevan shadow-sm. Shadow-md aparece en hover o en elementos marcados como hero. Shadow-lg aparece solo al abrir un modal. Nunca apilar sombras.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar terracota (#da5b3e) exclusivamente en: acción primaria, estado activo de nav, dot de badge hover/focus, logo. ≤10% de superficie.",
+      "Do codificar estados con hue OKLCH único por estado (amber 80, green 150, orange 52, red 22, gray 60, copper 42, magenta 325). Registrarlos en app-layout-header.php Y ViaticosEstadoUI.",
+      "Do tintar sombras hacia rgba(35,31,27, α). Preserva la calidez sobre el fondo paper.",
+      "Do usar font-variant-numeric: tabular-nums en toda cifra monetaria. Los montos se alinean sin trucos.",
+      "Do añadir dot de 6px en currentColor a cada badge: accesibilidad AA sin depender solo del color.",
+      "Do usar Sora solo en title de página y liquidación; Manrope para el resto.",
+      "Do wrappear tablas en .table-wrap { overflow-x: auto } para proteger viewports angostos.",
+      "Do centralizar badges/estados vía ViaticosEstadoUI (la fuente única de verdad estado→label→clase)."
+    ],
+    "donts": [
+      "Don't usar #fff ni #000 literales. Todo neutro se tinta.",
+      "Don't crear Interfaces gubernamentales recargadas: formularios enormes, tablas sin jerarquía, borders en todas las celdas.",
+      "Don't caer en Dashboards SaaS genéricos: gradientes de hero, hero-metrics, tarjetas idénticas repetidas en grid.",
+      "Don't replicar Excel con estilos: bordes en cada celda, sin espacio visual, sin zebra.",
+      "Don't usar gradient-text (background-clip: text con gradiente). Prohibido en este sistema.",
+      "Don't usar side-stripe borders (border-left >1px como acento). El tinte de fila is-needs-action usa gradient-fade horizontal, no stripe.",
+      "Don't usar glassmorphism decorativo. El único backdrop-filter: blur(3px) legítimo está en el overlay de modal.",
+      "Don't apilar sombras. Una capa por elemento.",
+      "Don't animar width/height/top/left. Solo transform, opacity, max-height (para reveals).",
+      "Don't usar em dash en copy. Usar coma, dos puntos, o paréntesis.",
+      "Don't nestear tarjetas dentro de tarjetas. Usar secciones o paneles sin card-en-card.",
+      "Don't duplicar estados/badges entre admin y colaborador: registrar en app-layout-header.php y consumir vía ViaticosEstadoUI."
+    ]
+  }
+}

@@ -153,3 +153,48 @@ function viaticos_register_cpt_gasto() {
     register_post_type( 'gasto_rendicion', $args );
 }
 add_action( 'init', 'viaticos_register_cpt_gasto' );
+
+
+// =============================================================================
+// TAXONOMY: CATEGORÍA DE GASTO
+// =============================================================================
+
+function viaticos_register_taxonomy_categoria_gasto() {
+    register_taxonomy( 'categoria_gasto', 'gasto_rendicion', array(
+        'labels'       => array(
+            'name'          => 'Categorías de Gasto',
+            'singular_name' => 'Categoría de Gasto',
+            'add_new_item'  => 'Añadir categoría',
+            'edit_item'     => 'Editar categoría',
+            'all_items'     => 'Todas las categorías',
+        ),
+        'public'        => false,
+        'show_ui'       => true,
+        'show_in_menu'  => false,   // Añadimos el submenu manualmente abajo.
+        'show_in_rest'  => true,
+        'hierarchical'  => false,
+        'rewrite'       => false,
+    ) );
+}
+add_action( 'init', 'viaticos_register_taxonomy_categoria_gasto' );
+
+function viaticos_add_categoria_gasto_submenu() {
+    global $submenu;
+    if ( current_user_can( 'manage_options' ) ) {
+        $submenu['edit.php?post_type=solicitud_viatico'][] = array(
+            'Categorías de Gasto',
+            'manage_options',
+            'edit-tags.php?taxonomy=categoria_gasto&post_type=gasto_rendicion',
+        );
+    }
+}
+add_action( 'admin_menu', 'viaticos_add_categoria_gasto_submenu' );
+
+function viaticos_categoria_gasto_parent_file( $parent_file ) {
+    global $current_screen;
+    if ( isset( $current_screen->taxonomy ) && 'categoria_gasto' === $current_screen->taxonomy ) {
+        $parent_file = 'edit.php?post_type=solicitud_viatico';
+    }
+    return $parent_file;
+}
+add_filter( 'parent_file', 'viaticos_categoria_gasto_parent_file' );

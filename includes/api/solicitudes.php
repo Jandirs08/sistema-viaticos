@@ -1,0 +1,201 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
+function viaticos_args_solicitud() {
+    return array(
+        'dni'    => array(
+            'required'          => true,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'validate_callback' => static function( $value ) {
+                return (bool) preg_match( '/^\d{8}$/', $value );
+            },
+        ),
+        'monto'  => array(
+            'required'          => true,
+            'type'              => 'number',
+            'minimum'           => 1,
+            'sanitize_callback' => static function( $value ) { return floatval( $value ); },
+        ),
+        'fecha'  => array(
+            'required'          => true,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'validate_callback' => static function( $value ) {
+                $d = DateTime::createFromFormat( 'Y-m-d', $value );
+                return $d && $d->format( 'Y-m-d' ) === $value;
+            },
+        ),
+        'motivo' => array(
+            'required'          => true,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_textarea_field',
+        ),
+        'ceco'   => array(
+            'required'          => true,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ),
+        'aprobador' => array(
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ),
+    );
+}
+
+function viaticos_callback_nueva_solicitud( WP_REST_Request $request ) {
+
+    $titulo = sprintf(
+        'Solicitud %s — %s',
+        sanitize_text_field( $request->get_param( 'dni' ) ),
+        current_time( 'd/m/Y H:i' )
+    );
+
+    $post_id = wp_insert_post( array(
+        'post_type'   => 'solicitud_viatico',
+        'post_status' => 'publish',
+        'post_title'  => $titulo,
+        'post_author' => get_current_user_id(),
+    ), true );
+
+    if ( is_wp_error( $post_id ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => $post_id->get_error_message() ),
+            500
+        );
+    }
+
+    update_field( 'field_sol_dni_colaborador',  $request->get_param( 'dni' ),    $post_id );
+    update_field( 'field_sol_monto_solicitado', $request->get_param( 'monto' ),  $post_id );
+    update_field( 'field_sol_fecha_viaje',      $request->get_param( 'fecha' ),  $post_id );
+    update_field( 'field_sol_motivo_viaje',     $request->get_param( 'motivo' ), $post_id );
+    update_field( 'field_sol_centro_costo',     $request->get_param( 'ceco' ),   $post_id );
+    update_field( 'field_sol_nombre_aprobador', $request->get_param( 'aprobador' ) ?: '', $post_id );
+    update_field( 'field_sol_estado_solicitud', 'pendiente',                      $post_id );
+    registrarEventoSolicitud( $post_id, 'solicitud_creada', get_current_user_id() );
+
+    return new WP_REST_Response(
+        array(
+            'success' => true,
+            'message' => 'Solicitud de viático creada correctamente.',
+            'id'      => $post_id,
+        ),
+        201
+    );
+}
+
+function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
+
+    $posts = get_posts( array(
+        'post_type'      => 'solicitud_viatico',
+        'post_status'    => 'publish',
+        'author'         => get_current_user_id(),
+        'posts_per_page' => 100,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'no_found_rows'  => true,
+    ) );
+
+    $data = array();
+
+    foreach ( $posts as $post ) {
+        $data[] = array(
+            'id'                   => $post->ID,
+            'dni'                  => get_field( 'dni_colaborador',  $post->ID ) ?: '',
+            'monto'                => (float) get_field( 'monto_solicitado', $post->ID ),
+            'fecha'                => get_field( 'fecha_viaje',      $post->ID ) ?: '',
+            'motivo'               => wp_strip_all_tags( get_field( 'motivo_viaje', $post->ID ) ?: '' ),
+            'ceco'                 => get_field( 'centro_costo',     $post->ID ) ?: '',
+            'estado'               => get_field( 'estado_solicitud', $post->ID ) ?: 'pendiente',
+            'rendicion_finalizada' => viaticos_es_rendicion_finalizada( $post->ID ),
+            'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
+            'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
+            'historial'            => viaticos_preparar_historial_solicitud( $post->ID ),
+        );
+    }
+
+    return new WP_REST_Response( $data, 200 );
+}
+
+function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
+
+    $posts = get_posts( array(
+        'post_type'      => 'solicitud_viatico',
+        'post_status'    => 'publish',
+        'posts_per_page' => 200,
+        'orderby'        => 'date',
+        'order'          => 'DESC',
+        'no_found_rows'  => true,
+    ) );
+
+    $data = array();
+
+    foreach ( $posts as $post ) {
+        $estado               = get_field( 'estado_solicitud', $post->ID ) ?: 'pendiente';
+        $rendicion_finalizada = viaticos_es_rendicion_finalizada( $post->ID );
+
+        $data[] = array(
+            'id'                   => $post->ID,
+            'colaborador'          => get_the_author_meta( 'display_name', $post->post_author ),
+            'dni'                  => get_field( 'dni_colaborador', $post->ID ) ?: '',
+            'monto'                => (float) get_field( 'monto_solicitado', $post->ID ),
+            'fecha'                => get_field( 'fecha_viaje', $post->ID ) ?: '',
+            'motivo'               => wp_strip_all_tags( get_field( 'motivo_viaje', $post->ID ) ?: '' ),
+            'ceco'                 => get_field( 'centro_costo', $post->ID ) ?: '',
+            'estado'               => $estado,
+            'rendicion_finalizada' => $rendicion_finalizada,
+            'total_rendido'        => $rendicion_finalizada ? viaticos_calcular_total_rendido_solicitud( $post->ID ) : 0,
+            'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
+            'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
+            'historial'            => viaticos_preparar_historial_solicitud( $post->ID ),
+        );
+    }
+
+    return new WP_REST_Response( $data, 200 );
+}
+
+function viaticos_callback_actualizar_estado( WP_REST_Request $request ) {
+
+    $post_id      = $request->get_param( 'id_solicitud' );
+    $nuevo_estado = $request->get_param( 'nuevo_estado' );
+    $estado_actual = get_field( 'estado_solicitud', $post_id ) ?: 'pendiente';
+
+    if ( 'solicitud_viatico' !== get_post_type( $post_id ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'ID de solicitud inválido.' ),
+            400
+        );
+    }
+
+    $resultado = update_field( 'field_sol_estado_solicitud', $nuevo_estado, $post_id );
+
+    if ( false === $resultado ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'No se pudo actualizar el estado.' ),
+            500
+        );
+    }
+
+    $eventos = array(
+        'aprobada'  => 'solicitud_aprobada',
+        'observada' => 'solicitud_observada',
+        'rechazada' => 'solicitud_rechazada',
+    );
+
+    if ( $estado_actual !== $nuevo_estado && isset( $eventos[ $nuevo_estado ] ) ) {
+        registrarEventoSolicitud( $post_id, $eventos[ $nuevo_estado ], get_current_user_id() );
+    }
+
+    return new WP_REST_Response(
+        array(
+            'success'      => true,
+            'message'      => sprintf( 'Solicitud #%d actualizada a "%s".', $post_id, $nuevo_estado ),
+            'id_solicitud' => $post_id,
+            'nuevo_estado' => $nuevo_estado,
+        ),
+        200
+    );
+}
