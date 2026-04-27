@@ -14,22 +14,11 @@
     const getLabelEstado       = estadoUI.getLabelEstado;
     const getSolicitudEstado   = estadoUI.getSolicitudEstado;
     const renderSolicitudBadge = estadoUI.renderSolicitudBadge;
-
-    function getRendicionEstado(sol, extra = {}) {
-        return estadoUI.resolveEstadoRendicion({
-            estadoSolicitud: sol && sol.estado,
-            estadoRendicion: sol && sol.estado_rendicion,
-            rendicionFinalizada: sol && sol.rendicion_finalizada,
-            ...extra,
-        });
-    }
+    const getRendicionEstado   = estadoUI.getRendicionEstado;
+    const renderRendicionBadge = estadoUI.renderRendicionBadge;
 
     const formatMonto = utils.fmtMonto;
     const formatFecha = utils.fmtFecha;
-
-    function renderRendicionBadge(sol, extra = {}) {
-        return renderEstadoBadge('rendicion', getRendicionEstado(sol, extra));
-    }
 
     const escHtml          = utils.escapeHtml;
     const showToast        = utils.showToast.bind(utils);

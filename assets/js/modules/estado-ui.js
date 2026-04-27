@@ -107,6 +107,19 @@ window.ViaticosEstadoUI = (function () {
         return renderBadgeEstado('rendicion', resolveEstadoRendicion(opts));
     }
 
+    function getRendicionEstado(sol, extra) {
+        return resolveEstadoRendicion(Object.assign({
+            estadoSolicitud:     sol && sol.estado,
+            estadoRendicion:     sol && sol.estado_rendicion,
+            rendicionFinalizada: sol && sol.rendicion_finalizada,
+            tieneGastos:         !!(sol && sol.tiene_gastos),
+        }, extra || {}));
+    }
+
+    function renderRendicionBadge(sol, extra) {
+        return renderBadgeEstado('rendicion', getRendicionEstado(sol, extra));
+    }
+
     return {
         resolveEstadoSolicitud,
         resolveEstadoRendicion,
@@ -116,6 +129,8 @@ window.ViaticosEstadoUI = (function () {
         getSolicitudEstado,
         renderSolicitudBadge,
         renderNarrativeBadge,
+        getRendicionEstado,
+        renderRendicionBadge,
     };
 })();
 window.resolveEstadoSolicitud = window.ViaticosEstadoUI.resolveEstadoSolicitud;

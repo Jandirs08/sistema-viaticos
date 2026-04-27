@@ -20,12 +20,12 @@ Sistema interno de gestión de viáticos construido como SPA ligera sobre WordPr
 
 ## 🧩 Estructura
 
-- page-dashboard.php → router por roles
-- view-colaborador.php → SPA colaborador
-- view-admin.php → SPA admin
-- api-endpoints.php → lógica REST
-- acf-fields.php → campos
-- cpt-setup.php → CPTs
+- index.php / front-page.php → entrypoint único, delega en theme_administracion_render_front_app() (functions.php)
+- template-parts/dashboard/view-colaborador.php → SPA colaborador
+- template-parts/dashboard/view-admin.php → SPA admin
+- includes/api-endpoints.php → lógica REST
+- includes/acf-fields.php → campos
+- includes/cpt-setup.php → CPTs
 
 ## 📦 Entidades
 

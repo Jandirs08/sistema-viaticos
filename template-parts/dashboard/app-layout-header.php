@@ -6,7 +6,7 @@
  * topbar and the opening <main id="erp-content"> tag.
  * Closed by app-layout-footer.php.
  *
- * Expected args (set by the router page-dashboard.php):
+ * Expected args (set by theme_administracion_render_front_app() in functions.php):
  *   $args['user_name']      string  Escaped display name.
  *   $args['user_initials']  string  Upper-cased initials (1–2 chars).
  *   $args['logout_url']     string  Escaped logout URL.

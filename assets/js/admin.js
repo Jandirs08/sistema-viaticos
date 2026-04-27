@@ -34,19 +34,8 @@
 
     const getSolicitudEstado   = estadoUI.getSolicitudEstado;
     const renderSolicitudBadge = estadoUI.renderSolicitudBadge;
-
-    function getRendicionEstado(sol) {
-        return estadoUI.resolveEstadoRendicion({
-            estadoSolicitud:     sol && sol.estado,
-            estadoRendicion:     sol && sol.estado_rendicion,
-            rendicionFinalizada: sol && sol.rendicion_finalizada,
-            tieneGastos:         !!(sol && sol.tiene_gastos)
-        });
-    }
-
-    function renderRendicionBadge(sol) {
-        return estadoUI.renderBadgeEstado('rendicion', getRendicionEstado(sol));
-    }
+    const getRendicionEstado   = estadoUI.getRendicionEstado;
+    const renderRendicionBadge = estadoUI.renderRendicionBadge;
 
     const showToast        = utils.showToast.bind(utils);
     const setButtonLoading = utils.setButtonLoading;
