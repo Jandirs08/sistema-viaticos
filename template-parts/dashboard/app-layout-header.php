@@ -25,15 +25,17 @@ if (!defined('ABSPATH')) {
 $args = wp_parse_args(
     $args,
     [
-        'user_name' => '',
-        'user_initials' => '',
-        'logout_url' => '',
+        'user_name'      => '',
+        'user_initials'  => '',
+        'logout_url'     => '',
+        'rest_nonce'     => '',
+        'api_base'       => '',
         'dashboard_role' => 'colaborador',
-        'user_dni' => '',
-        'user_cargo' => '',
-        'user_area' => '',
+        'user_dni'       => '',
+        'user_cargo'     => '',
+        'user_area'      => '',
         'user_aprobador' => '',
-        'logo_url' => '',
+        'logo_url'       => '',
     ]
 );
 ?>
@@ -55,19 +57,23 @@ $args = wp_parse_args(
     <?php wp_head(); ?>
 
     <?php
-    $_cat_terms = get_terms(array('taxonomy' => 'categoria_gasto', 'hide_empty' => false));
-    $_cats_js = array();
-    if (!is_wp_error($_cat_terms)) {
-        foreach ($_cat_terms as $_ct) {
-            $_cd = get_field('clase_doc', 'categoria_gasto_' . $_ct->term_id) ?: '';
-            $_cats_js[] = array(
-                'id' => $_ct->term_id,
-                'nombre' => $_ct->name,
-                'cta_contable' => get_field('cta_contable', 'categoria_gasto_' . $_ct->term_id) ?: '',
-                'clase_doc' => $_cd,
-                'tipo' => viaticos_clase_doc_to_tipo($_cd),
-            );
+    $_cats_js = get_transient( 'viaticos_categorias_js' );
+    if ( false === $_cats_js ) {
+        $_cat_terms = get_terms( array( 'taxonomy' => 'categoria_gasto', 'hide_empty' => false ) );
+        $_cats_js   = array();
+        if ( ! is_wp_error( $_cat_terms ) ) {
+            foreach ( $_cat_terms as $_ct ) {
+                $_cd        = get_field( 'clase_doc',    'categoria_gasto_' . $_ct->term_id ) ?: '';
+                $_cats_js[] = array(
+                    'id'          => $_ct->term_id,
+                    'nombre'      => $_ct->name,
+                    'cta_contable' => get_field( 'cta_contable', 'categoria_gasto_' . $_ct->term_id ) ?: '',
+                    'clase_doc'   => $_cd,
+                    'tipo'        => viaticos_clase_doc_to_tipo( $_cd ),
+                );
+            }
         }
+        set_transient( 'viaticos_categorias_js', $_cats_js, DAY_IN_SECONDS );
     }
     ?>
     <script>window.ViaticosCategoriasGasto = <?php echo wp_json_encode($_cats_js); ?>;</script>
@@ -78,12 +84,27 @@ $args = wp_parse_args(
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/utils.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/router.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/detalle-ui.js"></script>
+    <script>
+    window.ViaticosConfig = {
+        nonce:   '<?php echo esc_js( $args['rest_nonce'] ); ?>',
+        apiBase: '<?php echo esc_js( $args['api_base'] ); ?>',
+        logoUrl: '<?php echo esc_js( $args['logo_url'] ); ?>',
+        profile: {
+            name:      '<?php echo esc_js( $args['user_name'] ); ?>',
+            dni:       '<?php echo esc_js( $args['user_dni'] ); ?>',
+            cargo:     '<?php echo esc_js( $args['user_cargo'] ); ?>',
+            area:      '<?php echo esc_js( $args['user_area'] ); ?>',
+            aprobador: '<?php echo esc_js( $args['user_aprobador'] ); ?>'
+        }
+    };
+    </script>
 </head>
 
 <body>
+    <a href="#erp-content" class="skip-link">Saltar al contenido principal</a>
 
     <!-- Toast notifications -->
-    <div id="toast-container" role="alert" aria-live="polite"></div>
+    <div id="toast-container" aria-live="polite" aria-atomic="true" role="status"></div>
 
     <!-- ERP Shell -->
     <div id="erp-shell">
@@ -100,7 +121,6 @@ $args = wp_parse_args(
                     <div class="logo-text">
                         <img src="<?php echo esc_url(get_template_directory_uri() . '/images/fr-logo2.png'); ?>"
                             alt="Fundación Romero" class="sidebar-logo-full">
-                        <span><?php echo $args['dashboard_role'] === 'admin' ? 'Administrador' : 'Colaborador'; ?></span>
                     </div>
                 </a>
             </div>
@@ -153,35 +173,28 @@ $args = wp_parse_args(
 
             <div class="sidebar-footer">
                 <div class="sidebar-user">
-                    <div class="user-avatar" aria-hidden="true"><?php echo esc_html($args['user_initials'] ?: 'U'); ?>
-                    </div>
+                    <div class="user-avatar" aria-hidden="true"><?php echo esc_html($args['user_initials'] ?: 'U'); ?></div>
                     <div class="user-info">
                         <strong class="u-name"><?php echo esc_html($args['user_name']); ?></strong>
-                        <span
-                            class="u-role"><?php echo $args['dashboard_role'] === 'admin' ? 'Administrador' : 'Colaborador'; ?></span>
+                        <span class="u-role"><?php echo $args['dashboard_role'] === 'admin' ? 'Administrador' : 'Colaborador'; ?></span>
+                        <?php if ($args['user_cargo'] || $args['user_area']): ?>
+                            <span class="u-meta"><?php echo esc_html(implode(' · ', array_filter([$args['user_cargo'], $args['user_area']]))); ?></span>
+                        <?php endif; ?>
                     </div>
                 </div>
+                <?php if ($args['dashboard_role'] === 'admin'): ?>
+                    <a href="<?php echo esc_url(admin_url()); ?>" class="sidebar-wp-link" title="Panel de WordPress">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                        </svg>
+                        Configuración
+                    </a>
+                <?php endif; ?>
             </div>
         </aside><!-- /#erp-sidebar -->
         <div id="sidebar-overlay"></div>
-        <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var btn = document.getElementById('btn-hamburger');
-            var sidebar = document.getElementById('erp-sidebar');
-            var overlay = document.getElementById('sidebar-overlay');
-            if (!btn || !sidebar || !overlay) return;
-            function setSidebar(open) {
-                sidebar.classList.toggle('open', open);
-                overlay.classList.toggle('open', open);
-                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-            }
-            btn.addEventListener('click', function () { setSidebar(true); });
-            overlay.addEventListener('click', function () { setSidebar(false); });
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') setSidebar(false);
-            });
-        });
-        </script>
+        <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/sidebar.js"></script>
+        <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/worktray.js"></script>
 
         <!-- ══ MAIN AREA ════════════════════════════════════════════ -->
         <div id="erp-main">
@@ -192,42 +205,16 @@ $args = wp_parse_args(
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
                 </button>
                 <nav class="topbar-breadcrumb" aria-label="Ruta de navegación">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="opacity:.5">
-                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-                    </svg>
-                    &rsaquo;
-                    <span
-                        id="topbar-section-name"><?php echo $args['dashboard_role'] === 'admin' ? 'Anticipos' : 'Inicio'; ?></span>
+                    <svg class="bc-home-icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                    <span class="bc-sep">/</span>
+                    <span id="topbar-section-name" class="bc-page"><?php echo $args['dashboard_role'] === 'admin' ? 'Anticipos' : 'Inicio'; ?></span>
                 </nav>
                 <div class="topbar-actions">
-                    <div class="topbar-user-info" aria-label="Usuario autenticado">
-                        <strong class="t-name"><?php echo esc_html($args['user_name']); ?></strong>
-                        <span
-                            class="t-role"><?php echo $args['dashboard_role'] === 'admin' ? 'Administrador de Viáticos' : 'Colaborador'; ?></span>
-                        <?php if ($args['user_dni'] || $args['user_cargo'] || $args['user_area']): ?>
-                            <div class="topbar-user-meta">
-                                <?php if ($args['user_dni']): ?>
-                                    <span class="user-meta-chip"><strong>DNI</strong>
-                                        <?php echo esc_html($args['user_dni']); ?></span>
-                                <?php endif; ?>
-                                <?php if ($args['user_cargo']): ?>
-                                    <span class="user-meta-chip"><strong>Cargo</strong>
-                                        <?php echo esc_html($args['user_cargo']); ?></span>
-                                <?php endif; ?>
-                                <?php if ($args['user_area']): ?>
-                                    <span class="user-meta-chip"><strong>Área</strong>
-                                        <?php echo esc_html($args['user_area']); ?></span>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                    <a href="<?php echo $args['logout_url']; ?>" class="btn-logout" id="btn-logout"
-                        title="Cerrar sesión">
+                    <a href="<?php echo $args['logout_url']; ?>" class="btn-logout" id="btn-logout" title="Cerrar sesión">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
+                            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
                         </svg>
-                        Salir
+                        <span class="btn-logout-label">Salir</span>
                     </a>
                 </div>
             </header><!-- /#erp-topbar -->

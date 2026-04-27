@@ -68,13 +68,13 @@ function viaticos_callback_nueva_solicitud( WP_REST_Request $request ) {
         );
     }
 
-    update_field( 'field_sol_dni_colaborador',  $request->get_param( 'dni' ),    $post_id );
-    update_field( 'field_sol_monto_solicitado', $request->get_param( 'monto' ),  $post_id );
-    update_field( 'field_sol_fecha_viaje',      $request->get_param( 'fecha' ),  $post_id );
-    update_field( 'field_sol_motivo_viaje',     $request->get_param( 'motivo' ), $post_id );
-    update_field( 'field_sol_centro_costo',     $request->get_param( 'ceco' ),   $post_id );
-    update_field( 'field_sol_nombre_aprobador', $request->get_param( 'aprobador' ) ?: '', $post_id );
-    update_field( 'field_sol_estado_solicitud', 'pendiente',                      $post_id );
+    update_field( ACF_SOL_DNI,       $request->get_param( 'dni' ),    $post_id );
+    update_field( ACF_SOL_MONTO,     $request->get_param( 'monto' ),  $post_id );
+    update_field( ACF_SOL_FECHA,     $request->get_param( 'fecha' ),  $post_id );
+    update_field( ACF_SOL_MOTIVO,    $request->get_param( 'motivo' ), $post_id );
+    update_field( ACF_SOL_CECO,      $request->get_param( 'ceco' ),   $post_id );
+    update_field( ACF_SOL_APROBADOR, $request->get_param( 'aprobador' ) ?: '', $post_id );
+    update_field( ACF_SOL_ESTADO,    'pendiente',                      $post_id );
     registrarEventoSolicitud( $post_id, 'solicitud_creada', get_current_user_id() );
 
     return new WP_REST_Response(
@@ -93,7 +93,7 @@ function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
         'post_type'      => 'solicitud_viatico',
         'post_status'    => 'publish',
         'author'         => get_current_user_id(),
-        'posts_per_page' => 100,
+        'posts_per_page' => -1,
         'orderby'        => 'date',
         'order'          => 'DESC',
         'no_found_rows'  => true,
@@ -125,7 +125,7 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
     $posts = get_posts( array(
         'post_type'      => 'solicitud_viatico',
         'post_status'    => 'publish',
-        'posts_per_page' => 200,
+        'posts_per_page' => -1,
         'orderby'        => 'date',
         'order'          => 'DESC',
         'no_found_rows'  => true,
@@ -170,7 +170,23 @@ function viaticos_callback_actualizar_estado( WP_REST_Request $request ) {
         );
     }
 
-    $resultado = update_field( 'field_sol_estado_solicitud', $nuevo_estado, $post_id );
+    if ( 'pendiente' !== $estado_actual ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Solo se pueden decidir solicitudes en estado pendiente.' ),
+            400
+        );
+    }
+
+    $comentario = sanitize_textarea_field( (string) ( $request->get_param( 'comentario' ) ?: '' ) );
+
+    if ( 'observada' === $nuevo_estado && '' === trim( $comentario ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Debes indicar el motivo de la observación.' ),
+            422
+        );
+    }
+
+    $resultado = update_field( ACF_SOL_ESTADO, $nuevo_estado, $post_id );
 
     if ( false === $resultado ) {
         return new WP_REST_Response(
@@ -186,7 +202,7 @@ function viaticos_callback_actualizar_estado( WP_REST_Request $request ) {
     );
 
     if ( $estado_actual !== $nuevo_estado && isset( $eventos[ $nuevo_estado ] ) ) {
-        registrarEventoSolicitud( $post_id, $eventos[ $nuevo_estado ], get_current_user_id() );
+        registrarEventoSolicitud( $post_id, $eventos[ $nuevo_estado ], get_current_user_id(), $comentario );
     }
 
     return new WP_REST_Response(
@@ -195,6 +211,53 @@ function viaticos_callback_actualizar_estado( WP_REST_Request $request ) {
             'message'      => sprintf( 'Solicitud #%d actualizada a "%s".', $post_id, $nuevo_estado ),
             'id_solicitud' => $post_id,
             'nuevo_estado' => $nuevo_estado,
+        ),
+        200
+    );
+}
+
+function viaticos_callback_editar_solicitud( WP_REST_Request $request ) {
+    $id_solicitud = absint( $request->get_param( 'id_solicitud' ) );
+    $solicitud    = get_post( $id_solicitud );
+
+    if ( ! $solicitud || 'solicitud_viatico' !== $solicitud->post_type ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Solicitud no encontrada.' ),
+            404
+        );
+    }
+
+    if ( (int) $solicitud->post_author !== get_current_user_id() ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'No tienes permisos para editar esta solicitud.' ),
+            403
+        );
+    }
+
+    $estado_actual = get_field( 'estado_solicitud', $id_solicitud ) ?: 'pendiente';
+
+    if ( 'observada' !== $estado_actual ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Solo puedes editar una solicitud observada.' ),
+            409
+        );
+    }
+
+    update_field( ACF_SOL_DNI,    $request->get_param( 'dni' ),    $id_solicitud );
+    update_field( ACF_SOL_MONTO,  $request->get_param( 'monto' ),  $id_solicitud );
+    update_field( ACF_SOL_FECHA,  $request->get_param( 'fecha' ),  $id_solicitud );
+    update_field( ACF_SOL_MOTIVO, $request->get_param( 'motivo' ), $id_solicitud );
+    update_field( ACF_SOL_CECO,   $request->get_param( 'ceco' ),   $id_solicitud );
+    update_field( ACF_SOL_ESTADO, 'pendiente',                      $id_solicitud );
+
+    registrarEventoSolicitud( $id_solicitud, 'solicitud_reenviada', get_current_user_id() );
+
+    return new WP_REST_Response(
+        array(
+            'success'      => true,
+            'message'      => 'Solicitud corregida y reenviada a revisión.',
+            'id_solicitud' => $id_solicitud,
+            'nuevo_estado' => 'pendiente',
         ),
         200
     );

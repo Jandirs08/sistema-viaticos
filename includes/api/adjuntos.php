@@ -13,7 +13,7 @@ function viaticos_check_acceso_gasto( $id_gasto ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'Gasto no encontrado.' ), 404 );
     }
     $is_owner = (int) $gasto->post_author === get_current_user_id();
-    $is_admin = current_user_can( 'administrator' ) || current_user_can( 'admin_viaticos' ) || current_user_can( 'edit_others_posts' );
+    $is_admin = current_user_can( 'manage_viaticos' );
     if ( ! $is_owner && ! $is_admin ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'Sin permisos para este gasto.' ), 403 );
     }
@@ -28,8 +28,7 @@ function viaticos_callback_listar_adjuntos( WP_REST_Request $request ) {
     $result   = viaticos_check_acceso_gasto( $id_gasto );
     if ( $result instanceof WP_REST_Response ) return $result;
 
-    $ids  = get_post_meta( $id_gasto, 'adjuntos_ids', true );
-    $ids  = is_array( $ids ) ? array_filter( array_map( 'absint', $ids ) ) : array();
+    $ids = array_filter( array_map( 'absint', get_post_meta( $id_gasto, 'adjunto_id', false ) ) );
     $data = array();
 
     foreach ( $ids as $att_id ) {
@@ -59,13 +58,13 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
         require_once ABSPATH . 'wp-admin/includes/media.php';
     }
 
-    $id_gasto = absint( isset( $_POST['id_gasto'] ) ? $_POST['id_gasto'] : 0 );
+    $id_gasto = absint( $request->get_param( 'id_gasto' ) );
     $result   = viaticos_check_acceso_gasto( $id_gasto );
     if ( $result instanceof WP_REST_Response ) return $result;
     $gasto = $result;
 
-    $id_solicitud = (int) get_field( 'id_solicitud_padre', $id_gasto );
-    if ( $id_solicitud && viaticos_es_rendicion_finalizada( $id_solicitud ) ) {
+    $id_solicitud = (int) get_field( ACF_GAS_SOLICITUD, $id_gasto );
+    if ( $id_solicitud && viaticos_es_rendicion_finalizada( $id_solicitud ) && 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'La rendición ya fue finalizada; no se pueden agregar adjuntos.' ), 409 );
     }
 
@@ -103,10 +102,7 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
 
     wp_update_attachment_metadata( $att_id, wp_generate_attachment_metadata( $att_id, $uploaded['file'] ) );
 
-    $ids   = get_post_meta( $id_gasto, 'adjuntos_ids', true );
-    $ids   = is_array( $ids ) ? $ids : array();
-    $ids[] = $att_id;
-    update_post_meta( $id_gasto, 'adjuntos_ids', array_values( $ids ) );
+    add_post_meta( $id_gasto, 'adjunto_id', $att_id );
 
     return new WP_REST_Response( array(
         'success' => true,
@@ -135,18 +131,12 @@ function viaticos_callback_eliminar_adjunto( WP_REST_Request $request ) {
     $result   = viaticos_check_acceso_gasto( $id_gasto );
     if ( $result instanceof WP_REST_Response ) return $result;
 
-    $id_solicitud = (int) get_field( 'id_solicitud_padre', $id_gasto );
-    if ( $id_solicitud && viaticos_es_rendicion_finalizada( $id_solicitud ) ) {
+    $id_solicitud = (int) get_field( ACF_GAS_SOLICITUD, $id_gasto );
+    if ( $id_solicitud && viaticos_es_rendicion_finalizada( $id_solicitud ) && 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'La rendición ya fue finalizada.' ), 409 );
     }
 
-    $ids = get_post_meta( $id_gasto, 'adjuntos_ids', true );
-    if ( is_array( $ids ) ) {
-        $ids = array_values( array_filter( $ids, static function( $id ) use ( $id_adjunto ) {
-            return (int) $id !== $id_adjunto;
-        } ) );
-        update_post_meta( $id_gasto, 'adjuntos_ids', $ids );
-    }
+    delete_post_meta( $id_gasto, 'adjunto_id', $id_adjunto );
 
     wp_delete_attachment( $id_adjunto, true );
 

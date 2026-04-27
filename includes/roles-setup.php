@@ -30,6 +30,16 @@ function viaticos_registrar_roles() {
             $editor ? $editor->capabilities : array()
         );
     }
+    // Grant a custom capability so permission checks don't rely on 'edit_others_posts'.
+    $admin_viaticos_role = get_role( 'admin_viaticos' );
+    if ( $admin_viaticos_role && ! $admin_viaticos_role->has_cap( 'manage_viaticos' ) ) {
+        $admin_viaticos_role->add_cap( 'manage_viaticos' );
+    }
+
+    $administrator_role = get_role( 'administrator' );
+    if ( $administrator_role && ! $administrator_role->has_cap( 'manage_viaticos' ) ) {
+        $administrator_role->add_cap( 'manage_viaticos' );
+    }
 }
 add_action( 'init', 'viaticos_registrar_roles' );
 
@@ -55,7 +65,7 @@ function viaticos_bloquear_edicion_segun_estado( $post_id, $post, $update ) {
 
     $estado = get_field( 'estado_solicitud', $post_id );
 
-    $estados_bloqueados = array( 'pendiente', 'aprobada', 'rechazada', 'rendida' );
+    $estados_bloqueados = array( 'pendiente', 'aprobada', 'rechazada' );
 
     if ( in_array( $estado, $estados_bloqueados, true ) ) {
         wp_die(

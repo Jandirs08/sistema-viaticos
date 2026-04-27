@@ -7,9 +7,9 @@
     const gastoUI = window.ViaticosGastoUI;
     const LIST_VIEWS = ['view-anticipos', 'view-rendiciones'];
     const ROUTE_CONFIG = {
-        anticipos: { viewId: 'view-anticipos', breadcrumb: 'Anticipos' },
-        rendiciones: { viewId: 'view-rendiciones', breadcrumb: 'Rendiciones' },
-        solicitud: { viewId: 'view-solicitud-detalle', breadcrumb: 'Detalle de Solicitud', requiresId: true, validFrom: ['anticipos', 'rendiciones'] }
+        anticipos:   { viewId: 'view-anticipos',        breadcrumb: 'Anticipos' },
+        rendiciones: { viewId: 'view-rendiciones',       breadcrumb: 'Rendiciones' },
+        solicitud:   { viewId: 'view-solicitud-detalle', breadcrumb: 'Detalle de Solicitud', requiresId: true, validFrom: ['anticipos', 'rendiciones'] }
     };
     const VIEW_TO_ROUTE = Object.keys(ROUTE_CONFIG).reduce((acc, routeName) => {
         acc[ROUTE_CONFIG[routeName].viewId] = routeName;
@@ -21,51 +21,6 @@
         defaultRoute: 'anticipos',
         onNavigate:   async function (route) { await renderRoute(route); },
     });
-    const VIEW_CONFIG = {
-        'view-anticipos': {
-            breadcrumb: 'Anticipos',
-            tbodyId: 'anticipos-tbody',
-            searchId: 'search-anticipos',
-            counterId: 'tbl-counter-anticipos',
-            paginationId: 'tbl-pag-anticipos',
-            chipGroupId: 'chips-anticipos',
-            pageSizeId: 'page-size-anticipos',
-            fechaChipId: 'fecha-chip-anticipos',
-            datesStripId: 'dates-strip-anticipos',
-            dateFromId: 'fecha-desde-anticipos',
-            dateToId: 'fecha-hasta-anticipos',
-            clearBtnId: 'clear-anticipos',
-            emptyText: 'No hay anticipos por revisar.',
-            emptySearchText: 'No se encontraron resultados.',
-            filter: function (sol) { return getSolicitudEstado(sol) !== 'aprobada'; },
-            getChipEstado: function (sol) { return getSolicitudEstado(sol); }
-        },
-        'view-rendiciones': {
-            breadcrumb: 'Rendiciones',
-            tbodyId: 'rendiciones-tbody',
-            searchId: 'search-rendiciones',
-            counterId: 'tbl-counter-rendiciones',
-            paginationId: 'tbl-pag-rendiciones',
-            chipGroupId: 'chips-rendiciones',
-            pageSizeId: 'page-size-rendiciones',
-            fechaChipId: 'fecha-chip-rendiciones',
-            datesStripId: 'dates-strip-rendiciones',
-            dateFromId: 'fecha-desde-rendiciones',
-            dateToId: 'fecha-hasta-rendiciones',
-            clearBtnId: 'clear-rendiciones',
-            emptyText: 'No hay rendiciones registradas.',
-            emptySearchText: 'No se encontraron resultados.',
-            filter: function (sol) { return getSolicitudEstado(sol) === 'aprobada'; },
-            getChipEstado: function (sol) { return getRendicionEstado(sol); }
-        }
-    };
-
-    const sortState = {};
-    const pageState = {};
-    const filterState = {};
-    const pageSizeState = {};
-
-    function getPageSize(viewId) { return parseInt(pageSizeState[viewId] || 10, 10); }
 
     let cache = [];
     let modalSolId = null;
@@ -86,11 +41,11 @@
 
     function getRendicionEstado(sol) {
         return estadoUI.resolveEstadoRendicion({
-            estadoSolicitud: sol && sol.estado,
-            estadoRendicion: sol && sol.estado_rendicion,
+            estadoSolicitud:     sol && sol.estado,
+            estadoRendicion:     sol && sol.estado_rendicion,
             rendicionFinalizada: sol && sol.rendicion_finalizada,
-            totalRendido: sol && sol.total_rendido,
-            tieneGastos: tieneEvento(sol, 'rendicion_iniciada')
+            totalRendido:        sol && sol.total_rendido,
+            tieneGastos:         tieneEvento(sol, 'rendicion_iniciada')
         });
     }
 
@@ -185,189 +140,41 @@
         openSolicitudModal(sol);
     }
 
-    function getSearchValue(viewId) {
-        const cfg = VIEW_CONFIG[viewId];
-        const input = cfg ? document.getElementById(cfg.searchId) : null;
-        return input ? input.value : '';
-    }
-
-    function setTableLoading(viewId) {
-        const cfg = VIEW_CONFIG[viewId];
-        const tbody = cfg ? document.getElementById(cfg.tbodyId) : null;
-        if (!tbody) return;
-        utils.renderTableSkeleton(tbody, 6);
-        const pagEl = document.getElementById(cfg.paginationId);
-        if (pagEl) pagEl.innerHTML = '';
-    }
-
-    function applySortToRows(rows, viewId) {
-        const s = sortState[viewId];
-        if (!s || !s.key) return rows;
-        const { key, dir, type } = s;
-        return [...rows].sort((a, b) => {
-            let av = a[key], bv = b[key];
-            if (type === 'num') { av = parseFloat(av) || 0; bv = parseFloat(bv) || 0; }
-            else { av = String(av || '').toLowerCase(); bv = String(bv || '').toLowerCase(); }
-            if (av < bv) return dir === 'asc' ? -1 : 1;
-            if (av > bv) return dir === 'asc' ? 1 : -1;
-            return 0;
-        });
-    }
-
-    function renderPagination(cfg, viewId, total) {
-        const el = document.getElementById(cfg.paginationId);
-        if (!el) return;
-        const page = pageState[viewId] || 1;
-        const ps = getPageSize(viewId);
-        const totalPages = Math.ceil(total / ps);
-        if (totalPages <= 1) { el.innerHTML = ''; return; }
-        const start = (page - 1) * ps;
-        const end = Math.min(page * ps, total);
-        el.innerHTML = `
-            <span class="tbl-pag-info">${start + 1}–${end} de ${total}</span>
-            <div class="tbl-pag-btns">
-                <button class="btn btn-ghost btn-sm js-pag-prev" ${page <= 1 ? 'disabled' : ''}>← Anterior</button>
-                <button class="btn btn-ghost btn-sm js-pag-next" ${page >= totalPages ? 'disabled' : ''}>Siguiente →</button>
-            </div>`;
-        el.querySelector('.js-pag-prev').addEventListener('click', () => {
-            pageState[viewId] = Math.max(1, (pageState[viewId] || 1) - 1);
-            renderTable(viewId, cache, getSearchValue(viewId));
-        });
-        el.querySelector('.js-pag-next').addEventListener('click', () => {
-            pageState[viewId] = Math.min(totalPages, (pageState[viewId] || 1) + 1);
-            renderTable(viewId, cache, getSearchValue(viewId));
-        });
-    }
-
-    function applyDateFilter(rows, viewId) {
-        const cfg = VIEW_CONFIG[viewId];
-        const desdeEl = document.getElementById(cfg.dateFromId);
-        const hastaEl = document.getElementById(cfg.dateToId);
-        const from = desdeEl ? desdeEl.value : '';
-        const to = hastaEl ? hastaEl.value : '';
-        if (!from && !to) return rows;
-        return rows.filter(function(sol) {
-            var f = sol.fecha || '';
-            if (from && f < from) return false;
-            if (to && f > to) return false;
-            return true;
-        });
-    }
-
-    function hasActiveFilters(viewId) {
-        const cfg = VIEW_CONFIG[viewId];
-        if (filterState[viewId]) return true;
-        const searchEl = document.getElementById(cfg.searchId);
-        if (searchEl && searchEl.value.trim()) return true;
-        const desdeEl = document.getElementById(cfg.dateFromId);
-        const hastaEl = document.getElementById(cfg.dateToId);
-        if (desdeEl && desdeEl.value) return true;
-        if (hastaEl && hastaEl.value) return true;
-        return false;
-    }
-
-    function updateClearButton(viewId) {
-        const cfg = VIEW_CONFIG[viewId];
-        const btn = document.getElementById(cfg.clearBtnId);
-        if (btn) btn.style.display = hasActiveFilters(viewId) ? '' : 'none';
-    }
-
-    function clearAllFilters(viewId) {
-        const cfg = VIEW_CONFIG[viewId];
-        filterState[viewId] = '';
-        pageState[viewId] = 1;
-        const group = document.getElementById(cfg.chipGroupId);
-        if (group) {
-            group.querySelectorAll('.tbl-chip').forEach(function(c) { c.classList.remove('is-active'); });
-            const first = group.querySelector('.tbl-chip[data-filter=""]');
-            if (first) first.classList.add('is-active');
-        }
-        const searchEl = document.getElementById(cfg.searchId);
-        if (searchEl) searchEl.value = '';
-        const desdeEl = document.getElementById(cfg.dateFromId);
-        const hastaEl = document.getElementById(cfg.dateToId);
-        if (desdeEl) desdeEl.value = '';
-        if (hastaEl) hastaEl.value = '';
-        const strip = document.getElementById(cfg.datesStripId);
-        if (strip) strip.classList.remove('is-open');
-        const fechaChip = document.getElementById(cfg.fechaChipId);
-        if (fechaChip) fechaChip.classList.remove('is-active');
-        renderTable(viewId, cache, '');
-    }
-
-    function updateAllChipCounts() {
-        LIST_VIEWS.forEach(function(viewId) {
-            const cfg = VIEW_CONFIG[viewId];
-            const baseRows = cache.filter(cfg.filter);
-            const group = document.getElementById(cfg.chipGroupId);
-            if (!group) return;
-            group.querySelectorAll('.tbl-chip[data-filter]').forEach(function(chip) {
-                const filter = chip.dataset.filter;
-                const countEl = chip.querySelector('.tbl-chip-count');
-                if (!countEl) return;
-                const count = filter
-                    ? baseRows.filter(function(sol) { return cfg.getChipEstado(sol) === filter; }).length
-                    : baseRows.length;
-                countEl.textContent = count;
-            });
-        });
-    }
-
-    function renderTable(viewId, data, filter) {
-        if (filter === undefined) filter = '';
-        const cfg = VIEW_CONFIG[viewId];
-        if (!cfg) return;
-        updateClearButton(viewId);
-        const tbody = document.getElementById(cfg.tbodyId);
-        const counter = document.getElementById(cfg.counterId);
-        const q = filter.toLowerCase().trim();
-        const chipFilter = filterState[viewId] || '';
-        let rows = data.filter(cfg.filter);
-        if (chipFilter) {
-            rows = rows.filter(sol => cfg.getChipEstado(sol) === chipFilter);
-        }
-        if (q) {
-            rows = rows.filter(sol => (
-                String(sol.id).includes(q) ||
-                (sol.colaborador || '').toLowerCase().includes(q) ||
-                (sol.ceco || '').toLowerCase().includes(q) ||
-                (sol.motivo || '').toLowerCase().includes(q)
-            ));
-        }
-        rows = applyDateFilter(rows, viewId);
-        rows = applySortToRows(rows, viewId);
-        if (counter) counter.textContent = `${rows.length} resultado${rows.length !== 1 ? 's' : ''}`;
-        if (!rows.length) {
-            const emptyIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>';
-            tbody.innerHTML = `<tr><td colspan="6"><div class="table-empty">${emptyIcon}<p>${(q || chipFilter) ? cfg.emptySearchText : cfg.emptyText}</p></div></td></tr>`;
-            const pagEl = document.getElementById(cfg.paginationId);
-            if (pagEl) pagEl.innerHTML = '';
-            return;
-        }
-        const page = pageState[viewId] || 1;
-        const ps = getPageSize(viewId);
-        const start = (page - 1) * ps;
-        const pageRows = rows.slice(start, start + ps);
-        tbody.innerHTML = pageRows.map(sol => {
-            const action = getActionConfig(sol, viewId);
-            const classes = ['worktray-row'];
-            if (action.highlight === 'pending') classes.push('is-needs-action');
-            if (action.highlight === 'review') classes.push('is-needs-action', 'is-review-action');
-            return `
-                <tr class="${classes.join(' ')}" data-id="${sol.id}" data-view="${viewId}" tabindex="0">
+    function renderAnticipoRow(sol) {
+        const action  = getAnticipoActionConfig(sol);
+        const classes = ['worktray-row'];
+        if (action.highlight === 'pending') classes.push('is-needs-action');
+        return `
+                <tr class="${classes.join(' ')}" data-id="${sol.id}" data-view="view-anticipos" tabindex="0">
                     <td class="muted">#${sol.id}</td>
                     <td class="worktray-person-cell" data-fecha="${fmtFecha(sol.fecha)}"><div class="worktray-person"><strong>${escHtml(sol.colaborador || 'Sin nombre')}</strong><span>${escHtml(sol.ceco || 'Sin CECO')}</span></div></td>
                     <td>${fmtFecha(sol.fecha)}</td>
                     <td><strong>${fmt(sol.monto)}</strong></td>
-                    <td>${viewId === 'view-rendiciones' ? renderRendicionBadge(sol) : renderSolicitudBadge(sol)}</td>
-                    <td>${renderActionCell(sol, viewId)}</td>
+                    <td>${renderSolicitudBadge(sol)}</td>
+                    <td>${renderActionCell(sol, 'view-anticipos')}</td>
                 </tr>`;
-        }).join('');
+    }
 
+    function renderRendicionRow(sol) {
+        const action  = getRendicionActionConfig(sol);
+        const classes = ['worktray-row'];
+        if (action.highlight === 'review') classes.push('is-needs-action', 'is-review-action');
+        return `
+                <tr class="${classes.join(' ')}" data-id="${sol.id}" data-view="view-rendiciones" tabindex="0">
+                    <td class="muted">#${sol.id}</td>
+                    <td class="worktray-person-cell" data-fecha="${fmtFecha(sol.fecha)}"><div class="worktray-person"><strong>${escHtml(sol.colaborador || 'Sin nombre')}</strong><span>${escHtml(sol.ceco || 'Sin CECO')}</span></div></td>
+                    <td>${fmtFecha(sol.fecha)}</td>
+                    <td><strong>${fmt(sol.monto)}</strong></td>
+                    <td>${renderRendicionBadge(sol)}</td>
+                    <td>${renderActionCell(sol, 'view-rendiciones')}</td>
+                </tr>`;
+    }
+
+    function attachAdminRowListeners(tbody, pageRows, allRows) {
         tbody.querySelectorAll('.worktray-row').forEach(row => {
-            const id = parseInt(row.dataset.id, 10);
+            const id     = parseInt(row.dataset.id, 10);
             const rowView = row.dataset.view;
-            const sol = rows.find(item => item.id === id);
+            const sol    = allRows.find(item => item.id === id);
             if (!sol) return;
             const open = event => {
                 if (event && event.target && event.target.closest('button, a')) return;
@@ -381,13 +188,12 @@
                 }
             });
         });
-
         tbody.querySelectorAll('.js-row-action').forEach(btn => {
             btn.addEventListener('click', event => {
                 event.stopPropagation();
-                const id = parseInt(btn.dataset.id, 10);
+                const id     = parseInt(btn.dataset.id, 10);
                 const rowView = btn.dataset.view;
-                const sol = rows.find(item => item.id === id);
+                const sol    = allRows.find(item => item.id === id);
                 if (!sol) return;
                 if (btn.dataset.action === 'review') {
                     openSolicitudDetail(id, rowView);
@@ -396,13 +202,52 @@
                 openSolicitudModal(sol);
             });
         });
-
-        renderPagination(cfg, viewId, rows.length);
     }
 
-    function renderAllTables() {
-        LIST_VIEWS.forEach(viewId => renderTable(viewId, cache, getSearchValue(viewId)));
-    }
+    const trays = {
+        'view-anticipos': window.ViaticosWorktray.create({
+            tbodyId:        'anticipos-tbody',
+            searchId:       'search-anticipos',
+            counterId:      'tbl-counter-anticipos',
+            paginationId:   'tbl-pag-anticipos',
+            chipGroupId:    'chips-anticipos',
+            pageSizeId:     'page-size-anticipos',
+            fechaChipId:    'fecha-chip-anticipos',
+            datesStripId:   'dates-strip-anticipos',
+            dateFromId:     'fecha-desde-anticipos',
+            dateToId:       'fecha-hasta-anticipos',
+            clearBtnId:     'clear-anticipos',
+            sortSectionId:  'view-anticipos',
+            colspan:         6,
+            emptyText:       'No hay anticipos por revisar.',
+            emptySearchText: 'No se encontraron resultados.',
+            filter:          sol => getSolicitudEstado(sol) !== 'aprobada',
+            getChipEstado:   getSolicitudEstado,
+            renderRow:       renderAnticipoRow,
+            onAfterRender:   attachAdminRowListeners,
+        }),
+        'view-rendiciones': window.ViaticosWorktray.create({
+            tbodyId:        'rendiciones-tbody',
+            searchId:       'search-rendiciones',
+            counterId:      'tbl-counter-rendiciones',
+            paginationId:   'tbl-pag-rendiciones',
+            chipGroupId:    'chips-rendiciones',
+            pageSizeId:     'page-size-rendiciones',
+            fechaChipId:    'fecha-chip-rendiciones',
+            datesStripId:   'dates-strip-rendiciones',
+            dateFromId:     'fecha-desde-rendiciones',
+            dateToId:       'fecha-hasta-rendiciones',
+            clearBtnId:     'clear-rendiciones',
+            sortSectionId:  'view-rendiciones',
+            colspan:         6,
+            emptyText:       'No hay rendiciones registradas.',
+            emptySearchText: 'No se encontraron resultados.',
+            filter:          sol => getSolicitudEstado(sol) === 'aprobada',
+            getChipEstado:   getRendicionEstado,
+            renderRow:       renderRendicionRow,
+            onAfterRender:   attachAdminRowListeners,
+        }),
+    };
 
     async function loadSolicitudDetailView(route) {
         route = route || router.getCurrentRoute();
@@ -423,19 +268,13 @@
     }
 
     async function loadSolicitudes() {
-        LIST_VIEWS.forEach(setTableLoading);
+        LIST_VIEWS.forEach(id => trays[id].setLoading());
         try {
             cache = await apiFetch('/todas-solicitudes');
-            updateAllChipCounts();
-            renderAllTables();
+            LIST_VIEWS.forEach(id => trays[id].updateChipCounts(cache));
+            LIST_VIEWS.forEach(id => trays[id].render(cache));
         } catch (error) {
-            LIST_VIEWS.forEach(viewId => {
-                const cfg = VIEW_CONFIG[viewId];
-                const tbody = document.getElementById(cfg.tbodyId);
-                if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="6"><div class="table-empty"><p>Error: ${escHtml(error.message)}</p></div></td></tr>`;
-                }
-            });
+            LIST_VIEWS.forEach(id => trays[id].setError(error.message));
             showToast('error', 'Error al cargar solicitudes', error.message);
         }
     }
@@ -444,57 +283,108 @@
         ModalManager.close('modal-solicitud');
         modalSolId = null;
         document.getElementById('modal-solicitud-error').style.display = 'none';
+        const obsSection = document.getElementById('modal-obs-section');
+        if (obsSection) obsSection.style.display = 'none';
     }
 
     function toggleModalDecision(canEvaluate) {
-        const label = document.getElementById('modal-solicitud-label');
+        const label     = document.getElementById('modal-solicitud-label');
         const actionIds = ['btn-modal-aprobar', 'btn-modal-observar', 'btn-modal-rechazar'];
         label.style.display = canEvaluate ? '' : 'none';
         actionIds.forEach(id => {
-            const btn = document.getElementById(id);
+            const btn    = document.getElementById(id);
             btn.style.display = canEvaluate ? '' : 'none';
-            btn.disabled = !canEvaluate;
+            btn.disabled      = !canEvaluate;
         });
     }
 
     function openSolicitudModal(sol) {
         modalSolId = sol.id;
-        document.getElementById('modal-solicitud-titulo').textContent = `Solicitud #${sol.id}`;
+        document.getElementById('modal-solicitud-titulo').textContent    = `Solicitud #${sol.id}`;
         document.getElementById('modal-solicitud-subtitulo').textContent = sol.colaborador || '';
-        document.getElementById('modal-det-monto').textContent = fmt(sol.monto);
-        document.getElementById('modal-det-fecha').textContent = fmtFecha(sol.fecha);
-        document.getElementById('modal-det-colaborador').textContent = sol.colaborador || '-';
-        document.getElementById('modal-det-dni').textContent = sol.dni || '-';
-        document.getElementById('modal-det-ceco').textContent = sol.ceco || '-';
-        document.getElementById('modal-det-estado-solicitud').innerHTML = renderSolicitudBadge(sol);
-        document.getElementById('modal-det-estado-rendicion').innerHTML = renderRendicionBadge(sol);
-        document.getElementById('modal-det-motivo').textContent = sol.motivo || '-';
-        document.getElementById('modal-det-historial').innerHTML = timelineUI.renderTimeline(sol.historial);
-        document.getElementById('modal-solicitud-error').style.display = 'none';
+        document.getElementById('modal-det-monto').textContent           = fmt(sol.monto);
+        document.getElementById('modal-det-fecha').textContent           = fmtFecha(sol.fecha);
+        document.getElementById('modal-det-colaborador').textContent     = sol.colaborador || '-';
+        document.getElementById('modal-det-dni').textContent             = sol.dni  || '-';
+        document.getElementById('modal-det-ceco').textContent            = sol.ceco || '-';
+        document.getElementById('modal-det-estado-solicitud').innerHTML  = renderSolicitudBadge(sol);
+        document.getElementById('modal-det-estado-rendicion').innerHTML  = renderRendicionBadge(sol);
+        document.getElementById('modal-det-motivo').textContent          = sol.motivo || '-';
+        document.getElementById('modal-det-historial').innerHTML         = timelineUI.renderTimeline(sol.historial);
+        document.getElementById('modal-solicitud-error').style.display  = 'none';
+        const _obsSection = document.getElementById('modal-obs-section');
+        if (_obsSection) _obsSection.style.display = 'none';
         toggleModalDecision(getSolicitudEstado(sol) === 'pendiente');
         ModalManager.open('modal-solicitud');
     }
 
-    async function handleSolicitudDecision(nuevoEstado) {
+    function showModalObservarSection() {
+        const section = document.getElementById('modal-obs-section');
+        const ta      = document.getElementById('modal-obs-ta');
+        const btnConf = document.getElementById('btn-modal-obs-confirmar');
+        const btnCanc = document.getElementById('btn-modal-obs-cancelar');
+        if (!section) return;
+
+        section.style.display = '';
+        ta.value = '';
+        btnConf.disabled = true;
+
+        ['btn-modal-aprobar', 'btn-modal-observar', 'btn-modal-rechazar', 'modal-solicitud-label'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+
+        function onInput() { btnConf.disabled = !ta.value.trim(); }
+        ta.removeEventListener('input', ta._obsOnInput);
+        ta._obsOnInput = onInput;
+        ta.addEventListener('input', onInput);
+
+        btnCanc.onclick = function () {
+            section.style.display = 'none';
+            ta.value = '';
+            toggleModalDecision(true);
+        };
+
+        btnConf.onclick = async function () {
+            const comentario = ta.value.trim();
+            if (!comentario) return;
+            await handleSolicitudDecision('observada', comentario);
+        };
+
+        ta.focus();
+    }
+
+    async function handleSolicitudDecision(nuevoEstado, comentario) {
         if (!modalSolId) return;
-        const btnMap = { aprobada: 'btn-modal-aprobar', observada: 'btn-modal-observar', rechazada: 'btn-modal-rechazar' };
-        const btn = document.getElementById(btnMap[nuevoEstado]);
-        const errEl = document.getElementById('modal-solicitud-error');
+        comentario = comentario || '';
+        const btnMap = { aprobada: 'btn-modal-aprobar', observada: 'btn-modal-obs-confirmar', rechazada: 'btn-modal-rechazar' };
+        const btn    = document.getElementById(btnMap[nuevoEstado]) || document.getElementById('btn-modal-observar');
+        const errEl  = document.getElementById('modal-solicitud-error');
         errEl.style.display = 'none';
         setButtonLoading(btn, true);
-        ['btn-modal-aprobar', 'btn-modal-observar', 'btn-modal-rechazar'].forEach(id => {
-            if (id !== btnMap[nuevoEstado]) document.getElementById(id).disabled = true;
+        ['btn-modal-aprobar', 'btn-modal-rechazar', 'btn-modal-obs-confirmar', 'btn-modal-obs-cancelar'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el !== btn) el.disabled = true;
         });
         try {
-            await apiFetch('/actualizar-estado', { method: 'POST', body: JSON.stringify({ id_solicitud: modalSolId, nuevo_estado: nuevoEstado }) });
+            const body = { id_solicitud: modalSolId, nuevo_estado: nuevoEstado };
+            if (comentario) body.comentario = comentario;
+            await apiFetch('/actualizar-estado', { method: 'POST', body: JSON.stringify(body) });
             closeSolicitudModal();
             showToast('success', 'Estado actualizado', `Solicitud #${modalSolId}: ${estadoUI.getLabelEstado('solicitud', nuevoEstado)}.`);
             await loadSolicitudes();
         } catch (error) {
-            errEl.textContent = error.message || 'No se pudo actualizar la solicitud.';
-            errEl.style.display = 'block';
+            errEl.textContent    = error.message || 'No se pudo actualizar la solicitud.';
+            errEl.style.display  = 'block';
             setButtonLoading(btn, false);
-            toggleModalDecision(true);
+            if (nuevoEstado === 'observada') {
+                ['btn-modal-obs-confirmar', 'btn-modal-obs-cancelar'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.disabled = false;
+                });
+            } else {
+                toggleModalDecision(true);
+            }
         }
     }
 
@@ -509,7 +399,7 @@
     };
 
     function buildAdminAcciones(detalle, estadoRend) {
-        const errDiv = '<div id="rendicion-decision-error" class="erp-alert-error" style="display:none;margin-bottom:8px;width:100%;"></div>';
+        const errDiv  = '<div id="rendicion-decision-error" class="erp-alert-error" style="display:none;margin-bottom:8px;width:100%;"></div>';
         const buttons = [];
         if (detalle.rendicion_finalizada) {
             buttons.push('<button type="button" class="btn btn-secondary js-view-liquidacion">' + ICON.doc + 'Ver liquidación</button>');
@@ -517,19 +407,19 @@
         buttons.push('<button type="button" class="btn btn-ghost js-view-historial">' + ICON.timeline + 'Historial</button>');
         if (estadoRend === 'en_revision') {
             buttons.push('<span style="flex:1;"></span>');
-            buttons.push('<button type="button" class="btn-decide-rechazar js-decidir-rendicion" data-decision="rechazada">' + ICON.ban + 'Rechazar</button>');
+            buttons.push('<button type="button" class="btn-decide-rechazar js-decidir-rendicion" data-decision="rechazada">' + ICON.ban  + 'Rechazar</button>');
             buttons.push('<span class="decision-sep"></span>');
-            buttons.push('<button type="button" class="btn-decide-observar js-decidir-rendicion" data-decision="observada">' + ICON.msg + 'Observar</button>');
-            buttons.push('<button type="button" class="btn-decide-aprobar js-decidir-rendicion" data-decision="aprobada">' + ICON.check + 'Aprobar</button>');
+            buttons.push('<button type="button" class="btn-decide-observar js-decidir-rendicion" data-decision="observada">' + ICON.msg  + 'Observar</button>');
+            buttons.push('<button type="button" class="btn-decide-aprobar  js-decidir-rendicion" data-decision="aprobada">'  + ICON.check + 'Aprobar</button>');
         }
         return errDiv + buttons.join('');
     }
 
     function openHistorialModal(detalle) {
-        const body = document.getElementById('admin-historial-body');
-        const meta = document.getElementById('admin-historial-meta');
-        const sub  = document.getElementById('admin-historial-subtitulo');
-        const gastos = Array.isArray(detalle.gastos) ? detalle.gastos : [];
+        const body    = document.getElementById('admin-historial-body');
+        const meta    = document.getElementById('admin-historial-meta');
+        const sub     = document.getElementById('admin-historial-subtitulo');
+        const gastos   = Array.isArray(detalle.gastos)   ? detalle.gastos   : [];
         const historial = Array.isArray(detalle.historial) ? detalle.historial : [];
         if (body) {
             body.innerHTML = historial.length
@@ -551,7 +441,7 @@
     function openLiquidacionModal(detalle) {
         const container = document.getElementById('admin-liq-container');
         if (!container) return;
-        const gastos = Array.isArray(detalle.gastos) ? detalle.gastos : [];
+        const gastos  = Array.isArray(detalle.gastos) ? detalle.gastos : [];
         const liqOpts = {
             colaboradorNombre:  (detalle.colaborador || {}).display_name || '',
             codigoEmpleado:     detalle.dni  || '',
@@ -576,7 +466,7 @@
 
         window.ViaticosDetalleUI.render(container, sol, gastos, {
             apiFetch,
-            canDelete: false,
+            canDelete:    false,
             accionesHtml: buildAdminAcciones(detalle, getRendicionEstado(detalle)),
         });
 
@@ -594,13 +484,92 @@
     async function openSolicitudDetail(idSolicitud, fromView) {
         await navigateTo({
             name: 'solicitud',
-            id: idSolicitud,
+            id:   idSolicitud,
             from: VIEW_TO_ROUTE[fromView] || fromView,
         });
     }
 
+    function showDecisionCommentForm(idSolicitud, decision) {
+        const actionsEl = document.querySelector('.solv-exp-actions');
+        if (!actionsEl) return;
+        const isRequired = decision === 'observada';
+        const btnClass   = decision === 'observada' ? 'btn-decide-observar' : 'btn-decide-rechazar';
+        const btnLabel   = decision === 'observada' ? 'Confirmar observación' : 'Confirmar rechazo';
+        const placeholder = isRequired
+            ? 'Indica qué debe corregir el colaborador…'
+            : 'Indica el motivo del rechazo…';
+
+        actionsEl.innerHTML =
+            '<div id="rendicion-decision-error" class="erp-alert-error" style="display:none;margin-bottom:8px;width:100%;"></div>' +
+            '<div class="decision-prompt">' +
+            '<textarea class="decision-prompt-ta" placeholder="' + escHtml(placeholder) + '" maxlength="500" rows="3" aria-label="Motivo de la decisión"></textarea>' +
+            '<div class="decision-prompt-row">' +
+            '<button type="button" class="btn btn-ghost btn-sm" id="btn-dp-cancelar">Cancelar</button>' +
+            '<button type="button" class="' + btnClass + ' btn-sm" id="btn-dp-confirmar"' + (isRequired ? ' disabled' : '') + '>' + escHtml(btnLabel) + '</button>' +
+            '</div>' +
+            '</div>';
+
+        const ta       = actionsEl.querySelector('.decision-prompt-ta');
+        const btnConf  = document.getElementById('btn-dp-confirmar');
+        const btnCanc  = document.getElementById('btn-dp-cancelar');
+
+        if (isRequired) {
+            ta.addEventListener('input', function () {
+                btnConf.disabled = !this.value.trim();
+            });
+        }
+
+        btnCanc.addEventListener('click', function () {
+            if (currentDetalle) renderDetalle(currentDetalle);
+        });
+
+        btnConf.addEventListener('click', function () {
+            const comentario = ta.value.trim();
+            if (isRequired && !comentario) return;
+            submitDecisionRendicion(idSolicitud, decision, comentario);
+        });
+
+        ta.focus();
+    }
+
+    async function submitDecisionRendicion(idSolicitud, decision, comentario) {
+        const errEl   = document.getElementById('rendicion-decision-error');
+        if (errEl) errEl.style.display = 'none';
+        const btnConf = document.getElementById('btn-dp-confirmar');
+        const btnCanc = document.getElementById('btn-dp-cancelar');
+        if (btnConf) {
+            btnConf.disabled  = true;
+            btnConf.innerHTML = '<div class="spinner" style="width:13px;height:13px;border-width:2px;"></div> Procesando…';
+        }
+        if (btnCanc) btnCanc.disabled = true;
+        try {
+            const body = { id_solicitud: parseInt(idSolicitud, 10), decision };
+            if (comentario) body.comentario = comentario;
+            await apiFetch('/decidir-rendicion', { method: 'POST', body: JSON.stringify(body) });
+            const detalleActualizado = await apiFetch(`/detalle-rendicion-admin/${idSolicitud}`);
+            renderDetalle(detalleActualizado);
+            await loadSolicitudes();
+            showToast('success', 'Decisión registrada', `Rendición de solicitud #${idSolicitud}: ${estadoUI.getLabelEstado('rendicion', decision)}.`);
+        } catch (error) {
+            if (errEl) {
+                errEl.textContent   = error.message || 'No se pudo registrar la decisión.';
+                errEl.style.display = 'block';
+            }
+            if (btnConf) {
+                const btnLabel = decision === 'observada' ? 'Confirmar observación' : 'Confirmar rechazo';
+                btnConf.disabled  = false;
+                btnConf.innerHTML = escHtml(btnLabel);
+            }
+            if (btnCanc) btnCanc.disabled = false;
+        }
+    }
+
     async function handleDecisionRendicion(idSolicitud, decision) {
-        const errEl = document.getElementById('rendicion-decision-error');
+        if (decision === 'observada' || decision === 'rechazada') {
+            showDecisionCommentForm(idSolicitud, decision);
+            return;
+        }
+        const errEl   = document.getElementById('rendicion-decision-error');
         if (errEl) errEl.style.display = 'none';
         const buttons = document.querySelectorAll('.js-decidir-rendicion');
         buttons.forEach(btn => { btn.disabled = true; });
@@ -617,7 +586,7 @@
             showToast('success', 'Decisión registrada', `Rendición de solicitud #${idSolicitud}: ${estadoUI.getLabelEstado('rendicion', decision)}.`);
         } catch (error) {
             if (errEl) {
-                errEl.textContent = error.message || 'No se pudo registrar la decisión.';
+                errEl.textContent   = error.message || 'No se pudo registrar la decisión.';
                 errEl.style.display = 'block';
             }
             buttons.forEach(btn => {
@@ -636,8 +605,8 @@
             return;
         }
 
-        if (VIEW_CONFIG[route.viewId]) {
-            renderTable(route.viewId, cache, getSearchValue(route.viewId));
+        if (trays[route.viewId]) {
+            trays[route.viewId].render(cache);
         }
     }
 
@@ -650,88 +619,13 @@
         await router.navigateTo(routeName, { id, from, historyMode: options.historyMode || 'push' });
     }
 
-    function initFilterChips() {
-        LIST_VIEWS.forEach(viewId => {
-            const cfg = VIEW_CONFIG[viewId];
-            const group = document.getElementById(cfg.chipGroupId);
-            if (!group) return;
-            group.querySelectorAll('.tbl-chip:not(.tbl-chip-fecha)').forEach(chip => {
-                chip.addEventListener('click', () => {
-                    group.querySelectorAll('.tbl-chip:not(.tbl-chip-fecha)').forEach(c => c.classList.remove('is-active'));
-                    chip.classList.add('is-active');
-                    filterState[viewId] = chip.dataset.filter || '';
-                    pageState[viewId] = 1;
-                    renderTable(viewId, cache, getSearchValue(viewId));
-                });
-            });
-
-            const fechaChip = document.getElementById(cfg.fechaChipId);
-            const strip = document.getElementById(cfg.datesStripId);
-            if (fechaChip && strip) {
-                fechaChip.addEventListener('click', () => {
-                    const opening = !strip.classList.contains('is-open');
-                    strip.classList.toggle('is-open');
-                    if (!opening) {
-                        const desdeEl = document.getElementById(cfg.dateFromId);
-                        const hastaEl = document.getElementById(cfg.dateToId);
-                        const hasDate = (desdeEl && desdeEl.value) || (hastaEl && hastaEl.value);
-                        fechaChip.classList.toggle('is-active', !!hasDate);
-                    } else {
-                        fechaChip.classList.add('is-active');
-                        const desde = document.getElementById(cfg.dateFromId);
-                        if (desde) desde.focus();
-                    }
-                });
-            }
-
-            [cfg.dateFromId, cfg.dateToId].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.addEventListener('change', () => {
-                    const desdeEl = document.getElementById(cfg.dateFromId);
-                    const hastaEl = document.getElementById(cfg.dateToId);
-                    const hasDate = (desdeEl && desdeEl.value) || (hastaEl && hastaEl.value);
-                    const fc = document.getElementById(cfg.fechaChipId);
-                    if (fc) fc.classList.toggle('is-active', !!hasDate || strip.classList.contains('is-open'));
-                    pageState[viewId] = 1;
-                    renderTable(viewId, cache, getSearchValue(viewId));
-                });
-            });
-
-            const clearBtn = document.getElementById(cfg.clearBtnId);
-            if (clearBtn) {
-                clearBtn.addEventListener('click', () => clearAllFilters(viewId));
-            }
-        });
-    }
-
-    function initSortHeaders() {
-        LIST_VIEWS.forEach(viewId => {
-            const section = document.getElementById(viewId);
-            if (!section) return;
-            section.querySelectorAll('thead th[data-sort-key]').forEach(th => {
-                th.addEventListener('click', () => {
-                    const key = th.dataset.sortKey;
-                    const type = th.dataset.sortType || 'str';
-                    const current = sortState[viewId] || {};
-                    const newDir = current.key === key && current.dir === 'asc' ? 'desc' : 'asc';
-                    sortState[viewId] = { key, dir: newDir, type };
-                    th.closest('thead').querySelectorAll('th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
-                    th.classList.add(newDir === 'asc' ? 'sort-asc' : 'sort-desc');
-                    pageState[viewId] = 1;
-                    renderTable(viewId, cache, getSearchValue(viewId));
-                });
-            });
-        });
-    }
-
     function bindEvents() {
         document.querySelectorAll('[data-route]').forEach(link => {
             link.addEventListener('click', event => {
                 event.preventDefault();
                 navigateTo({
                     name: link.dataset.route,
-                    id: link.dataset.routeId || null,
+                    id:   link.dataset.routeId   || null,
                     from: link.dataset.routeFrom || null,
                 });
             });
@@ -741,29 +635,7 @@
             btn.addEventListener('click', loadSolicitudes);
         });
 
-        LIST_VIEWS.forEach(viewId => {
-            const cfg = VIEW_CONFIG[viewId];
-            const input = document.getElementById(cfg.searchId);
-            if (!input) return;
-            input.addEventListener('input', event => {
-                pageState[viewId] = 1;
-                renderTable(viewId, cache, event.target.value);
-            });
-        });
-
-        initSortHeaders();
-        initFilterChips();
-
-        LIST_VIEWS.forEach(viewId => {
-            const cfg = VIEW_CONFIG[viewId];
-            const select = document.getElementById(cfg.pageSizeId);
-            if (!select) return;
-            select.addEventListener('change', () => {
-                pageSizeState[viewId] = parseInt(select.value, 10);
-                pageState[viewId] = 1;
-                renderTable(viewId, cache, getSearchValue(viewId));
-            });
-        });
+        LIST_VIEWS.forEach(viewId => trays[viewId].initInteractions(() => cache));
 
         document.getElementById('btn-volver-lista').addEventListener('click', () => {
             const route = router.getCurrentRoute();
@@ -777,14 +649,14 @@
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape') closeSolicitudModal();
         });
-        document.getElementById('btn-modal-aprobar').addEventListener('click', () => handleSolicitudDecision('aprobada'));
-        document.getElementById('btn-modal-observar').addEventListener('click', () => handleSolicitudDecision('observada'));
-        document.getElementById('btn-modal-rechazar').addEventListener('click', () => handleSolicitudDecision('rechazada'));
-        ['btn-cerrar-admin-historial','btn-cancelar-admin-historial'].forEach(id => {
+        document.getElementById('btn-modal-aprobar').addEventListener('click', () => handleSolicitudDecision('aprobada', ''));
+        document.getElementById('btn-modal-observar').addEventListener('click', () => showModalObservarSection());
+        document.getElementById('btn-modal-rechazar').addEventListener('click', () => handleSolicitudDecision('rechazada', ''));
+        ['btn-cerrar-admin-historial', 'btn-cancelar-admin-historial'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener('click', () => ModalManager.close('modal-admin-historial'));
         });
-        ['btn-cerrar-admin-liq','btn-cancelar-admin-liq'].forEach(id => {
+        ['btn-cerrar-admin-liq', 'btn-cancelar-admin-liq'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener('click', () => ModalManager.close('modal-admin-liquidacion'));
         });
@@ -801,7 +673,7 @@
                 setButtonLoading(btn, false);
             }
         });
-        ['modal-admin-historial','modal-admin-liquidacion'].forEach(id => {
+        ['modal-admin-historial', 'modal-admin-liquidacion'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener('click', event => {
                 if (event.target === el) ModalManager.close(id);
@@ -816,9 +688,9 @@
     }
 
     window.AdminApp = {
-        navigate: navigateTo,
+        navigate:        navigateTo,
         loadSolicitudes,
-        refreshRows: loadSolicitudes,
+        refreshRows:     loadSolicitudes,
         showToast,
         openSolicitudDetail
     };

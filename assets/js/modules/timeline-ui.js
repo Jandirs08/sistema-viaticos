@@ -6,11 +6,13 @@ window.ViaticosTimelineUI = (function () {
         solicitud_aprobada: 'Solicitud aprobada',
         solicitud_observada: 'Solicitud observada',
         solicitud_rechazada: 'Solicitud rechazada',
+        solicitud_reenviada: 'Solicitud reenviada a revisión',
         rendicion_iniciada: 'Rendición iniciada',
         rendicion_finalizada: 'Rendición finalizada',
         rendicion_aprobada: 'Rendición aprobada',
         rendicion_observada: 'Rendición observada',
         rendicion_rechazada: 'Rendición rechazada',
+        rendicion_reenviada: 'Rendición reenviada a revisión',
     };
 
     function escapeHtml(value) {
@@ -60,11 +62,17 @@ window.ViaticosTimelineUI = (function () {
                     : '';
             const meta = [formatDateTime(item && item.fecha), usuario].filter(Boolean).join(' · ');
 
+                const comentario = item && item.comentario ? String(item.comentario) : '';
+            const comentarioHtml = comentario
+                ? `<div class="timeline-comment">${escapeHtml(comentario)}</div>`
+                : '';
+
             return `
         <div class="timeline-item">
             <div class="timeline-marker"><span class="timeline-dot"></span></div>
             <div class="timeline-content">
                 <div class="timeline-title">${escapeHtml(getLabel(item && item.evento))}</div>
+                ${comentarioHtml}
                 <div class="timeline-meta">${meta}</div>
             </div>
         </div>

@@ -105,7 +105,7 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
         );
     }
 
-    if ( (int) $solicitud->post_author !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
+    if ( (int) $solicitud->post_author !== get_current_user_id() && ! current_user_can( 'manage_viaticos' ) ) {
         return new WP_REST_Response(
             array(
                 'success' => false,
@@ -127,7 +127,7 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
         );
     }
 
-    if ( viaticos_es_rendicion_finalizada( $id_solicitud ) ) {
+    if ( viaticos_es_rendicion_finalizada( $id_solicitud ) && 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
         return new WP_REST_Response(
             array(
                 'success' => false,
@@ -232,20 +232,20 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
         );
     }
 
-    update_field( 'field_gas_id_solicitud_padre',  $id_solicitud,                    $post_id );
-    update_field( 'field_gas_fecha_emision',       $request->get_param( 'fecha' ),   $post_id );
-    update_field( 'field_gas_importe_comprobante', $request->get_param( 'importe' ), $post_id );
+    update_field( ACF_GAS_SOLICITUD, $id_solicitud,                    $post_id );
+    update_field( ACF_GAS_FECHA,    $request->get_param( 'fecha' ),   $post_id );
+    update_field( ACF_GAS_IMPORTE,  $request->get_param( 'importe' ), $post_id );
     wp_set_object_terms( $post_id, $id_categoria, 'categoria_gasto' );
 
     if ( 'movilidad' === $tipo ) {
-        update_field( 'field_gas_motivo_movilidad',  $request->get_param( 'motivo_movilidad' ),  $post_id );
-        update_field( 'field_gas_destino_movilidad', $request->get_param( 'destino_movilidad' ), $post_id );
-        update_field( 'field_gas_ceco_oi',           $request->get_param( 'ceco_oi' ),           $post_id );
+        update_field( ACF_GAS_MOTIVO_MOV, $request->get_param( 'motivo_movilidad' ),  $post_id );
+        update_field( ACF_GAS_DESTINO,    $request->get_param( 'destino_movilidad' ), $post_id );
+        update_field( ACF_GAS_CECO,       $request->get_param( 'ceco_oi' ),           $post_id );
     } else {
-        update_field( 'field_gas_ruc_proveedor',        $request->get_param( 'ruc' ),                  $post_id );
-        update_field( 'field_gas_razon_social',         $request->get_param( 'razon_social' ),         $post_id );
-        update_field( 'field_gas_nro_comprobante',      $request->get_param( 'nro_comprobante' ),      $post_id );
-        update_field( 'field_gas_descripcion_concepto', $request->get_param( 'descripcion_concepto' ), $post_id );
+        update_field( ACF_GAS_RUC,      $request->get_param( 'ruc' ),                  $post_id );
+        update_field( ACF_GAS_RAZON,    $request->get_param( 'razon_social' ),         $post_id );
+        update_field( ACF_GAS_NRO,      $request->get_param( 'nro_comprobante' ),      $post_id );
+        update_field( ACF_GAS_CONCEPTO, $request->get_param( 'descripcion_concepto' ), $post_id );
     }
 
     if ( ! $tenia_gastos ) {
@@ -277,7 +277,7 @@ function viaticos_callback_finalizar_rendicion( WP_REST_Request $request ) {
         );
     }
 
-    if ( (int) $solicitud->post_author !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
+    if ( (int) $solicitud->post_author !== get_current_user_id() && ! current_user_can( 'manage_viaticos' ) ) {
         return new WP_REST_Response(
             array(
                 'success' => false,
@@ -317,10 +317,10 @@ function viaticos_callback_finalizar_rendicion( WP_REST_Request $request ) {
         );
     }
 
-    update_post_meta( $id_solicitud, 'rendicion_finalizada', '1' );
+    update_post_meta( $id_solicitud, META_RENDICION_FINALIZADA, '1' );
 
     if ( '' === viaticos_get_estado_rendicion( $id_solicitud ) ) {
-        update_post_meta( $id_solicitud, 'estado_rendicion', 'finalizada' );
+        update_post_meta( $id_solicitud, META_ESTADO_RENDICION, 'finalizada' );
     }
 
     registrarEventoSolicitud( $id_solicitud, 'rendicion_finalizada', get_current_user_id() );
@@ -343,7 +343,7 @@ function viaticos_callback_mis_rendiciones( WP_REST_Request $request ) {
         'post_type'      => 'gasto_rendicion',
         'post_status'    => 'publish',
         'author'         => get_current_user_id(),
-        'posts_per_page' => 100,
+        'posts_per_page' => -1,
         'orderby'        => 'date',
         'order'          => 'DESC',
         'no_found_rows'  => true,
@@ -437,8 +437,17 @@ function viaticos_callback_decidir_rendicion( WP_REST_Request $request ) {
         );
     }
 
+    $comentario = sanitize_textarea_field( (string) ( $request->get_param( 'comentario' ) ?: '' ) );
+
+    if ( 'observada' === $decision && '' === trim( $comentario ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Debes indicar el motivo de la observación.' ),
+            422
+        );
+    }
+
     $estado_anterior = viaticos_get_estado_rendicion( $id_solicitud );
-    update_post_meta( $id_solicitud, 'estado_rendicion', $decision );
+    update_post_meta( $id_solicitud, META_ESTADO_RENDICION, $decision );
 
     $eventos = array(
         'aprobada'  => 'rendicion_aprobada',
@@ -447,7 +456,7 @@ function viaticos_callback_decidir_rendicion( WP_REST_Request $request ) {
     );
 
     if ( $estado_anterior !== $decision && isset( $eventos[ $decision ] ) ) {
-        registrarEventoSolicitud( $id_solicitud, $eventos[ $decision ], get_current_user_id() );
+        registrarEventoSolicitud( $id_solicitud, $eventos[ $decision ], get_current_user_id(), $comentario );
     }
 
     $labels = array(
@@ -462,6 +471,85 @@ function viaticos_callback_decidir_rendicion( WP_REST_Request $request ) {
             'message'          => sprintf( 'Rendición de solicitud #%d %s.', $id_solicitud, $labels[ $decision ] ?? $decision ),
             'id_solicitud'     => $id_solicitud,
             'estado_rendicion' => $decision,
+        ),
+        200
+    );
+}
+
+function viaticos_callback_eliminar_gasto( WP_REST_Request $request ) {
+    $id_gasto = absint( $request->get_param( 'id_gasto' ) );
+    $gasto    = get_post( $id_gasto );
+
+    if ( ! $gasto || 'gasto_rendicion' !== $gasto->post_type ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Gasto no encontrado.' ),
+            404
+        );
+    }
+
+    if ( (int) $gasto->post_author !== get_current_user_id() ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'No tienes permisos para eliminar este gasto.' ),
+            403
+        );
+    }
+
+    $id_solicitud = (int) get_field( ACF_GAS_SOLICITUD, $id_gasto );
+
+    if ( 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Solo puedes eliminar gastos cuando la rendición está observada.' ),
+            409
+        );
+    }
+
+    $adj_ids = array_filter( array_map( 'absint', get_post_meta( $id_gasto, 'adjunto_id', false ) ) );
+    foreach ( $adj_ids as $att_id ) {
+        wp_delete_attachment( $att_id, true );
+    }
+
+    wp_delete_post( $id_gasto, true );
+
+    return new WP_REST_Response(
+        array( 'success' => true, 'message' => 'Gasto eliminado correctamente.' ),
+        200
+    );
+}
+
+function viaticos_callback_reenviar_rendicion( WP_REST_Request $request ) {
+    $id_solicitud = absint( $request->get_param( 'id_solicitud' ) );
+    $solicitud    = get_post( $id_solicitud );
+
+    if ( ! $solicitud || 'solicitud_viatico' !== $solicitud->post_type ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Solicitud no encontrada.' ),
+            404
+        );
+    }
+
+    if ( (int) $solicitud->post_author !== get_current_user_id() ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'No tienes permisos para reenviar esta rendición.' ),
+            403
+        );
+    }
+
+    if ( 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Solo puedes reenviar una rendición observada.' ),
+            409
+        );
+    }
+
+    update_post_meta( $id_solicitud, META_ESTADO_RENDICION, '' );
+    registrarEventoSolicitud( $id_solicitud, 'rendicion_reenviada', get_current_user_id() );
+
+    return new WP_REST_Response(
+        array(
+            'success'          => true,
+            'message'          => 'Rendición reenviada a revisión correctamente.',
+            'id_solicitud'     => $id_solicitud,
+            'estado_rendicion' => '',
         ),
         200
     );

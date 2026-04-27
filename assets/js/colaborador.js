@@ -161,11 +161,39 @@
     }
 
     /* ── Data ─────────────────────────────────────────────── */
-    let solPageSize = 10;
-    let solSortState = null;
-    let solPage = 1;
-    let solFilter = '';
-    let solSearch = '';
+    function renderSolicitudRow(sol) {
+        const gastos   = getGastosBySolicitud(sol.id);
+        const acciones = buildAcciones(sol);
+        return `<tr>
+            <td class="text-muted">#${sol.id}</td>
+            <td>${formatFecha(sol.fecha)}</td>
+            <td class="td-truncate" title="${escHtml(sol.motivo)}">${escHtml(sol.motivo)}</td>
+            <td><strong>${formatMonto(sol.monto)}</strong></td>
+            <td>${escHtml(sol.ceco)}</td>
+            <td>${estadoUI.renderNarrativeBadge(sol, { gastos })}</td>
+            <td>${acciones}</td>
+        </tr>`;
+    }
+
+    const solTray = window.ViaticosWorktray.create({
+        tbodyId:         'solicitudes-tbody',
+        paginationId:    'tbl-pag-solicitudes',
+        chipGroupId:     'chips-solicitudes',
+        searchId:        'search-solicitudes',
+        pageSizeId:      'page-size-solicitudes',
+        fechaChipId:     'fecha-chip-solicitudes',
+        datesStripId:    'dates-strip-solicitudes',
+        dateFromId:      'fecha-desde-solicitudes',
+        dateToId:        'fecha-hasta-solicitudes',
+        clearBtnId:      'clear-solicitudes',
+        sortSectionId:   'view-solicitudes',
+        colspan:         7,
+        emptyText:       'Aún no tienes solicitudes registradas.',
+        emptySearchText: 'No se encontraron resultados.',
+        getChipEstado:   getSolicitudEstado,
+        renderRow:       renderSolicitudRow,
+        onAfterRender:   function (tbody, pageRows) { attachActionListeners(tbody, pageRows); },
+    });
 
     let solicitudesCache = [];
     let gastosCache = [];
@@ -424,7 +452,7 @@
         renderInicioLoading();
         try {
             await Promise.all([refreshSolicitudesCache(), refreshGastosCache()]);
-            updateSolChipCounts();
+            solTray.updateChipCounts(solicitudesCache);
             renderInicioStats(solicitudesCache);
             renderInicioBandeja(solicitudesCache);
             renderInicioRecent(solicitudesCache);
@@ -435,12 +463,11 @@
 
     async function loadSolicitudesView() {
         showView('view-solicitudes', 'solicitudes');
-        const tbody = document.getElementById('solicitudes-tbody');
-        if (tbody) renderTableLoading(tbody, 7);
+        solTray.setLoading();
         try {
             await Promise.all([refreshSolicitudesCache(), refreshGastosCache()]);
-            updateSolChipCounts();
-            renderSolicitudesTable(solicitudesCache);
+            solTray.updateChipCounts(solicitudesCache);
+            solTray.render(solicitudesCache);
         } catch (err) {
             showToast('error', 'Error', err.message);
         }
@@ -574,7 +601,7 @@
             renderInicioStats(solicitudesCache);
             renderInicioBandeja(solicitudesCache);
             renderInicioRecent(solicitudesCache);
-            if (router.getCurrentRoute().name === 'solicitudes') renderSolicitudesTable(solicitudesCache);
+            if (router.getCurrentRoute().name === 'solicitudes') solTray.render(solicitudesCache);
             showToast('success', 'Solicitud registrada');
             await navigateTo({ name: 'solicitudes' });
         } catch (err) {
@@ -588,137 +615,66 @@
         }
     }
 
-    function handleEditarSolicitudSubmit(e) {
+    async function handleEditarSolicitudSubmit(e) {
         e.preventDefault();
-        showToast('error', 'No disponible', 'La edición de solicitudes observadas no está conectada en esta versión.');
-    }
-
-    /* ── Render helpers ───────────────────────────────────── */
-    function renderTableEmpty(tbody, colSpan, message) {
-        if (message === undefined) message = 'No se encontraron registros.';
-        const icon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>';
-        tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="table-empty">${icon}<p>${message}</p></div></td></tr>`;
-    }
-
-    function renderTableLoading(tbody, colSpan) {
-        utils.renderTableSkeleton(tbody, colSpan);
-    }
-
-    function renderSolPagination(total) {
-        const el = document.getElementById('tbl-pag-solicitudes');
-        if (!el) return;
-        const totalPages = Math.ceil(total / solPageSize);
-        if (totalPages <= 1) { el.innerHTML = ''; return; }
-        const start = (solPage - 1) * solPageSize;
-        const end = Math.min(solPage * solPageSize, total);
-        el.innerHTML = `
-            <span class="tbl-pag-info">${start + 1}–${end} de ${total}</span>
-            <div class="tbl-pag-btns">
-                <button class="btn btn-ghost btn-sm js-sol-prev" ${solPage <= 1 ? 'disabled' : ''}>← Anterior</button>
-                <button class="btn btn-ghost btn-sm js-sol-next" ${solPage >= totalPages ? 'disabled' : ''}>Siguiente →</button>
-            </div>`;
-        el.querySelector('.js-sol-prev').addEventListener('click', () => {
-            solPage = Math.max(1, solPage - 1);
-            renderSolicitudesTable(solicitudesCache);
-        });
-        el.querySelector('.js-sol-next').addEventListener('click', () => {
-            solPage = Math.min(totalPages, solPage + 1);
-            renderSolicitudesTable(solicitudesCache);
-        });
-    }
-
-    function updateSolChipCounts() {
-        var group = document.getElementById('chips-solicitudes');
-        if (!group) return;
-        group.querySelectorAll('.tbl-chip[data-filter]').forEach(function(chip) {
-            var filter = chip.dataset.filter;
-            var countEl = chip.querySelector('.tbl-chip-count');
-            if (!countEl) return;
-            var count = filter
-                ? solicitudesCache.filter(function(sol) { return getSolicitudEstado(sol) === filter; }).length
-                : solicitudesCache.length;
-            countEl.textContent = count;
-        });
-    }
-
-    function hasActiveSolFilters() {
-        if (solFilter) return true;
-        if (solSearch.trim()) return true;
-        var desdeEl = document.getElementById('fecha-desde-solicitudes');
-        var hastaEl = document.getElementById('fecha-hasta-solicitudes');
-        if (desdeEl && desdeEl.value) return true;
-        if (hastaEl && hastaEl.value) return true;
-        return false;
-    }
-
-    function updateSolClearButton() {
-        var btn = document.getElementById('clear-solicitudes');
-        if (btn) btn.style.display = hasActiveSolFilters() ? '' : 'none';
-    }
-
-    /* ── Render: solicitudes table ────────────────────────── */
-    function renderSolicitudesTable(data) {
-        updateSolClearButton();
-        const tbody = document.getElementById('solicitudes-tbody');
-        const pagEl = document.getElementById('tbl-pag-solicitudes');
-        let rows = [...(data || [])];
-
-        if (solFilter) {
-            rows = rows.filter(sol => getSolicitudEstado(sol) === solFilter);
+        const btn = document.getElementById('btn-submit-editar-solicitud');
+        const id_solicitud = parseInt(document.getElementById('ed-post-id').value, 10);
+        if (!id_solicitud) return;
+        setButtonLoading(btn, true);
+        try {
+            const payload = {
+                id_solicitud,
+                dni:    document.getElementById('ed-dni').value,
+                monto:  parseFloat(document.getElementById('ed-monto').value),
+                fecha:  document.getElementById('ed-fecha').value,
+                ceco:   document.getElementById('ed-ceco').value,
+                motivo: document.getElementById('ed-motivo').value,
+            };
+            await apiFetch('/editar-solicitud', { method: 'POST', body: JSON.stringify(payload) });
+            ModalManager.close('modal-editar-solicitud');
+            await refreshSolicitudesCache();
+            await refreshGastosCache();
+            solTray.render(solicitudesCache);
+            const sol = getSolicitudById(id_solicitud);
+            if (sol) {
+                renderDetalleSolicitudContent(sol, getGastosBySolicitud(id_solicitud));
+                await navigateTo({ name: 'solicitud', id: id_solicitud, from: 'solicitudes' });
+            }
+            showToast('success', 'Solicitud corregida y reenviada a revisión.');
+        } catch (err) {
+            showToast('error', 'Error', err.message);
+        } finally {
+            setButtonLoading(btn, false);
         }
-        if (solSearch) {
-            const q = solSearch.toLowerCase();
-            rows = rows.filter(sol =>
-                String(sol.id).includes(q) ||
-                (sol.ceco || '').toLowerCase().includes(q) ||
-                (sol.motivo || '').toLowerCase().includes(q)
-            );
-        }
-        const desdeVal = (document.getElementById('fecha-desde-solicitudes') || {}).value || '';
-        const hastaVal = (document.getElementById('fecha-hasta-solicitudes') || {}).value || '';
-        if (desdeVal || hastaVal) {
-            rows = rows.filter(sol => {
-                const f = sol.fecha || '';
-                if (desdeVal && f < desdeVal) return false;
-                if (hastaVal && f > hastaVal) return false;
-                return true;
-            });
-        }
-
-        if (!rows.length) {
-            renderTableEmpty(tbody, 7, (solFilter || solSearch || desdeVal || hastaVal) ? 'No se encontraron resultados.' : 'Aún no tienes solicitudes registradas.');
-            if (pagEl) pagEl.innerHTML = '';
-            return;
-        }
-        if (solSortState) {
-            const { key, dir, type } = solSortState;
-            rows.sort((a, b) => {
-                let av = a[key], bv = b[key];
-                if (type === 'num') { av = parseFloat(av) || 0; bv = parseFloat(bv) || 0; }
-                else { av = String(av || '').toLowerCase(); bv = String(bv || '').toLowerCase(); }
-                if (av < bv) return dir === 'asc' ? -1 : 1;
-                if (av > bv) return dir === 'asc' ? 1 : -1;
-                return 0;
-            });
-        }
-        const start = (solPage - 1) * solPageSize;
-        const pageRows = rows.slice(start, start + solPageSize);
-        tbody.innerHTML = pageRows.map(sol => {
-            const gastosSolicitud = getGastosBySolicitud(sol.id);
-            const acciones = buildAcciones(sol);
-            return `<tr>
-                <td class="text-muted">#${sol.id}</td>
-                <td>${formatFecha(sol.fecha)}</td>
-                <td class="td-truncate" title="${escHtml(sol.motivo)}">${escHtml(sol.motivo)}</td>
-                <td><strong>${formatMonto(sol.monto)}</strong></td>
-                <td>${escHtml(sol.ceco)}</td>
-                <td>${estadoUI.renderNarrativeBadge(sol, { gastos: gastosSolicitud })}</td>
-                <td>${acciones}</td>
-            </tr>`;
-        }).join('');
-        attachActionListeners(tbody, rows);
-        renderSolPagination(rows.length);
     }
+
+    async function handleDeleteGasto(solicitudId, gastoId) {
+        try {
+            await apiFetch('/gasto/' + gastoId, { method: 'DELETE' });
+            await refreshGastosCache();
+            const sol = getSolicitudById(solicitudId);
+            if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(solicitudId));
+            showToast('success', 'Gasto eliminado.');
+        } catch (err) {
+            showToast('error', 'Error', err.message);
+        }
+    }
+
+    async function handleReenviarRendicion(solicitudId) {
+        if (!confirm('¿Reenviar la rendición a revisión? El administrador podrá revisarla nuevamente.')) return;
+        try {
+            await apiFetch('/reenviar-rendicion', { method: 'POST', body: JSON.stringify({ id_solicitud: solicitudId }) });
+            await refreshSolicitudesCache();
+            await refreshGastosCache();
+            solTray.render(solicitudesCache);
+            const sol = getSolicitudById(solicitudId);
+            if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(solicitudId));
+            showToast('success', 'Rendición reenviada a revisión.');
+        } catch (err) {
+            showToast('error', 'Error', err.message);
+        }
+    }
+
 
     function buildAcciones(sol) {
         const estado = getSolicitudEstado(sol);
@@ -780,11 +736,11 @@
         const contentEl       = document.getElementById('detalle-view-content');
         const estadoSolicitud = getSolicitudEstado(sol);
         const estadoRend      = getRendicionEstado(sol, { gastos });
-        const canAdd          = estadoSolicitud === 'aprobada' && !sol.rendicion_finalizada && !['aprobada', 'rechazada'].includes(estadoRend);
-        const canFinalize     = canAdd && gastos.length > 0;
+        const canAdd          = estadoSolicitud === 'aprobada' && (!sol.rendicion_finalizada || estadoRend === 'observada') && !['aprobada', 'rechazada', 'en_revision'].includes(estadoRend);
+        const canFinalize     = estadoSolicitud === 'aprobada' && !sol.rendicion_finalizada && gastos.length > 0;
         const canLiquidacion  = !!sol.rendicion_finalizada;
         const canEditSolicitud = estadoSolicitud === 'observada';
-        const canFixRendicion  = estadoRend === 'observada';
+        const canReenviar     = estadoRend === 'observada';
 
         const editIcon     = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02.0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41.0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
         const checkIcon    = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
@@ -794,13 +750,19 @@
 
         const accionesHtml =
             '<button type="button" class="btn btn-primary" id="detalle-hero-editar-solicitud"' + (canEditSolicitud ? '' : ' style="display:none;"') + '>' + editIcon + 'Corregir solicitud</button>' +
-            '<button type="button" class="btn btn-primary" id="detalle-hero-fix-rendicion"' + (canFixRendicion ? '' : ' style="display:none;"') + '>' + editIcon + 'Corregir rendición</button>' +
+            '<button type="button" class="btn btn-primary" id="detalle-hero-reenviar-rendicion"' + (canReenviar ? '' : ' style="display:none;"') + '>' + checkIcon + 'Reenviar rendición</button>' +
             '<button type="button" class="btn btn-primary" id="detalle-hero-finalizar-rendicion"' + (canFinalize ? '' : ' style="display:none;"') + '>' + checkIcon + 'Finalizar y enviar rendición</button>' +
             '<button type="button" class="btn btn-secondary" id="detalle-hero-agregar-gasto"' + (canAdd ? '' : ' style="display:none;"') + '>' + plusIcon + 'Agregar gasto</button>' +
             '<button type="button" class="btn btn-secondary" id="detalle-hero-ver-liquidacion"' + (canLiquidacion ? '' : ' style="display:none;"') + '>' + docIcon + 'Ver liquidación</button>' +
             '<button type="button" class="btn btn-ghost" data-open-history="1">' + timelineIcon + 'Historial</button>';
 
-        const { historialHtml } = window.ViaticosDetalleUI.render(contentEl, sol, gastos, { apiFetch, canDelete: true, accionesHtml });
+        const { historialHtml } = window.ViaticosDetalleUI.render(contentEl, sol, gastos, {
+            apiFetch,
+            canDelete: true,
+            accionesHtml,
+            canDeleteGasto: canReenviar,
+            onDeleteGasto: (gastoId) => handleDeleteGasto(sol.id, gastoId),
+        });
 
         const historial           = Array.isArray(sol.historial) ? sol.historial : [];
         const historialBodyEl     = document.getElementById('detalle-historial-body');
@@ -823,13 +785,13 @@
         const btnFinalizar   = contentEl.querySelector('#detalle-hero-finalizar-rendicion');
         const btnLiquidacion = contentEl.querySelector('#detalle-hero-ver-liquidacion');
         const btnEditar      = contentEl.querySelector('#detalle-hero-editar-solicitud');
-        const btnFixRend     = contentEl.querySelector('#detalle-hero-fix-rendicion');
+        const btnReenviar    = contentEl.querySelector('#detalle-hero-reenviar-rendicion');
 
-        if (btnAgregar)     btnAgregar.addEventListener('click',     () => { if (!sol.rendicion_finalizada) openRendirModal(sol.id); });
+        if (btnAgregar)     btnAgregar.addEventListener('click',     () => openRendirModal(sol.id));
         if (btnFinalizar)   btnFinalizar.addEventListener('click',   () => { if (!sol.rendicion_finalizada && gastos.length) ModalManager.open('modal-confirmar-finalizar'); });
         if (btnLiquidacion) btnLiquidacion.addEventListener('click', () => openLiquidacionModal(sol.id));
         if (btnEditar)      btnEditar.addEventListener('click',      () => openEditarModal(sol));
-        if (btnFixRend)     btnFixRend.addEventListener('click',     () => openRendirModal(sol.id));
+        if (btnReenviar)    btnReenviar.addEventListener('click',    () => handleReenviarRendicion(sol.id));
         contentEl.querySelectorAll('[data-open-history="1"]').forEach(btn => btn.addEventListener('click', () => ModalManager.open('modal-historial-solicitud')));
 
     }
@@ -840,7 +802,7 @@
         try {
             await apiFetch('/finalizar-rendicion', { method: 'POST', body: JSON.stringify({ id_solicitud: currentId }) });
             await refreshSolicitudesCache(); await refreshGastosCache();
-            renderSolicitudesTable(solicitudesCache);
+            solTray.render(solicitudesCache);
             const sol = getSolicitudById(currentId);
             if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(currentId));
             showToast('success', 'Finalizado', 'Rendición enviada a revisión.');
@@ -1255,111 +1217,11 @@
         ModalManager.closeOnOverlayClick('modal-historial-solicitud');
 
         document.getElementById('btn-refrescar-solicitudes').addEventListener('click', () => {
-            solPage = 1;
+            solTray.setPage(1);
             loadSolicitudesView();
         });
 
-        const searchSol = document.getElementById('search-solicitudes');
-        if (searchSol) {
-            searchSol.addEventListener('input', () => {
-                solSearch = searchSol.value;
-                solPage = 1;
-                renderSolicitudesTable(solicitudesCache);
-            });
-        }
-
-        const chipGroup = document.getElementById('chips-solicitudes');
-        if (chipGroup) {
-            chipGroup.querySelectorAll('.tbl-chip:not(.tbl-chip-fecha)').forEach(chip => {
-                chip.addEventListener('click', () => {
-                    chipGroup.querySelectorAll('.tbl-chip:not(.tbl-chip-fecha)').forEach(c => c.classList.remove('is-active'));
-                    chip.classList.add('is-active');
-                    solFilter = chip.dataset.filter || '';
-                    solPage = 1;
-                    renderSolicitudesTable(solicitudesCache);
-                });
-            });
-        }
-
-        const solFechaChip = document.getElementById('fecha-chip-solicitudes');
-        const solDatesStrip = document.getElementById('dates-strip-solicitudes');
-        if (solFechaChip && solDatesStrip) {
-            solFechaChip.addEventListener('click', () => {
-                const opening = !solDatesStrip.classList.contains('is-open');
-                solDatesStrip.classList.toggle('is-open');
-                if (opening) {
-                    solFechaChip.classList.add('is-active');
-                    const desde = document.getElementById('fecha-desde-solicitudes');
-                    if (desde) desde.focus();
-                } else {
-                    const desdeEl = document.getElementById('fecha-desde-solicitudes');
-                    const hastaEl = document.getElementById('fecha-hasta-solicitudes');
-                    const hasDate = (desdeEl && desdeEl.value) || (hastaEl && hastaEl.value);
-                    solFechaChip.classList.toggle('is-active', !!hasDate);
-                }
-            });
-        }
-
-        ['fecha-desde-solicitudes', 'fecha-hasta-solicitudes'].forEach(function(id) {
-            var el = document.getElementById(id);
-            if (!el) return;
-            el.addEventListener('change', function() {
-                var desdeEl = document.getElementById('fecha-desde-solicitudes');
-                var hastaEl = document.getElementById('fecha-hasta-solicitudes');
-                var hasDate = (desdeEl && desdeEl.value) || (hastaEl && hastaEl.value);
-                if (solFechaChip) solFechaChip.classList.toggle('is-active', !!(hasDate || (solDatesStrip && solDatesStrip.classList.contains('is-open'))));
-                solPage = 1;
-                renderSolicitudesTable(solicitudesCache);
-            });
-        });
-
-        var clearSolBtn = document.getElementById('clear-solicitudes');
-        if (clearSolBtn) {
-            clearSolBtn.addEventListener('click', function() {
-                solFilter = '';
-                solSearch = '';
-                solPage = 1;
-                if (chipGroup) {
-                    chipGroup.querySelectorAll('.tbl-chip').forEach(function(c) { c.classList.remove('is-active'); });
-                    var first = chipGroup.querySelector('.tbl-chip[data-filter=""]');
-                    if (first) first.classList.add('is-active');
-                }
-                var searchEl = document.getElementById('search-solicitudes');
-                if (searchEl) searchEl.value = '';
-                var desdeEl = document.getElementById('fecha-desde-solicitudes');
-                var hastaEl = document.getElementById('fecha-hasta-solicitudes');
-                if (desdeEl) desdeEl.value = '';
-                if (hastaEl) hastaEl.value = '';
-                if (solDatesStrip) solDatesStrip.classList.remove('is-open');
-                if (solFechaChip) solFechaChip.classList.remove('is-active');
-                renderSolicitudesTable(solicitudesCache);
-            });
-        }
-
-        const pageSizeSol = document.getElementById('page-size-solicitudes');
-        if (pageSizeSol) {
-            pageSizeSol.addEventListener('change', () => {
-                solPageSize = parseInt(pageSizeSol.value, 10);
-                solPage = 1;
-                renderSolicitudesTable(solicitudesCache);
-            });
-        }
-
-        const solTable = document.querySelector('#view-solicitudes .erp-table');
-        if (solTable) {
-            solTable.querySelectorAll('thead th[data-sort-key]').forEach(th => {
-                th.addEventListener('click', () => {
-                    const key = th.dataset.sortKey;
-                    const type = th.dataset.sortType || 'str';
-                    const newDir = solSortState && solSortState.key === key && solSortState.dir === 'asc' ? 'desc' : 'asc';
-                    solSortState = { key, dir: newDir, type };
-                    solTable.querySelectorAll('thead th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
-                    th.classList.add(newDir === 'asc' ? 'sort-asc' : 'sort-desc');
-                    solPage = 1;
-                    renderSolicitudesTable(solicitudesCache);
-                });
-            });
-        }
+        solTray.initInteractions(() => solicitudesCache);
     }
 
     /* ── Init ─────────────────────────────────────────────── */

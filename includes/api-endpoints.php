@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 const VIATICOS_API_NAMESPACE = 'viaticos/v1';
 
+require_once __DIR__ . '/acf-keys.php';
 require_once __DIR__ . '/api/permissions.php';
 require_once __DIR__ . '/api/helpers.php';
 require_once __DIR__ . '/api/solicitudes.php';
@@ -94,8 +95,13 @@ function viaticos_registrar_endpoints() {
             'nuevo_estado' => array(
                 'required'          => true,
                 'type'              => 'string',
-                'enum'              => array( 'aprobada', 'observada', 'rechazada' ),
+                'enum'              => VIATICOS_DECISIONES,
                 'sanitize_callback' => 'sanitize_text_field',
+            ),
+            'comentario' => array(
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_textarea_field',
             ),
         ),
     ) );
@@ -117,8 +123,60 @@ function viaticos_registrar_endpoints() {
             'decision' => array(
                 'required'          => true,
                 'type'              => 'string',
-                'enum'              => array( 'aprobada', 'observada', 'rechazada' ),
+                'enum'              => VIATICOS_DECISIONES,
                 'sanitize_callback' => 'sanitize_text_field',
+            ),
+            'comentario' => array(
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_textarea_field',
+            ),
+        ),
+    ) );
+
+    register_rest_route( VIATICOS_API_NAMESPACE, '/editar-solicitud', array(
+        'methods'             => WP_REST_Server::CREATABLE,
+        'callback'            => 'viaticos_callback_editar_solicitud',
+        'permission_callback' => 'viaticos_permission_logueado',
+        'args'                => array_merge( viaticos_args_solicitud(), array(
+            'id_solicitud' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'minimum'           => 1,
+                'sanitize_callback' => static function( $value ) { return absint( $value ); },
+                'validate_callback' => static function( $value ) {
+                    return 'solicitud_viatico' === get_post_type( absint( $value ) );
+                },
+            ),
+        ) ),
+    ) );
+
+    register_rest_route( VIATICOS_API_NAMESPACE, '/reenviar-rendicion', array(
+        'methods'             => WP_REST_Server::CREATABLE,
+        'callback'            => 'viaticos_callback_reenviar_rendicion',
+        'permission_callback' => 'viaticos_permission_logueado',
+        'args'                => array(
+            'id_solicitud' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'minimum'           => 1,
+                'sanitize_callback' => static function( $value ) { return absint( $value ); },
+                'validate_callback' => static function( $value ) {
+                    return 'solicitud_viatico' === get_post_type( absint( $value ) );
+                },
+            ),
+        ),
+    ) );
+
+    register_rest_route( VIATICOS_API_NAMESPACE, '/gasto/(?P<id_gasto>\\d+)', array(
+        'methods'             => 'DELETE',
+        'callback'            => 'viaticos_callback_eliminar_gasto',
+        'permission_callback' => 'viaticos_permission_logueado',
+        'args'                => array(
+            'id_gasto' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'sanitize_callback' => static function( $v ) { return absint( $v ); },
             ),
         ),
     ) );

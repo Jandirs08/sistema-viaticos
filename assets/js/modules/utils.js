@@ -80,13 +80,45 @@ window.ViaticosUtils = (function () {
     }
 
     const ModalManager = {
+        _triggers: {},
+        _focusable: function (container) {
+            return Array.from(container.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )).filter(function (el) { return el.offsetParent !== null; });
+        },
         open: function (id) {
             const o = document.getElementById(id);
-            if (o) { o.classList.add('open'); document.body.style.overflow = 'hidden'; }
+            if (!o) return;
+            this._triggers[id] = document.activeElement;
+            o.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            const self = this;
+            setTimeout(function () {
+                const els = self._focusable(o);
+                if (els.length) els[0].focus();
+            }, 60);
+            o._trapFocus = function (e) {
+                if (e.key !== 'Tab') return;
+                const els = self._focusable(o);
+                if (!els.length) return;
+                const first = els[0], last = els[els.length - 1];
+                if (e.shiftKey) {
+                    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+                } else {
+                    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+                }
+            };
+            o.addEventListener('keydown', o._trapFocus);
         },
         close: function (id) {
             const o = document.getElementById(id);
-            if (o) { o.classList.remove('open'); document.body.style.overflow = ''; }
+            if (!o) return;
+            o.classList.remove('open');
+            document.body.style.overflow = '';
+            if (o._trapFocus) { o.removeEventListener('keydown', o._trapFocus); delete o._trapFocus; }
+            const trigger = this._triggers[id];
+            if (trigger && typeof trigger.focus === 'function') trigger.focus();
+            delete this._triggers[id];
         },
         closeOnOverlayClick: function (id) {
             const self = this;

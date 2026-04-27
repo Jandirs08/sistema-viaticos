@@ -137,8 +137,7 @@ function theme_administracion_hide_admin_bar_for_colaboradores($show_admin_bar)
 
     if (
         in_array('administrator', $user_roles, true) ||
-        in_array('admin_viaticos', $user_roles, true) ||
-        current_user_can('edit_others_posts')
+        in_array('admin_viaticos', $user_roles, true)
     ) {
         return $show_admin_bar;
     }
@@ -227,7 +226,7 @@ function theme_administracion_is_front_login_submission()
         return false;
     }
 
-    $redirect_to = isset($_REQUEST['redirect_to']) ? esc_url_raw(wp_unslash($_REQUEST['redirect_to'])) : '';
+    $redirect_to = isset($_POST['redirect_to']) ? esc_url_raw(wp_unslash($_POST['redirect_to'])) : '';
 
     if (!$redirect_to) {
         return false;
@@ -283,10 +282,10 @@ function theme_administracion_render_login_screen()
     $site_description = get_bloginfo('description');
 
     if ('failed' === $login_state) {
-        $message_text = 'Usuario o contrasena incorrectos.';
+        $message_text = 'Usuario o contraseña incorrectos.';
         $message_class = 'is-error';
     } elseif ('empty' === $login_state) {
-        $message_text = 'Ingresa usuario y contrasena.';
+        $message_text = 'Ingresa usuario y contraseña.';
         $message_class = 'is-error';
     } elseif ('loggedout' === $login_state) {
         $message_text = 'Sesion cerrada correctamente.';
@@ -298,7 +297,7 @@ function theme_administracion_render_login_screen()
         'redirect' => home_url('/'),
         'remember' => true,
         'label_username' => 'Usuario o correo',
-        'label_password' => 'Contrasena',
+        'label_password' => 'Contraseña',
         'label_remember' => 'Recordarme',
         'label_log_in' => 'Ingresar',
     ]);
@@ -535,7 +534,7 @@ function theme_administracion_render_login_screen()
             <?php echo $login_form; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
             <div class="login-card__links">
-                <a href="<?php echo esc_url(wp_lostpassword_url(home_url('/'))); ?>">Recuperar contrasena</a>
+                <a href="<?php echo esc_url(wp_lostpassword_url(home_url('/'))); ?>">Recuperar contraseña</a>
                 <?php if (get_option('users_can_register')) : ?>
                     <a href="<?php echo esc_url(wp_registration_url()); ?>">Crear cuenta</a>
                 <?php endif; ?>
@@ -646,3 +645,13 @@ function theme_administracion_redirect_non_home_requests()
     }
 }
 add_action('template_redirect', 'theme_administracion_redirect_non_home_requests');
+
+// Bust category cache when ACF term meta or terms change.
+add_action( 'acf/save_post', function( $post_id ) {
+    if ( str_starts_with( (string) $post_id, 'categoria_gasto_' ) ) {
+        delete_transient( 'viaticos_categorias_js' );
+    }
+} );
+add_action( 'created_categoria_gasto', function() { delete_transient( 'viaticos_categorias_js' ); } );
+add_action( 'edited_categoria_gasto',  function() { delete_transient( 'viaticos_categorias_js' ); } );
+add_action( 'deleted_categoria_gasto', function() { delete_transient( 'viaticos_categorias_js' ); } );

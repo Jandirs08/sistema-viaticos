@@ -3,7 +3,12 @@
     "allow": [
       "Bash(node *)",
       "Bash(php *)",
-      "Bash(grep -E \":\\\\s*\\\\d{3,}px\")"
+      "Bash(grep -E \":\\\\s*\\\\d{3,}px\")",
+      "Skill(code-review:code-review)",
+      "PowerShell(gh pr *)",
+      "Bash(xargs wc *)",
+      "Skill(impeccable:impeccable)",
+      "Bash(xargs grep *)"
     ]
   }
 }

@@ -54,6 +54,16 @@ Description: Tema ERP de viáticos — Fundación Romero.
     --wp-admin-bar-h: 0px;
 }
 
+/* ── Skip link ───────────────────────────────────────────────── */
+.skip-link {
+    position: absolute; top: -100%; left: 8px; z-index: 9999;
+    padding: 8px 16px; background: var(--primary); color: oklch(99% 0.005 30);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    transition: top .15s ease;
+}
+.skip-link:focus { top: 0; outline: 2px solid oklch(99% 0.005 30); outline-offset: 2px; }
+
 /* ============================================================
    RESET & BASE
    ============================================================ */
@@ -106,7 +116,6 @@ body.admin-bar {
 .logo-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .logo-text { display: flex; flex-direction: column; }
 .sidebar-logo-full { max-width: 110px; height: auto; display: block; filter: brightness(0) invert(1); }
-.logo-text span   { font-size: 10.5px; color: rgba(255,255,255,.45); font-weight: 400; letter-spacing: .02em; }
 
 .sidebar-section       { padding: 16px 0 8px; }
 .sidebar-section-label { padding: 0 16px 8px; font-size: 10px; font-weight: 600;
@@ -122,7 +131,7 @@ body.admin-bar {
 .sidebar-nav a .nav-icon { width: 18px; height: 18px; flex-shrink: 0; opacity: .7; transition: opacity var(--ease); }
 .sidebar-nav a:hover { background: var(--sidebar-hover); color: #fff; }
 .sidebar-nav a:hover .nav-icon { opacity: 1; }
-.sidebar-nav a.active { background: rgba(218,91,62,.18); color: #f4a58f; }
+.sidebar-nav a.active { background: oklch(27% 0.075 30); color: #fff; font-weight: 600; }
 .sidebar-nav a.active .nav-icon { opacity: 1; }
 
 .sidebar-footer {
@@ -139,6 +148,17 @@ body.admin-bar {
 .user-info .u-name { display: block; font-size: 12.5px; color: #fff; font-weight: 600;
                      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-info .u-role { display: block; font-size: 10.5px; color: rgba(255,255,255,.40); }
+.user-info .u-meta { display: block; font-size: 10px; color: rgba(255,255,255,.26); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.sidebar-wp-link {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; margin-top: 10px;
+    border-top: 1px solid rgba(255,255,255,.06);
+    color: rgba(255,255,255,.32); font-size: 12px; font-weight: 500;
+    text-decoration: none; transition: color var(--ease);
+}
+.sidebar-wp-link svg { flex-shrink: 0; opacity: .5; transition: opacity var(--ease); }
+.sidebar-wp-link:hover { color: rgba(255,255,255,.68); }
+.sidebar-wp-link:hover svg { opacity: 1; }
 
 /* ── Main area ──────────────────────────────────────────────── */
 #erp-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -148,32 +168,26 @@ body.admin-bar {
     height: var(--topbar-h); min-height: var(--topbar-h);
     background: var(--surface); border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 28px; gap: 16px; box-shadow: var(--shadow-sm); z-index: 50;
+    padding: 0 24px; gap: 12px; box-shadow: var(--shadow-sm); z-index: 50; overflow: hidden;
 }
-.topbar-breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted); }
-.topbar-breadcrumb span { color: var(--text); font-weight: 600; }
-.topbar-actions { display: flex; align-items: center; gap: 16px; }
-.topbar-user-info { text-align: right; }
-.topbar-user-info .t-name { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
-.topbar-user-info .t-role { display: block; font-size: 11px; color: var(--text-muted); }
-.topbar-user-meta {
-    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
-    flex-wrap: wrap; margin-top: 6px;
+.topbar-breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-muted); flex: 1; min-width: 0;
 }
-.user-meta-chip {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 9px; border-radius: 999px; background: var(--bg);
-    border: 1px solid var(--border-light); color: var(--text-muted);
-    font-size: 11px; line-height: 1;
+.topbar-breadcrumb .bc-home-icon { flex-shrink: 0; opacity: .4; }
+.topbar-breadcrumb .bc-sep { color: var(--border); font-size: 18px; font-weight: 300; line-height: 1; }
+.topbar-breadcrumb .bc-page {
+    color: var(--text); font-weight: 600; font-size: 13.5px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.user-meta-chip strong { color: var(--text); font-weight: 600; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .btn-logout {
-    display: flex; align-items: center; gap: 6px; padding: 7px 14px;
-    background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    display: flex; align-items: center; gap: 5px; padding: 6px 11px;
+    background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm);
     color: var(--text-muted); font-size: 12.5px; font-weight: 500; cursor: pointer;
     text-decoration: none; transition: all var(--ease);
 }
-.btn-logout:hover { background: #FEF2F2; border-color: #FECACA; color: #DC2626; }
+.btn-logout:hover { background: oklch(97% 0.03 22); border-color: oklch(85% 0.08 22); color: oklch(35% 0.13 22); }
 
 /* ── Content area ───────────────────────────────────────────── */
 #erp-content { flex: 1; overflow-y: auto; padding: 28px; }
@@ -323,6 +337,7 @@ th.sort-desc .arrow-asc { opacity: .2; }
     background-repeat: no-repeat; background-position: right 7px center;
 }
 .tbl-page-size:focus { border-color: var(--primary); }
+.tbl-page-size:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 .tbl-chip-count:empty { display: none; }
 .tbl-chip.is-active .tbl-chip-count { background: rgba(0,0,0,0.13); color: inherit; }
 
@@ -367,6 +382,7 @@ th.sort-desc .arrow-asc { opacity: .2; }
     outline: none; cursor: pointer;
 }
 .tbl-date-input:focus { border-color: var(--primary); }
+.tbl-date-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 
 /* ── Search input ─────────────────────────────────────────── */
 .search-input {
@@ -493,6 +509,7 @@ th.sort-desc .arrow-asc { opacity: .2; }
     transition: background var(--ease), color var(--ease); flex-shrink: 0;
 }
 .modal-close:hover { background: #FEE2E2; color: #DC2626; }
+.modal-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .modal-body { padding: 24px; }
 .modal-footer {
     display: flex; align-items: center; justify-content: flex-end;
@@ -1740,6 +1757,18 @@ textarea.form-control { resize: vertical; min-height: 88px; }
     font-size: 13px;
     color: var(--text-muted);
 }
+.timeline-comment {
+    margin: 6px 0 2px;
+    padding: 8px 10px;
+    background: oklch(95.5% 0.012 50);
+    border: 1px solid oklch(89% 0.018 50);
+    border-radius: 5px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: oklch(28% 0.018 45);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
 
 .estado-alerta {
     display: flex;
@@ -2338,6 +2367,57 @@ textarea.form-control { resize: vertical; min-height: 88px; }
     padding: 8px 14px;
     font-size: .84rem;
 }
+.decision-prompt {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.decision-prompt-ta {
+    width: 100%;
+    min-height: 72px;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    resize: vertical;
+    transition: border-color var(--ease), box-shadow var(--ease);
+    box-sizing: border-box;
+}
+.decision-prompt-ta:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(186,76,51,.12);
+}
+.decision-prompt-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-gasto-eliminar {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    padding: 5px 10px;
+    font-size: .78rem;
+    font-weight: 500;
+    color: oklch(40% 0.12 25);
+    background: oklch(97% 0.01 25);
+    border: 1px solid oklch(88% 0.04 25);
+    border-radius: var(--radius-sm, 6px);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.btn-gasto-eliminar:hover {
+    background: oklch(93% 0.05 25);
+    color: oklch(32% 0.15 25);
+}
 
 /* ── Stepper: dots + labels, flows across row ──────────────── */
 .solv-exp-stepper {
@@ -2435,6 +2515,17 @@ textarea.form-control { resize: vertical; min-height: 88px; }
 .solv-banner.is-warn   { background: #fff7ed; border-color: #fed7aa; color: #92400e; }
 .solv-banner.is-danger { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
 .solv-banner.is-ok     { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+.solv-banner-comment {
+    margin: 6px 0 0;
+    padding: 7px 10px;
+    background: rgba(0,0,0,.04);
+    border-radius: 4px;
+    font-size: 12.5px;
+    font-style: italic;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
 
 /* ── Finance bar: 3 cells with tonal tints ─────────────────── */
 .solv-fin {
@@ -2944,7 +3035,7 @@ textarea.form-control { resize: vertical; min-height: 88px; }
 /* ── Phase 2: ultra-narrow phones (<375px) ──────────────── */
 @media (max-width: 375px) {
     #erp-topbar { padding: 0 12px; gap: 8px; }
-    .topbar-user-meta { display: none; }
+
     .tbl-toolbar { padding: 8px 12px; gap: 4px; }
     .tbl-chip { font-size: 11px; padding: 3px 8px; }
     #erp-content { padding: 10px; }

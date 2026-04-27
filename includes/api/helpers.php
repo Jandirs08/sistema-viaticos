@@ -4,11 +4,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function viaticos_es_rendicion_finalizada( $solicitud_id ) {
-    return '1' === get_post_meta( $solicitud_id, 'rendicion_finalizada', true );
+    return '1' === get_post_meta( $solicitud_id, META_RENDICION_FINALIZADA, true );
 }
 
 function viaticos_get_estado_rendicion( $solicitud_id ) {
-    $valor = get_post_meta( $solicitud_id, 'estado_rendicion', true );
+    $valor = get_post_meta( $solicitud_id, META_ESTADO_RENDICION, true );
     return $valor ?: '';
 }
 
@@ -77,7 +77,7 @@ function viaticos_obtener_gastos_solicitud( $solicitud_id ) {
     $posts = get_posts( array(
         'post_type'      => 'gasto_rendicion',
         'post_status'    => 'publish',
-        'posts_per_page' => 200,
+        'posts_per_page' => -1,
         'orderby'        => 'date',
         'order'          => 'DESC',
         'no_found_rows'  => true,
@@ -132,15 +132,17 @@ function viaticos_get_eventos_historial_validos() {
         'solicitud_aprobada',
         'solicitud_observada',
         'solicitud_rechazada',
+        'solicitud_reenviada',
         'rendicion_iniciada',
         'rendicion_finalizada',
         'rendicion_aprobada',
         'rendicion_observada',
         'rendicion_rechazada',
+        'rendicion_reenviada',
     );
 }
 
-function registrarEventoSolicitud( $solicitud_id, $evento, $usuario_id = 0 ) {
+function registrarEventoSolicitud( $solicitud_id, $evento, $usuario_id = 0, $comentario = '' ) {
     $solicitud_id = absint( $solicitud_id );
     $evento       = sanitize_key( $evento );
     $usuario_id   = absint( $usuario_id ?: get_current_user_id() );
@@ -161,15 +163,23 @@ function registrarEventoSolicitud( $solicitud_id, $evento, $usuario_id = 0 ) {
         is_array( $ultimo )
         && ( $ultimo['evento'] ?? '' ) === $evento
         && absint( $ultimo['usuario_id'] ?? 0 ) === $usuario_id
+        && empty( $comentario )
     ) {
         return false;
     }
 
-    $historial[] = array(
+    $entry = array(
         'evento'     => $evento,
         'fecha'      => current_time( 'timestamp' ),
         'usuario_id' => $usuario_id,
     );
+
+    $comentario = sanitize_textarea_field( (string) $comentario );
+    if ( '' !== trim( $comentario ) ) {
+        $entry['comentario'] = $comentario;
+    }
+
+    $historial[] = $entry;
 
     return update_post_meta( $solicitud_id, viaticos_get_historial_meta_key(), $historial );
 }
@@ -191,11 +201,17 @@ function viaticos_obtener_historial_solicitud( $solicitud_id ) {
             continue;
         }
 
-        $data[] = array(
+        $entry_data = array(
             'evento'     => $evento,
             'fecha'      => absint( $item['fecha'] ?? 0 ),
             'usuario_id' => absint( $item['usuario_id'] ?? 0 ),
         );
+
+        if ( ! empty( $item['comentario'] ) ) {
+            $entry_data['comentario'] = (string) $item['comentario'];
+        }
+
+        $data[] = $entry_data;
     }
 
     usort(
@@ -222,12 +238,18 @@ function viaticos_preparar_historial_solicitud( $solicitud_id ) {
 
         $usuario = $usuario_id ? $usuarios[ $usuario_id ] : null;
 
-        $data[] = array(
+        $prepared = array(
             'evento'         => $item['evento'],
             'fecha'          => $item['fecha'],
             'usuario_id'     => $usuario_id,
             'usuario_nombre' => $usuario ? $usuario->display_name : '',
         );
+
+        if ( ! empty( $item['comentario'] ) ) {
+            $prepared['comentario'] = (string) $item['comentario'];
+        }
+
+        $data[] = $prepared;
     }
 
     return $data;

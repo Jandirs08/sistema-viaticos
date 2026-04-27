@@ -24,12 +24,40 @@ window.ViaticosDetalleUI = (function () {
         }).join('');
     }
 
-    function buildBannerHtml(estadoSolicitud, estadoRend) {
-        if (estadoRend === 'rechazada') return '<div class="solv-banner is-danger"><strong>Rendición rechazada.</strong> Revisa el historial.</div>';
-        if (estadoRend === 'observada') return '<div class="solv-banner is-warn"><strong>Rendición observada.</strong> Corrige y reenvía.</div>';
+    function getUltimoComentario(historial, eventoFiltro) {
+        if (!Array.isArray(historial)) return '';
+        for (var i = historial.length - 1; i >= 0; i--) {
+            var item = historial[i];
+            if (item && item.comentario && (!eventoFiltro || item.evento === eventoFiltro)) {
+                return String(item.comentario);
+            }
+        }
+        return '';
+    }
+
+    function buildBannerHtml(estadoSolicitud, estadoRend, historial) {
+        var comentario, extra;
+        if (estadoRend === 'rechazada') {
+            comentario = getUltimoComentario(historial, 'rendicion_rechazada');
+            extra = comentario ? '<p class="solv-banner-comment">' + esc(comentario) + '</p>' : '';
+            return '<div class="solv-banner is-danger"><strong>Rendición rechazada.</strong> Revisa el historial.' + extra + '</div>';
+        }
+        if (estadoRend === 'observada') {
+            comentario = getUltimoComentario(historial, 'rendicion_observada');
+            extra = comentario ? '<p class="solv-banner-comment">' + esc(comentario) + '</p>' : '';
+            return '<div class="solv-banner is-warn"><strong>Rendición observada.</strong> Corrige y reenvía.' + extra + '</div>';
+        }
         if (estadoRend === 'aprobada') return '<div class="solv-banner is-ok"><strong>Rendición aprobada.</strong></div>';
-        if (estadoSolicitud === 'rechazada') return '<div class="solv-banner is-danger"><strong>Solicitud rechazada.</strong></div>';
-        if (estadoSolicitud === 'observada') return '<div class="solv-banner is-warn"><strong>Solicitud observada.</strong> Corrige y reenvía.</div>';
+        if (estadoSolicitud === 'rechazada') {
+            comentario = getUltimoComentario(historial, 'solicitud_rechazada');
+            extra = comentario ? '<p class="solv-banner-comment">' + esc(comentario) + '</p>' : '';
+            return '<div class="solv-banner is-danger"><strong>Solicitud rechazada.</strong>' + extra + '</div>';
+        }
+        if (estadoSolicitud === 'observada') {
+            comentario = getUltimoComentario(historial, 'solicitud_observada');
+            extra = comentario ? '<p class="solv-banner-comment">' + esc(comentario) + '</p>' : '';
+            return '<div class="solv-banner is-warn"><strong>Solicitud observada.</strong> Corrige y reenvía.' + extra + '</div>';
+        }
         return '';
     }
 
@@ -44,6 +72,8 @@ window.ViaticosDetalleUI = (function () {
         opts = opts || {};
         const apiFetch = opts.apiFetch;
         const canDelete = !!opts.canDelete;
+        const canDeleteGasto = !!opts.canDeleteGasto;
+        const onDeleteGasto = typeof opts.onDeleteGasto === 'function' ? opts.onDeleteGasto : null;
         const accionesHtml = opts.accionesHtml || '';
 
         const totalSolicitado = parseFloat(sol.monto) || 0;
@@ -70,6 +100,9 @@ window.ViaticosDetalleUI = (function () {
                     var summary = gastoUI.summaryText(g);
                     var fields = gastoUI.buildFields(g);
                     var gastoIdAttr = g.id ? String(g.id) : '';
+                    var deleteBtn = (canDeleteGasto && gastoIdAttr)
+                        ? '<button type="button" class="btn-gasto-eliminar" data-delete-gasto-id="' + gastoIdAttr + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>Eliminar gasto</button>'
+                        : '';
                     var adjuntosHtml = gastoIdAttr
                         ? '<div class="gasto-adj-panel" data-adj-gasto-id="' + gastoIdAttr + '"><div class="gasto-adj-title"><span style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#4A5568;"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .28-.22.5-.5.5s-.5-.22-.5-.5V6H11v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S8 2.79 8 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-2.5z"/></svg>Adjuntos</span></div><div class="gasto-adj-list"><span class="gasto-adj-loading">Cargando adjuntos…</span></div></div>'
                         : '';
@@ -85,6 +118,7 @@ window.ViaticosDetalleUI = (function () {
                         '<td colspan="5">' +
                         '<div class="solv-gtbl-fields">' + fields + '</div>' +
                         adjuntosHtml +
+                        deleteBtn +
                         '</td>' +
                         '</tr>'
                     );
@@ -105,7 +139,7 @@ window.ViaticosDetalleUI = (function () {
             : '<div class="solv-empty"><p>Sin gastos registrados.</p></div>';
 
         const stepperHtml = buildStepperHtml(sol, estadoSolicitud, estadoRend);
-        const bannerHtml = buildBannerHtml(estadoSolicitud, estadoRend);
+        const bannerHtml = buildBannerHtml(estadoSolicitud, estadoRend, historial);
 
         containerEl.innerHTML =
             '<div class="solv-shell">' +
@@ -147,6 +181,14 @@ window.ViaticosDetalleUI = (function () {
         const tableEl = containerEl.querySelector('#' + accId);
         if (tableEl && apiFetch) {
             tableEl.addEventListener('click', function (e) {
+                var delBtn = e.target.closest('.btn-gasto-eliminar');
+                if (delBtn && onDeleteGasto) {
+                    e.stopPropagation();
+                    if (confirm('¿Eliminar este gasto? Esta acción no se puede deshacer.')) {
+                        onDeleteGasto(parseInt(delBtn.dataset.deleteGastoId, 10));
+                    }
+                    return;
+                }
                 var row = e.target.closest('.solv-gtbl-row');
                 if (!row || !tableEl.contains(row)) return;
                 var id = row.dataset.accId;

@@ -23,7 +23,7 @@ function viaticos_permission_admin() {
         );
     }
 
-    if ( current_user_can( 'administrator' ) || current_user_can( 'admin_viaticos' ) || current_user_can( 'edit_others_posts' ) ) {
+    if ( current_user_can( 'manage_viaticos' ) ) {
         return true;
     }
 

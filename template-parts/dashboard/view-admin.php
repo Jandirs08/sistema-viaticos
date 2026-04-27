@@ -33,7 +33,7 @@ $args = wp_parse_args(
         <div class="tbl-toolbar">
             <div class="tbl-toolbar-search">
                 <svg class="tbl-toolbar-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                <input type="search" id="search-anticipos" class="search-input" placeholder="Buscar..." autocomplete="off">
+                <input type="search" id="search-anticipos" class="search-input" placeholder="Buscar..." autocomplete="off" aria-label="Buscar en anticipos">
             </div>
             <div class="tbl-chips" id="chips-anticipos">
                 <button class="tbl-chip is-active" data-filter="">Todos <span class="tbl-chip-count"></span></button>
@@ -62,21 +62,21 @@ $args = wp_parse_args(
             </div>
             <div class="tbl-toolbar-dates" id="dates-strip-anticipos">
                 <span class="tbl-dates-label">Viaje entre</span>
-                <input type="date" class="tbl-date-input" id="fecha-desde-anticipos">
+                <input type="date" class="tbl-date-input" id="fecha-desde-anticipos" aria-label="Fecha desde">
                 <span class="tbl-dates-sep">y</span>
-                <input type="date" class="tbl-date-input" id="fecha-hasta-anticipos">
+                <input type="date" class="tbl-date-input" id="fecha-hasta-anticipos" aria-label="Fecha hasta">
             </div>
         </div>
         <div class="table-wrap">
             <table class="erp-table" aria-label="Bandeja de anticipos">
                 <thead>
                     <tr>
-                        <th data-sort-key="id" data-sort-type="num" class="sortable"><span class="th-inner">ID<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
-                        <th>Solicitud</th>
-                        <th data-sort-key="fecha" data-sort-type="date" class="sortable"><span class="th-inner">Fecha viaje<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
-                        <th data-sort-key="monto" data-sort-type="num" class="sortable"><span class="th-inner">Monto<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
-                        <th>Estado</th>
-                        <th>AcciÃƒÂ³n</th>
+                        <th scope="col" aria-sort="none" data-sort-key="id" data-sort-type="num" class="sortable"><span class="th-inner">ID<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
+                        <th scope="col">Solicitud</th>
+                        <th scope="col" aria-sort="none" data-sort-key="fecha" data-sort-type="date" class="sortable"><span class="th-inner">Fecha viaje<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
+                        <th scope="col" aria-sort="none" data-sort-key="monto" data-sort-type="num" class="sortable"><span class="th-inner">Monto<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acción</th>
                     </tr>
                 </thead>
                 <tbody id="anticipos-tbody">
@@ -102,13 +102,13 @@ $args = wp_parse_args(
         <div class="tbl-toolbar">
             <div class="tbl-toolbar-search">
                 <svg class="tbl-toolbar-search-icon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                <input type="search" id="search-rendiciones" class="search-input" placeholder="Buscar..." autocomplete="off">
+                <input type="search" id="search-rendiciones" class="search-input" placeholder="Buscar..." autocomplete="off" aria-label="Buscar en rendiciones">
             </div>
             <div class="tbl-chips" id="chips-rendiciones">
                 <button class="tbl-chip is-active" data-filter="">Todos <span class="tbl-chip-count"></span></button>
                 <button class="tbl-chip" data-filter="no_iniciada">Sin iniciar <span class="tbl-chip-count"></span></button>
                 <button class="tbl-chip" data-filter="en_proceso">En proceso <span class="tbl-chip-count"></span></button>
-                <button class="tbl-chip" data-filter="en_revision">En revisiÃƒÂ³n <span class="tbl-chip-count"></span></button>
+                <button class="tbl-chip" data-filter="en_revision">En revisión <span class="tbl-chip-count"></span></button>
                 <button class="tbl-chip" data-filter="observada">Observada <span class="tbl-chip-count"></span></button>
                 <button class="tbl-chip" data-filter="aprobada">Aprobada <span class="tbl-chip-count"></span></button>
                 <button class="tbl-chip" data-filter="rechazada">Rechazada <span class="tbl-chip-count"></span></button>
@@ -134,21 +134,21 @@ $args = wp_parse_args(
             </div>
             <div class="tbl-toolbar-dates" id="dates-strip-rendiciones">
                 <span class="tbl-dates-label">Viaje entre</span>
-                <input type="date" class="tbl-date-input" id="fecha-desde-rendiciones">
+                <input type="date" class="tbl-date-input" id="fecha-desde-rendiciones" aria-label="Fecha desde">
                 <span class="tbl-dates-sep">y</span>
-                <input type="date" class="tbl-date-input" id="fecha-hasta-rendiciones">
+                <input type="date" class="tbl-date-input" id="fecha-hasta-rendiciones" aria-label="Fecha hasta">
             </div>
         </div>
         <div class="table-wrap">
             <table class="erp-table" aria-label="Bandeja de rendiciones">
                 <thead>
                     <tr>
-                        <th data-sort-key="id" data-sort-type="num" class="sortable"><span class="th-inner">ID<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
-                        <th>Solicitud</th>
-                        <th data-sort-key="fecha" data-sort-type="date" class="sortable"><span class="th-inner">Fecha viaje<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
-                        <th data-sort-key="monto" data-sort-type="num" class="sortable"><span class="th-inner">Monto<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
-                        <th>Estado</th>
-                        <th>AcciÃƒÂ³n</th>
+                        <th scope="col" aria-sort="none" data-sort-key="id" data-sort-type="num" class="sortable"><span class="th-inner">ID<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
+                        <th scope="col">Solicitud</th>
+                        <th scope="col" aria-sort="none" data-sort-key="fecha" data-sort-type="date" class="sortable"><span class="th-inner">Fecha viaje<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
+                        <th scope="col" aria-sort="none" data-sort-key="monto" data-sort-type="num" class="sortable"><span class="th-inner">Monto<span class="sort-arrows"><svg class="arrow-asc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 5L4 0L8 5Z"/></svg><svg class="arrow-desc" width="8" height="5" viewBox="0 0 8 5" fill="currentColor"><path d="M0 0L4 5L8 0Z"/></svg></span></span></th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acción</th>
                     </tr>
                 </thead>
                 <tbody id="rendiciones-tbody">
@@ -168,7 +168,7 @@ $args = wp_parse_args(
     </div>
 
     <div id="solicitud-detalle-content">
-        <div class="table-loading" style="padding:40px;"><div class="spinner"></div>Cargando detalleÃ¢â‚¬Â¦</div>
+        <div class="table-loading" style="padding:40px;"><div class="spinner"></div>Cargando detalle…</div>
     </div>
 </section>
 
@@ -186,7 +186,7 @@ $args = wp_parse_args(
         </div>
         <div class="solv-history-meta" id="admin-historial-meta"></div>
         <div class="solv-history-body" id="admin-historial-body">
-            <div class="table-loading"><div class="spinner"></div> Cargando historialÃ¢â‚¬Â¦</div>
+            <div class="table-loading"><div class="spinner"></div> Cargando historial…</div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-secondary" id="btn-cancelar-admin-historial">Cerrar</button>
@@ -194,12 +194,12 @@ $args = wp_parse_args(
     </div>
 </div>
 
-<!-- MODAL: liquidaciÃƒÂ³n admin -->
+<!-- MODAL: liquidación admin -->
 <div class="modal-overlay" id="modal-admin-liquidacion" role="dialog" aria-modal="true" aria-labelledby="modal-admin-liq-titulo">
     <div class="modal modal-xl liq-modal">
         <div class="modal-header">
             <div class="modal-header-info">
-                <h2 id="modal-admin-liq-titulo">LiquidaciÃƒÂ³n de RendiciÃƒÂ³n</h2>
+                <h2 id="modal-admin-liq-titulo">Liquidación de Rendición</h2>
                 <p>Documento de solo lectura</p>
             </div>
             <button class="modal-close" id="btn-cerrar-admin-liq" aria-label="Cerrar modal">
@@ -239,10 +239,18 @@ $args = wp_parse_args(
                 <div class="detail-item"><div class="di-label">DNI</div><div class="di-value" id="modal-det-dni">-</div></div>
                 <div class="detail-item"><div class="di-label">CECO / Proyecto</div><div class="di-value" id="modal-det-ceco">-</div></div>
                 <div class="detail-item"><div class="di-label">Estado solicitud</div><div class="di-value" id="modal-det-estado-solicitud">-</div></div>
-                <div class="detail-item"><div class="di-label">Estado rendiciÃƒÂ³n</div><div class="di-value" id="modal-det-estado-rendicion">-</div></div>
+                <div class="detail-item"><div class="di-label">Estado rendición</div><div class="di-value" id="modal-det-estado-rendicion">-</div></div>
                 <div class="detail-item col-full"><div class="di-label">Motivo del viaje</div><div class="motivo-box" id="modal-det-motivo">-</div></div>
             </div>
             <div style="margin-top:20px;"><div class="di-label" style="margin-bottom:10px;">Historial</div><div id="modal-det-historial"></div></div>
+            <div id="modal-obs-section" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+                <div class="di-label" style="margin-bottom:8px;">Motivo de la observación</div>
+                <textarea id="modal-obs-ta" class="decision-prompt-ta" placeholder="Indica qué debe corregir el colaborador…" maxlength="500" rows="3" style="width:100%;"></textarea>
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+                    <button type="button" class="btn btn-ghost btn-sm" id="btn-modal-obs-cancelar">Cancelar</button>
+                    <button type="button" class="btn-decide-observar btn-sm" id="btn-modal-obs-confirmar" disabled>Confirmar observación</button>
+                </div>
+            </div>
             <div id="modal-solicitud-error" class="erp-alert-error"></div>
         </div>
 
@@ -256,5 +264,4 @@ $args = wp_parse_args(
         </div>
     </div>
 </div>
-<script>window.ViaticosConfig = { nonce: '<?php echo esc_js( $args['rest_nonce'] ); ?>', apiBase: '<?php echo esc_js( $args['api_base'] ); ?>', logoUrl: '<?php echo esc_js( $args['logo_url'] ?? '' ); ?>' };</script>
 <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/admin.js"></script>
