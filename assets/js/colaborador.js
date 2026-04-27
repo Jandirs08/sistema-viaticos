@@ -488,6 +488,9 @@
             if (!gastosCache.length) await refreshGastosCache();
             const sol = getSolicitudById(id);
             if (!sol) throw new Error('No se encontró la solicitud seleccionada.');
+            const detalle = await apiFetch('/detalle-solicitud/' + id, { method: 'GET' });
+            sol.historial     = Array.isArray(detalle.historial) ? detalle.historial : [];
+            sol.total_rendido = Number(detalle.total_rendido || 0);
             renderDetalleSolicitudContent(sol, getGastosBySolicitud(id));
         } catch (err) {
             if (errorEl) { errorEl.textContent = err.message; errorEl.style.display = 'block'; }

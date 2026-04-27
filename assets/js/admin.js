@@ -35,17 +35,12 @@
     const getSolicitudEstado   = estadoUI.getSolicitudEstado;
     const renderSolicitudBadge = estadoUI.renderSolicitudBadge;
 
-    function tieneEvento(sol, evento) {
-        return Array.isArray(sol && sol.historial) && sol.historial.some(item => item && item.evento === evento);
-    }
-
     function getRendicionEstado(sol) {
         return estadoUI.resolveEstadoRendicion({
             estadoSolicitud:     sol && sol.estado,
             estadoRendicion:     sol && sol.estado_rendicion,
             rendicionFinalizada: sol && sol.rendicion_finalizada,
-            totalRendido:        sol && sol.total_rendido,
-            tieneGastos:         tieneEvento(sol, 'rendicion_iniciada')
+            tieneGastos:         !!(sol && sol.tiene_gastos)
         });
     }
 
@@ -298,7 +293,7 @@
         });
     }
 
-    function openSolicitudModal(sol) {
+    async function openSolicitudModal(sol) {
         modalSolId = sol.id;
         document.getElementById('modal-solicitud-titulo').textContent    = `Solicitud #${sol.id}`;
         document.getElementById('modal-solicitud-subtitulo').textContent = sol.colaborador || '';
@@ -310,12 +305,22 @@
         document.getElementById('modal-det-estado-solicitud').innerHTML  = renderSolicitudBadge(sol);
         document.getElementById('modal-det-estado-rendicion').innerHTML  = renderRendicionBadge(sol);
         document.getElementById('modal-det-motivo').textContent          = sol.motivo || '-';
-        document.getElementById('modal-det-historial').innerHTML         = timelineUI.renderTimeline(sol.historial);
+        document.getElementById('modal-det-historial').innerHTML         = '<div class="timeline-empty"><div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Cargando historial…</div>';
         document.getElementById('modal-solicitud-error').style.display  = 'none';
         const _obsSection = document.getElementById('modal-obs-section');
         if (_obsSection) _obsSection.style.display = 'none';
         toggleModalDecision(getSolicitudEstado(sol) === 'pendiente');
         ModalManager.open('modal-solicitud');
+
+        try {
+            const detalle = await apiFetch('/detalle-solicitud/' + sol.id, { method: 'GET' });
+            if (modalSolId !== sol.id) return;
+            const historialEl = document.getElementById('modal-det-historial');
+            if (historialEl) historialEl.innerHTML = timelineUI.renderTimeline(detalle.historial || []);
+        } catch (err) {
+            const historialEl = document.getElementById('modal-det-historial');
+            if (historialEl) historialEl.innerHTML = '<div class="timeline-empty">No se pudo cargar el historial.</div>';
+        }
     }
 
     function showModalObservarSection() {

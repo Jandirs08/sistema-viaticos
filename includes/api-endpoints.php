@@ -151,6 +151,23 @@ function viaticos_registrar_endpoints() {
         ) ),
     ) );
 
+    register_rest_route( VIATICOS_API_NAMESPACE, '/detalle-solicitud/(?P<id_solicitud>\d+)', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'viaticos_callback_detalle_solicitud',
+        'permission_callback' => 'viaticos_permission_logueado',
+        'args'                => array(
+            'id_solicitud' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'minimum'           => 1,
+                'sanitize_callback' => static function( $value ) { return absint( $value ); },
+                'validate_callback' => static function( $value ) {
+                    return 'solicitud_viatico' === get_post_type( absint( $value ) );
+                },
+            ),
+        ),
+    ) );
+
     register_rest_route( VIATICOS_API_NAMESPACE, '/reenviar-rendicion', array(
         'methods'             => WP_REST_Server::CREATABLE,
         'callback'            => 'viaticos_callback_reenviar_rendicion',

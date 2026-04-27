@@ -52,6 +52,22 @@ window.ViaticosUtils = (function () {
         }
     }
 
+    let nonceExpiredHandled = false;
+    function handleNonceExpired() {
+        if (nonceExpiredHandled) return;
+        nonceExpiredHandled = true;
+        try {
+            showToast('info', 'Sesión expirada', 'Recargando para renovar tu sesión…', 2500);
+        } catch (_) { /* toast container may not exist */ }
+        setTimeout(function () { window.location.reload(); }, 1600);
+    }
+
+    function isNonceError(status, data) {
+        if (status !== 401 && status !== 403) return false;
+        const code = data && (data.code || (data.data && data.data.code));
+        return code === 'rest_cookie_invalid_nonce';
+    }
+
     function createApiFetch(apiBase, nonce) {
         return async function apiFetch(endpoint, options) {
             options = options || {};
@@ -59,7 +75,10 @@ window.ViaticosUtils = (function () {
             merged.headers = Object.assign({ 'Content-Type': 'application/json', 'X-WP-Nonce': nonce }, options.headers || {});
             const response = await fetch(apiBase + endpoint, merged);
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || `Error ${response.status}`);
+            if (!response.ok) {
+                if (isNonceError(response.status, data)) handleNonceExpired();
+                throw new Error(data.message || `Error ${response.status}`);
+            }
             return data;
         };
     }
@@ -74,7 +93,10 @@ window.ViaticosUtils = (function () {
                 body: formData,
             });
             const json = await resp.json();
-            if (!resp.ok || !json.success) throw new Error(json.message || 'Error en la solicitud.');
+            if (!resp.ok || !json.success) {
+                if (isNonceError(resp.status, json)) handleNonceExpired();
+                throw new Error(json.message || 'Error en la solicitud.');
+            }
             return json;
         };
     }

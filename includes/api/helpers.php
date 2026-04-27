@@ -31,6 +31,42 @@ function viaticos_solicitud_tiene_gastos( $solicitud_id ) {
 }
 
 /**
+ * Devuelve un mapa [solicitud_id => true] de solicitudes que tienen al menos
+ * un gasto publicado. Una sola query, evita N+1 en listados.
+ *
+ * @param int[] $solicitud_ids IDs a consultar; vacío = todas.
+ * @return array<int,bool>
+ */
+function viaticos_mapa_solicitudes_con_gastos( $solicitud_ids = array() ) {
+    global $wpdb;
+
+    $where_in = '';
+    if ( ! empty( $solicitud_ids ) ) {
+        $ids = array_filter( array_map( 'absint', (array) $solicitud_ids ) );
+        if ( empty( $ids ) ) {
+            return array();
+        }
+        $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+        $where_in     = $wpdb->prepare( " AND CAST(pm.meta_value AS UNSIGNED) IN ($placeholders) ", $ids );
+    }
+
+    $sql = "SELECT DISTINCT pm.meta_value AS sol_id
+            FROM {$wpdb->postmeta} pm
+            INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+            WHERE pm.meta_key = 'id_solicitud_padre'
+              AND p.post_type = 'gasto_rendicion'
+              AND p.post_status = 'publish'
+              {$where_in}";
+
+    $rows = $wpdb->get_col( $sql );
+    $map  = array();
+    foreach ( (array) $rows as $sid ) {
+        $map[ (int) $sid ] = true;
+    }
+    return $map;
+}
+
+/**
  * Mapea CLASE DOC textual a un tipo interno que el front usa para decidir
  * qué campos mostrar. No hay lista cerrada: cualquier valor distinto de
  * VALE MOVILIDAD / VALE DE CAJA se trata como 'documento' (form con PDF).
@@ -170,7 +206,7 @@ function registrarEventoSolicitud( $solicitud_id, $evento, $usuario_id = 0, $com
 
     $entry = array(
         'evento'     => $evento,
-        'fecha'      => current_time( 'timestamp' ),
+        'fecha'      => time(),
         'usuario_id' => $usuario_id,
     );
 

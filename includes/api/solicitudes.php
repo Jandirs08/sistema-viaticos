@@ -99,6 +99,9 @@ function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
         'no_found_rows'  => true,
     ) );
 
+    $ids               = wp_list_pluck( $posts, 'ID' );
+    $tiene_gastos_map  = viaticos_mapa_solicitudes_con_gastos( $ids );
+
     $data = array();
 
     foreach ( $posts as $post ) {
@@ -113,7 +116,7 @@ function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
             'rendicion_finalizada' => viaticos_es_rendicion_finalizada( $post->ID ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
             'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
-            'historial'            => viaticos_preparar_historial_solicitud( $post->ID ),
+            'tiene_gastos'         => ! empty( $tiene_gastos_map[ $post->ID ] ),
         );
     }
 
@@ -131,6 +134,9 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
         'no_found_rows'  => true,
     ) );
 
+    $ids              = wp_list_pluck( $posts, 'ID' );
+    $tiene_gastos_map = viaticos_mapa_solicitudes_con_gastos( $ids );
+
     $data = array();
 
     foreach ( $posts as $post ) {
@@ -147,10 +153,9 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
             'ceco'                 => get_field( 'centro_costo', $post->ID ) ?: '',
             'estado'               => $estado,
             'rendicion_finalizada' => $rendicion_finalizada,
-            'total_rendido'        => $rendicion_finalizada ? viaticos_calcular_total_rendido_solicitud( $post->ID ) : 0,
             'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
-            'historial'            => viaticos_preparar_historial_solicitud( $post->ID ),
+            'tiene_gastos'         => ! empty( $tiene_gastos_map[ $post->ID ] ),
         );
     }
 
@@ -261,4 +266,34 @@ function viaticos_callback_editar_solicitud( WP_REST_Request $request ) {
         ),
         200
     );
+}
+
+/**
+ * GET /viaticos/v1/detalle-solicitud/{id_solicitud}
+ * Devuelve datos pesados (historial completo + total_rendido) on-demand.
+ * Validación: autor de la solicitud o admin.
+ */
+function viaticos_callback_detalle_solicitud( WP_REST_Request $request ) {
+    $id_solicitud = absint( $request->get_param( 'id_solicitud' ) );
+    $solicitud    = get_post( $id_solicitud );
+
+    if ( ! $solicitud || 'solicitud_viatico' !== $solicitud->post_type ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'Solicitud no encontrada.' ), 404 );
+    }
+
+    $is_owner = (int) $solicitud->post_author === get_current_user_id();
+    $is_admin = current_user_can( 'manage_viaticos' );
+
+    if ( ! $is_owner && ! $is_admin ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'Sin permisos para ver esta solicitud.' ), 403 );
+    }
+
+    $rendicion_finalizada = viaticos_es_rendicion_finalizada( $id_solicitud );
+
+    return new WP_REST_Response( array(
+        'success'        => true,
+        'id'             => $id_solicitud,
+        'historial'      => viaticos_preparar_historial_solicitud( $id_solicitud ),
+        'total_rendido'  => $rendicion_finalizada ? viaticos_calcular_total_rendido_solicitud( $id_solicitud ) : 0,
+    ), 200 );
 }

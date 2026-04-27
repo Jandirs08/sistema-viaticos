@@ -12,11 +12,24 @@ function viaticos_check_acceso_gasto( $id_gasto ) {
     if ( ! $gasto || 'gasto_rendicion' !== $gasto->post_type ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'Gasto no encontrado.' ), 404 );
     }
-    $is_owner = (int) $gasto->post_author === get_current_user_id();
+
+    $user_id  = get_current_user_id();
     $is_admin = current_user_can( 'manage_viaticos' );
-    if ( ! $is_owner && ! $is_admin ) {
+
+    if ( $is_admin ) {
+        return $gasto;
+    }
+
+    $is_owner_gasto = (int) $gasto->post_author === $user_id;
+
+    $id_solicitud      = (int) get_field( ACF_GAS_SOLICITUD, $gasto->ID );
+    $solicitud         = $id_solicitud ? get_post( $id_solicitud ) : null;
+    $is_owner_solicitud = $solicitud && (int) $solicitud->post_author === $user_id;
+
+    if ( ! $is_owner_gasto && ! $is_owner_solicitud ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'Sin permisos para este gasto.' ), 403 );
     }
+
     return $gasto;
 }
 
@@ -78,6 +91,19 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
         'jpeg' => 'image/jpeg',
         'png'  => 'image/png',
     );
+
+    $max_bytes  = 5 * 1024 * 1024;
+    $max_count  = 10;
+    $size_bytes = isset( $_FILES['archivo']['size'] ) ? (int) $_FILES['archivo']['size'] : 0;
+
+    if ( $size_bytes <= 0 || $size_bytes > $max_bytes ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'El archivo supera el tamaño máximo permitido (5 MB).' ), 413 );
+    }
+
+    $existentes = array_filter( array_map( 'absint', get_post_meta( $id_gasto, 'adjunto_id', false ) ) );
+    if ( count( $existentes ) >= $max_count ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'Se alcanzó el máximo de 10 adjuntos por gasto.' ), 409 );
+    }
 
     $uploaded = wp_handle_upload( $_FILES['archivo'], array(
         'test_form' => false,

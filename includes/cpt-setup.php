@@ -198,3 +198,21 @@ function viaticos_categoria_gasto_parent_file( $parent_file ) {
     return $parent_file;
 }
 add_filter( 'parent_file', 'viaticos_categoria_gasto_parent_file' );
+
+// =============================================================================
+// CACHÉ: invalidar lista de categorías cuando cambian
+// =============================================================================
+
+function viaticos_purgar_cache_categorias_js() {
+    delete_transient( 'viaticos_categorias_js' );
+}
+
+add_action( 'created_categoria_gasto', 'viaticos_purgar_cache_categorias_js' );
+add_action( 'edited_categoria_gasto',  'viaticos_purgar_cache_categorias_js' );
+add_action( 'delete_categoria_gasto',  'viaticos_purgar_cache_categorias_js' );
+
+add_action( 'acf/save_post', function ( $post_id ) {
+    if ( is_string( $post_id ) && 0 === strpos( $post_id, 'categoria_gasto_' ) ) {
+        viaticos_purgar_cache_categorias_js();
+    }
+}, 20 );
