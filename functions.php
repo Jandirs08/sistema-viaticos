@@ -32,6 +32,9 @@ require_once get_template_directory() . '/includes/api-endpoints.php';
 require_once get_template_directory() . '/includes/render-shell.php';
 require_once get_template_directory() . '/includes/auth.php';
 
+// OCR bootstrap (settings page + storage + helpers; endpoint REST en fase OCR-2).
+require_once get_template_directory() . '/includes/ocr-bootstrap.php';
+
 // =============================================================================
 // 2. ASSETS Y CONFIGURACIÓN BÁSICA DEL TEMA
 // =============================================================================
