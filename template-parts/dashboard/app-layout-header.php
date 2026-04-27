@@ -76,8 +76,24 @@ $args = wp_parse_args(
         set_transient( 'viaticos_categorias_js', $_cats_js, DAY_IN_SECONDS );
     }
     ?>
-    <script>window.ViaticosCategoriasGasto = <?php echo wp_json_encode($_cats_js); ?>;</script>
-    <script>window.ViaticosConfigData = <?php echo wp_json_encode( viaticos_get_config() ); ?>;</script>
+    <?php
+    $_runtime_config = array(
+        'nonce'   => $args['rest_nonce'],
+        'apiBase' => $args['api_base'],
+        'logoUrl' => $args['logo_url'],
+        'profile' => array(
+            'name'      => $args['user_name'],
+            'dni'       => $args['user_dni'],
+            'cargo'     => $args['user_cargo'],
+            'area'      => $args['user_area'],
+            'aprobador' => $args['user_aprobador'],
+        ),
+    );
+    ?>
+    <script type="application/json" id="viaticos-categorias-data"><?php echo wp_json_encode( $_cats_js ); ?></script>
+    <script type="application/json" id="viaticos-config-data"><?php echo wp_json_encode( viaticos_get_config() ); ?></script>
+    <script type="application/json" id="viaticos-runtime-config"><?php echo wp_json_encode( $_runtime_config ); ?></script>
+    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/bootstrap.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/gasto-ui.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/estado-ui.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/timeline-ui.js"></script>
@@ -85,20 +101,6 @@ $args = wp_parse_args(
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/utils.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/router.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/detalle-ui.js"></script>
-    <script>
-    window.ViaticosConfig = {
-        nonce:   '<?php echo esc_js( $args['rest_nonce'] ); ?>',
-        apiBase: '<?php echo esc_js( $args['api_base'] ); ?>',
-        logoUrl: '<?php echo esc_js( $args['logo_url'] ); ?>',
-        profile: {
-            name:      '<?php echo esc_js( $args['user_name'] ); ?>',
-            dni:       '<?php echo esc_js( $args['user_dni'] ); ?>',
-            cargo:     '<?php echo esc_js( $args['user_cargo'] ); ?>',
-            area:      '<?php echo esc_js( $args['user_area'] ); ?>',
-            aprobador: '<?php echo esc_js( $args['user_aprobador'] ); ?>'
-        }
-    };
-    </script>
 </head>
 
 <body>
