@@ -8,6 +8,7 @@ const VIATICOS_API_NAMESPACE = 'viaticos/v1';
 require_once __DIR__ . '/acf-keys.php';
 require_once __DIR__ . '/api/permissions.php';
 require_once __DIR__ . '/api/helpers.php';
+require_once __DIR__ . '/api/config.php';
 require_once __DIR__ . '/api/solicitudes.php';
 require_once __DIR__ . '/api/rendiciones.php';
 require_once __DIR__ . '/api/adjuntos.php';
@@ -17,6 +18,14 @@ require_once __DIR__ . '/api/adjuntos.php';
 // =============================================================================
 
 function viaticos_registrar_endpoints() {
+
+    // ── Config (single source of truth: estados, schemas, mapping) ────────────
+
+    register_rest_route( VIATICOS_API_NAMESPACE, '/config', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'viaticos_callback_config',
+        'permission_callback' => 'viaticos_permission_logueado',
+    ) );
 
     // ── Colaborador ───────────────────────────────────────────────────────────
 

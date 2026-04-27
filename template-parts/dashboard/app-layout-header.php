@@ -63,11 +63,11 @@ $args = wp_parse_args(
         $_cats_js   = array();
         if ( ! is_wp_error( $_cat_terms ) ) {
             foreach ( $_cat_terms as $_ct ) {
-                $_cd        = get_field( 'clase_doc',    'categoria_gasto_' . $_ct->term_id ) ?: '';
+                $_cd        = get_field( ACF_CAT_CLASE_DOC, 'categoria_gasto_' . $_ct->term_id ) ?: '';
                 $_cats_js[] = array(
                     'id'          => $_ct->term_id,
                     'nombre'      => $_ct->name,
-                    'cta_contable' => get_field( 'cta_contable', 'categoria_gasto_' . $_ct->term_id ) ?: '',
+                    'cta_contable' => get_field( ACF_CAT_CTA, 'categoria_gasto_' . $_ct->term_id ) ?: '',
                     'clase_doc'   => $_cd,
                     'tipo'        => viaticos_clase_doc_to_tipo( $_cd ),
                 );
@@ -77,6 +77,7 @@ $args = wp_parse_args(
     }
     ?>
     <script>window.ViaticosCategoriasGasto = <?php echo wp_json_encode($_cats_js); ?>;</script>
+    <script>window.ViaticosConfigData = <?php echo wp_json_encode( viaticos_get_config() ); ?>;</script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/gasto-ui.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/estado-ui.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/timeline-ui.js"></script>

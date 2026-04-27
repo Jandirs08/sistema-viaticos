@@ -28,6 +28,10 @@ define( 'ACF_GAS_RAZON',      'field_gas_razon_social' );
 define( 'ACF_GAS_NRO',        'field_gas_nro_comprobante' );
 define( 'ACF_GAS_CONCEPTO',   'field_gas_descripcion_concepto' );
 
+// categoria_gasto (taxonomy) fields
+define( 'ACF_CAT_CLASE_DOC',  'field_cat_clase_doc' );
+define( 'ACF_CAT_CTA',        'field_cat_cta_contable' );
+
 // post_meta keys for rendicion state (not ACF fields — stored directly via update_post_meta)
 define( 'META_RENDICION_FINALIZADA', 'rendicion_finalizada' );
 define( 'META_ESTADO_RENDICION',     'estado_rendicion' );

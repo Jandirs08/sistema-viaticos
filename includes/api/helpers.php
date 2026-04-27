@@ -68,14 +68,20 @@ function viaticos_mapa_solicitudes_con_gastos( $solicitud_ids = array() ) {
 
 /**
  * Mapea CLASE DOC textual a un tipo interno que el front usa para decidir
- * qué campos mostrar. No hay lista cerrada: cualquier valor distinto de
- * VALE MOVILIDAD / VALE DE CAJA se trata como 'documento' (form con PDF).
+ * qué campos mostrar. Lee el mapping desde viaticos_get_config() para
+ * mantener una única fuente de verdad compartida con el frontend.
  */
 function viaticos_clase_doc_to_tipo( $clase_doc ) {
+    static $cache = null;
+    if ( null === $cache ) {
+        $cfg   = function_exists( 'viaticos_get_config' ) ? viaticos_get_config() : array();
+        $cache = array(
+            'map'     => isset( $cfg['clase_doc_map'] ) ? $cfg['clase_doc_map'] : array(),
+            'default' => isset( $cfg['tipo_default'] ) ? $cfg['tipo_default'] : 'documento',
+        );
+    }
     $n = strtoupper( trim( (string) $clase_doc ) );
-    if ( 'VALE MOVILIDAD' === $n ) return 'movilidad';
-    if ( 'VALE DE CAJA'   === $n ) return 'vale_caja';
-    return 'documento';
+    return isset( $cache['map'][ $n ] ) ? $cache['map'][ $n ] : $cache['default'];
 }
 
 /**
@@ -86,22 +92,22 @@ function viaticos_build_gasto_dto( $post ) {
     $term_ids   = wp_get_object_terms( $post->ID, 'categoria_gasto', array( 'fields' => 'ids' ) );
     $cat_id     = ! empty( $term_ids ) && ! is_wp_error( $term_ids ) ? (int) $term_ids[0] : 0;
     $cat_term   = $cat_id ? get_term( $cat_id, 'categoria_gasto' ) : null;
-    $clase_doc  = $cat_id ? ( get_field( 'clase_doc',    'categoria_gasto_' . $cat_id ) ?: '' ) : '';
-    $cta_cont   = $cat_id ? ( get_field( 'cta_contable', 'categoria_gasto_' . $cat_id ) ?: '' ) : '';
+    $clase_doc  = $cat_id ? ( get_field( ACF_CAT_CLASE_DOC, 'categoria_gasto_' . $cat_id ) ?: '' ) : '';
+    $cta_cont   = $cat_id ? ( get_field( ACF_CAT_CTA,       'categoria_gasto_' . $cat_id ) ?: '' ) : '';
 
     return array(
         'id'                 => $post->ID,
-        'id_solicitud'       => (int) get_field( 'id_solicitud_padre', $post->ID ),
+        'id_solicitud'       => (int) get_field( ACF_GAS_SOLICITUD, $post->ID ),
         'tipo'               => viaticos_clase_doc_to_tipo( $clase_doc ),
-        'fecha'              => get_field( 'fecha_emision', $post->ID ) ?: '',
-        'importe'            => (float) get_field( 'importe_comprobante', $post->ID ),
-        'ruc'                => get_field( 'ruc_proveedor', $post->ID ) ?: '',
-        'razon'              => get_field( 'razon_social', $post->ID ) ?: '',
-        'nro'                => get_field( 'nro_comprobante', $post->ID ) ?: '',
-        'concepto'           => get_field( 'descripcion_concepto', $post->ID ) ?: '',
-        'motivo_movilidad'   => get_field( 'motivo_movilidad', $post->ID ) ?: '',
-        'destino_movilidad'  => get_field( 'destino_movilidad', $post->ID ) ?: '',
-        'ceco_oi'            => get_field( 'ceco_oi', $post->ID ) ?: '',
+        'fecha'              => get_field( ACF_GAS_FECHA,      $post->ID ) ?: '',
+        'importe'            => (float) get_field( ACF_GAS_IMPORTE, $post->ID ),
+        'ruc'                => get_field( ACF_GAS_RUC,        $post->ID ) ?: '',
+        'razon'              => get_field( ACF_GAS_RAZON,      $post->ID ) ?: '',
+        'nro'                => get_field( ACF_GAS_NRO,        $post->ID ) ?: '',
+        'concepto'           => get_field( ACF_GAS_CONCEPTO,   $post->ID ) ?: '',
+        'motivo_movilidad'   => get_field( ACF_GAS_MOTIVO_MOV, $post->ID ) ?: '',
+        'destino_movilidad'  => get_field( ACF_GAS_DESTINO,    $post->ID ) ?: '',
+        'ceco_oi'            => get_field( ACF_GAS_CECO,       $post->ID ) ?: '',
         'categoria_id'       => $cat_id,
         'categoria_nombre'   => $cat_term ? $cat_term->name : '',
         'cta_contable'       => $cta_cont,

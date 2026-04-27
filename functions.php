@@ -21,6 +21,12 @@ if (!defined('ABSPATH')) {
 // =============================================================================
 
 /**
+ * Constantes de field keys ACF — single source of truth, debe cargarse primero
+ * para que cualquier hook posterior (roles-setup, endpoints) las pueda usar.
+ */
+require_once get_template_directory() . '/includes/acf-keys.php';
+
+/**
  * Incluye el módulo de registro de Custom Post Types.
  * Contiene la definición de 'solicitud_viatico' y 'gasto_rendicion'.
  */

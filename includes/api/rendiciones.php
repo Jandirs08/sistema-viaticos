@@ -115,7 +115,7 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
         );
     }
 
-    $estado_solicitud = get_field( 'estado_solicitud', $id_solicitud );
+    $estado_solicitud = get_field( ACF_SOL_ESTADO, $id_solicitud );
 
     if ( 'aprobada' !== $estado_solicitud ) {
         return new WP_REST_Response(
@@ -150,7 +150,7 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
         );
     }
 
-    $clase_doc = get_field( 'clase_doc', 'categoria_gasto_' . $id_categoria ) ?: '';
+    $clase_doc = get_field( ACF_CAT_CLASE_DOC, 'categoria_gasto_' . $id_categoria ) ?: '';
 
     if ( '' === trim( (string) $clase_doc ) ) {
         return new WP_REST_Response(
@@ -287,7 +287,7 @@ function viaticos_callback_finalizar_rendicion( WP_REST_Request $request ) {
         );
     }
 
-    if ( 'aprobada' !== get_field( 'estado_solicitud', $id_solicitud ) ) {
+    if ( 'aprobada' !== get_field( ACF_SOL_ESTADO, $id_solicitud ) ) {
         return new WP_REST_Response(
             array(
                 'success' => false,
@@ -364,7 +364,7 @@ function viaticos_callback_detalle_rendicion_admin( WP_REST_Request $request ) {
         );
     }
 
-    $estado = get_field( 'estado_solicitud', $id_solicitud ) ?: 'pendiente';
+    $estado = get_field( ACF_SOL_ESTADO, $id_solicitud ) ?: 'pendiente';
 
     if ( 'aprobada' !== $estado ) {
         return new WP_REST_Response(
@@ -375,7 +375,7 @@ function viaticos_callback_detalle_rendicion_admin( WP_REST_Request $request ) {
 
     $gastos        = viaticos_obtener_gastos_solicitud( $id_solicitud );
     $usuario       = get_userdata( (int) get_post_field( 'post_author', $id_solicitud ) );
-    $monto         = (float) get_field( 'monto_solicitado', $id_solicitud );
+    $monto         = (float) get_field( ACF_SOL_MONTO, $id_solicitud );
     $perfil        = $usuario ? viaticos_get_user_perfil( $usuario->ID ) : array( 'cargo' => '', 'area' => '' );
     $total_rendido = 0;
 
@@ -390,10 +390,10 @@ function viaticos_callback_detalle_rendicion_admin( WP_REST_Request $request ) {
             'rendicion_finalizada' => viaticos_es_rendicion_finalizada( $id_solicitud ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $id_solicitud ),
             'fecha_creacion'       => get_the_date( 'd/m/Y', $id_solicitud ),
-            'fecha_viaje'          => get_field( 'fecha_viaje', $id_solicitud ) ?: '',
-            'motivo'               => wp_strip_all_tags( get_field( 'motivo_viaje', $id_solicitud ) ?: '' ),
-            'ceco'                 => get_field( 'centro_costo', $id_solicitud ) ?: '',
-            'dni'                  => get_field( 'dni_colaborador', $id_solicitud ) ?: '',
+            'fecha_viaje'          => get_field( ACF_SOL_FECHA, $id_solicitud ) ?: '',
+            'motivo'               => wp_strip_all_tags( get_field( ACF_SOL_MOTIVO, $id_solicitud ) ?: '' ),
+            'ceco'                 => get_field( ACF_SOL_CECO,  $id_solicitud ) ?: '',
+            'dni'                  => get_field( ACF_SOL_DNI,   $id_solicitud ) ?: '',
             'cargo'                => $perfil['cargo'],
             'area'                 => $perfil['area'],
             'monto'                => $monto,
@@ -423,7 +423,7 @@ function viaticos_callback_decidir_rendicion( WP_REST_Request $request ) {
         );
     }
 
-    if ( 'aprobada' !== get_field( 'estado_solicitud', $id_solicitud ) ) {
+    if ( 'aprobada' !== get_field( ACF_SOL_ESTADO, $id_solicitud ) ) {
         return new WP_REST_Response(
             array( 'success' => false, 'message' => 'La solicitud no está aprobada.' ),
             400

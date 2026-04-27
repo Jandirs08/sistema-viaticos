@@ -63,7 +63,7 @@ function viaticos_bloquear_edicion_segun_estado( $post_id, $post, $update ) {
         return;
     }
 
-    $estado = get_field( 'estado_solicitud', $post_id );
+    $estado = get_field( ACF_SOL_ESTADO, $post_id );
 
     $estados_bloqueados = array( 'pendiente', 'aprobada', 'rechazada' );
 

@@ -1,5 +1,5 @@
 window.ViaticosEstadoUI = (function () {
-    const labels = {
+    const FALLBACK_LABELS = {
         solicitud: {
             pendiente: 'Anticipo Pendiente',
             aprobada: 'Anticipo Aprobado',
@@ -15,6 +15,12 @@ window.ViaticosEstadoUI = (function () {
             observada: 'Rendición Observada',
             rechazada: 'Rendición Rechazada',
         },
+    };
+
+    const cfg = (window.ViaticosConfigData && window.ViaticosConfigData.estados) || {};
+    const labels = {
+        solicitud: Object.assign({}, FALLBACK_LABELS.solicitud, cfg.solicitud || {}),
+        rendicion: Object.assign({}, FALLBACK_LABELS.rendicion, cfg.rendicion || {}),
     };
 
     function escapeHtml(value) {

@@ -107,12 +107,12 @@ function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
     foreach ( $posts as $post ) {
         $data[] = array(
             'id'                   => $post->ID,
-            'dni'                  => get_field( 'dni_colaborador',  $post->ID ) ?: '',
-            'monto'                => (float) get_field( 'monto_solicitado', $post->ID ),
-            'fecha'                => get_field( 'fecha_viaje',      $post->ID ) ?: '',
-            'motivo'               => wp_strip_all_tags( get_field( 'motivo_viaje', $post->ID ) ?: '' ),
-            'ceco'                 => get_field( 'centro_costo',     $post->ID ) ?: '',
-            'estado'               => get_field( 'estado_solicitud', $post->ID ) ?: 'pendiente',
+            'dni'                  => get_field( ACF_SOL_DNI,    $post->ID ) ?: '',
+            'monto'                => (float) get_field( ACF_SOL_MONTO, $post->ID ),
+            'fecha'                => get_field( ACF_SOL_FECHA,  $post->ID ) ?: '',
+            'motivo'               => wp_strip_all_tags( get_field( ACF_SOL_MOTIVO, $post->ID ) ?: '' ),
+            'ceco'                 => get_field( ACF_SOL_CECO,   $post->ID ) ?: '',
+            'estado'               => get_field( ACF_SOL_ESTADO, $post->ID ) ?: 'pendiente',
             'rendicion_finalizada' => viaticos_es_rendicion_finalizada( $post->ID ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
             'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
@@ -140,17 +140,17 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
     $data = array();
 
     foreach ( $posts as $post ) {
-        $estado               = get_field( 'estado_solicitud', $post->ID ) ?: 'pendiente';
+        $estado               = get_field( ACF_SOL_ESTADO, $post->ID ) ?: 'pendiente';
         $rendicion_finalizada = viaticos_es_rendicion_finalizada( $post->ID );
 
         $data[] = array(
             'id'                   => $post->ID,
             'colaborador'          => get_the_author_meta( 'display_name', $post->post_author ),
-            'dni'                  => get_field( 'dni_colaborador', $post->ID ) ?: '',
-            'monto'                => (float) get_field( 'monto_solicitado', $post->ID ),
-            'fecha'                => get_field( 'fecha_viaje', $post->ID ) ?: '',
-            'motivo'               => wp_strip_all_tags( get_field( 'motivo_viaje', $post->ID ) ?: '' ),
-            'ceco'                 => get_field( 'centro_costo', $post->ID ) ?: '',
+            'dni'                  => get_field( ACF_SOL_DNI,    $post->ID ) ?: '',
+            'monto'                => (float) get_field( ACF_SOL_MONTO, $post->ID ),
+            'fecha'                => get_field( ACF_SOL_FECHA,  $post->ID ) ?: '',
+            'motivo'               => wp_strip_all_tags( get_field( ACF_SOL_MOTIVO, $post->ID ) ?: '' ),
+            'ceco'                 => get_field( ACF_SOL_CECO,   $post->ID ) ?: '',
             'estado'               => $estado,
             'rendicion_finalizada' => $rendicion_finalizada,
             'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
@@ -166,7 +166,7 @@ function viaticos_callback_actualizar_estado( WP_REST_Request $request ) {
 
     $post_id      = $request->get_param( 'id_solicitud' );
     $nuevo_estado = $request->get_param( 'nuevo_estado' );
-    $estado_actual = get_field( 'estado_solicitud', $post_id ) ?: 'pendiente';
+    $estado_actual = get_field( ACF_SOL_ESTADO, $post_id ) ?: 'pendiente';
 
     if ( 'solicitud_viatico' !== get_post_type( $post_id ) ) {
         return new WP_REST_Response(
@@ -239,7 +239,7 @@ function viaticos_callback_editar_solicitud( WP_REST_Request $request ) {
         );
     }
 
-    $estado_actual = get_field( 'estado_solicitud', $id_solicitud ) ?: 'pendiente';
+    $estado_actual = get_field( ACF_SOL_ESTADO, $id_solicitud ) ?: 'pendiente';
 
     if ( 'observada' !== $estado_actual ) {
         return new WP_REST_Response(

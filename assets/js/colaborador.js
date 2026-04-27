@@ -50,56 +50,42 @@
         return (document.getElementById('rg-tipo') ? document.getElementById('rg-tipo').value : '').trim();
     }
 
-    // Schema config per tipo: visible group IDs + label overrides.
-    // Add new tipos here without touching updateRendirTipoUI or the submit handler.
-    const RG_SCHEMAS = {
-        movilidad: {
-            groups:   ['rg-group-fecha', 'rg-group-motivo', 'rg-group-destino', 'rg-group-importe', 'rg-group-ceco-oi'],
-            labels:   { 'lbl-rg-fecha': 'Día', 'lbl-rg-importe': 'Monto Gastado S/.' },
-            required: ['rg-fecha', 'rg-motivo', 'rg-destino', 'rg-importe', 'rg-ceco-oi'],
-            buildPayload: function (base) {
-                return Object.assign(base, {
-                    motivo_movilidad:  document.getElementById('rg-motivo').value,
-                    destino_movilidad: document.getElementById('rg-destino').value,
-                    ceco_oi:           document.getElementById('rg-ceco-oi').value,
-                    id_categoria:      parseInt(document.getElementById('rg-categoria').value) || 0,
-                });
-            },
-        },
-        vale_caja: {
-            groups:   ['rg-group-fecha', 'rg-group-ruc', 'rg-group-razon', 'rg-group-concepto', 'rg-group-importe', 'rg-group-nro', 'rg-group-ceco', 'rg-group-oi'],
-            labels:   { 'lbl-rg-fecha': 'Fecha Emisión Comprobante', 'lbl-rg-importe': 'Importe Total del Comprobante', 'lbl-rg-concepto': 'Descripción del Servicio' },
-            required: ['rg-fecha', 'rg-ruc', 'rg-razon', 'rg-importe', 'rg-nro-comprobante'],
-            buildPayload: function (base) {
-                const ceco = (document.getElementById('rg-ceco').value || '').trim();
-                const oi   = (document.getElementById('rg-oi').value   || '').trim();
-                return Object.assign(base, {
-                    ruc:                  document.getElementById('rg-ruc').value,
-                    razon_social:         document.getElementById('rg-razon').value,
-                    descripcion_concepto: document.getElementById('rg-concepto').value,
-                    nro_comprobante:      document.getElementById('rg-nro-comprobante').value,
-                    ceco_oi:              ceco + (oi ? ' / ' + oi : ''),
-                    id_categoria:         parseInt(document.getElementById('rg-categoria').value) || 0,
-                });
-            },
-        },
-    };
+    // Schemas vienen desde window.ViaticosConfigData.schemas_gasto (single
+    // source of truth definida en includes/api/config.php). Cada schema declara
+    // groups visibles, labels y los fields a mapear en el payload (con soporte
+    // opcional para concatenar dos elementos vía concat_with + separator).
+    const SCHEMAS_RAW   = (window.ViaticosConfigData && window.ViaticosConfigData.schemas_gasto) || {};
+    const TIPO_DEFAULT  = (window.ViaticosConfigData && window.ViaticosConfigData.tipo_default) || 'documento';
 
-    // Default schema for factura / boleta / rxh.
-    const RG_SCHEMA_DEFAULT = {
-        groups:   ['rg-group-fecha', 'rg-group-ruc', 'rg-group-razon', 'rg-group-concepto', 'rg-group-importe', 'rg-group-nro'],
-        labels:   { 'lbl-rg-fecha': 'Fecha de Emisión', 'lbl-rg-importe': 'Importe', 'lbl-rg-concepto': 'Descripción / Concepto' },
-        required: ['rg-fecha', 'rg-importe', 'rg-ruc', 'rg-razon', 'rg-nro-comprobante'],
-        buildPayload: function (base) {
-            return Object.assign(base, {
-                ruc:                  document.getElementById('rg-ruc').value,
-                razon_social:         document.getElementById('rg-razon').value,
-                nro_comprobante:      document.getElementById('rg-nro-comprobante').value,
-                descripcion_concepto: document.getElementById('rg-concepto').value,
-                id_categoria:         parseInt(document.getElementById('rg-categoria').value) || 0,
-            });
-        },
-    };
+    function buildPayloadFromSchema(schema, base) {
+        const out = Object.assign({}, base);
+        (schema.fields || []).forEach(function (f) {
+            const elA = document.getElementById(f.el);
+            const valA = elA ? (elA.value || '').trim() : '';
+            if (f.concat_with) {
+                const elB = document.getElementById(f.concat_with);
+                const valB = elB ? (elB.value || '').trim() : '';
+                out[f.payload] = valA + (valB ? (f.separator || ' ') + valB : '');
+            } else {
+                out[f.payload] = elA ? elA.value : '';
+            }
+        });
+        out.id_categoria = parseInt(document.getElementById('rg-categoria').value) || 0;
+        return out;
+    }
+
+    const RG_SCHEMAS = {};
+    Object.keys(SCHEMAS_RAW).forEach(function (key) {
+        const s = SCHEMAS_RAW[key];
+        RG_SCHEMAS[key] = {
+            groups:       s.groups || [],
+            labels:       s.labels || {},
+            required:     s.required || [],
+            buildPayload: function (base) { return buildPayloadFromSchema(s, base); },
+        };
+    });
+
+    const RG_SCHEMA_DEFAULT = RG_SCHEMAS[TIPO_DEFAULT] || null;
 
     const ALL_RG_GROUPS = [
         'rg-group-fecha','rg-group-ruc','rg-group-razon','rg-group-concepto','rg-group-motivo',
@@ -108,7 +94,9 @@
     ];
 
     function getActiveSchema() {
-        return RG_SCHEMAS[getRendicionTipo()] || (getRendicionTipo() ? RG_SCHEMA_DEFAULT : null);
+        const tipo = getRendicionTipo();
+        if (!tipo) return null;
+        return RG_SCHEMAS[tipo] || RG_SCHEMA_DEFAULT;
     }
 
     function updateRendirTipoUI() {
