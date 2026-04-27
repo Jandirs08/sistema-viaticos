@@ -12,6 +12,7 @@ require_once __DIR__ . '/api/config.php';
 require_once __DIR__ . '/api/solicitudes.php';
 require_once __DIR__ . '/api/rendiciones.php';
 require_once __DIR__ . '/api/adjuntos.php';
+require_once __DIR__ . '/api/ocr.php';
 
 // =============================================================================
 // REGISTRO DE RUTAS
@@ -225,6 +226,12 @@ function viaticos_registrar_endpoints() {
     register_rest_route( VIATICOS_API_NAMESPACE, '/gasto-adjunto', array(
         'methods'             => WP_REST_Server::CREATABLE,
         'callback'            => 'viaticos_callback_subir_adjunto',
+        'permission_callback' => 'viaticos_permission_logueado',
+    ) );
+
+    register_rest_route( VIATICOS_API_NAMESPACE, '/ocr-extract', array(
+        'methods'             => WP_REST_Server::CREATABLE,
+        'callback'            => 'viaticos_callback_ocr_extract',
         'permission_callback' => 'viaticos_permission_logueado',
     ) );
 

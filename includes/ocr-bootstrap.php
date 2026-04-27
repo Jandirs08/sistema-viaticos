@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once __DIR__ . '/ocr/storage.php';
 require_once __DIR__ . '/ocr/helpers.php';
+require_once __DIR__ . '/ocr/extractor.php';
 
 if ( is_admin() ) {
     require_once __DIR__ . '/ocr/settings.php';

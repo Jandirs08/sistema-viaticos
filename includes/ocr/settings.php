@@ -47,12 +47,21 @@ function viaticos_ocr_handle_save() {
         }
     }
 
-    add_settings_error(
-        'viaticos_ocr',
-        'viaticos_ocr_saved',
-        'Configuración guardada.',
-        'updated'
-    );
+    if ( ! empty( $_POST['viaticos_ocr_test'] ) ) {
+        $test = viaticos_ocr_test_connection();
+        if ( ! empty( $test['ok'] ) ) {
+            add_settings_error( 'viaticos_ocr', 'viaticos_ocr_test_ok', $test['message'], 'success' );
+        } else {
+            add_settings_error( 'viaticos_ocr', 'viaticos_ocr_test_err', 'Test falló: ' . $test['error'], 'error' );
+        }
+    } else {
+        add_settings_error(
+            'viaticos_ocr',
+            'viaticos_ocr_saved',
+            'Configuración guardada.',
+            'updated'
+        );
+    }
 }
 add_action( 'admin_init', 'viaticos_ocr_handle_save' );
 
@@ -141,7 +150,10 @@ function viaticos_ocr_render_settings_page() {
                 </tr>
             </table>
 
-            <?php submit_button( 'Guardar cambios' ); ?>
+            <p class="submit">
+                <?php submit_button( 'Guardar cambios', 'primary', 'submit', false ); ?>
+                <?php submit_button( 'Probar conexión', 'secondary', 'viaticos_ocr_test', false ); ?>
+            </p>
         </form>
 
         <hr>
