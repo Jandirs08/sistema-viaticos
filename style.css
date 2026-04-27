@@ -619,6 +619,28 @@ textarea.form-control { resize: vertical; min-height: 88px; }
     border-radius: 999px;
     opacity: .75;
 }
+.rg-ocr-block {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.rg-ocr-block[hidden] { display: none !important; }
+.rg-ocr-status {
+    font-size: 13px;
+    color: var(--muted, #6b7280);
+}
+.rg-ocr-status.is-error { color: #b91c1c; }
+.rg-ocr-status.is-success { color: #047857; }
+.form-control.is-autofilled {
+    border-color: oklch(70% 0.15 90);
+    background-color: oklch(98% 0.04 90);
+}
+.form-control.is-autofilled:focus {
+    border-color: var(--primary, #da5b3e);
+    background-color: #fff;
+}
 @media (max-width: 600px) {
     .rg-cat-panel { grid-template-columns: 1fr; }
     .rg-cat-panel__lock { justify-self: start; }

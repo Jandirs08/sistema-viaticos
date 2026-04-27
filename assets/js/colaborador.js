@@ -827,6 +827,7 @@
         }
         updateAdjuntosBadge(tipoEl.value);
         updateRendirTipoUI();
+        updateOcrButtonVisibility();
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -841,6 +842,7 @@
         updateAdjuntosBadge('');
         _adjFiles = []; renderAdjPickList();
         updateRendirTipoUI();
+        updateOcrButtonVisibility();
         _forceGoToStep(1);
         const idInput = document.getElementById('rg-id-solicitud');
         const refEl = document.getElementById('rendir-sol-ref');
@@ -894,11 +896,13 @@
             btn.addEventListener('click', () => {
                 _adjFiles.splice(parseInt(btn.dataset.idx, 10), 1);
                 renderAdjPickList();
+                updateOcrButtonVisibility();
             });
         });
         if (emptyEl) emptyEl.style.display = 'none';
         if (addEl) addEl.style.display = '';
         if (dz) dz.classList.add('has-files');
+        updateOcrButtonVisibility();
     }
 
     function bindDropzone() {
@@ -913,6 +917,7 @@
             Array.from(this.files).forEach(f => _adjFiles.push(f));
             this.value = '';
             renderAdjPickList();
+            updateOcrButtonVisibility();
         });
         ['dragenter', 'dragover'].forEach(evt => {
             dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.add('is-dragover'); });
@@ -928,7 +933,120 @@
                 /\.(pdf|jpg|jpeg|png)$/i.test(f.name));
             files.forEach(f => _adjFiles.push(f));
             renderAdjPickList();
+            updateOcrButtonVisibility();
         });
+    }
+
+    /* ── OCR auto-llenado ────────────────────────────────── */
+    const OCR_CONFIG = (window.ViaticosConfigData && window.ViaticosConfigData.ocr) || { enabled: false, timeout_ms: 25000 };
+    const OCR_TIPOS_SOPORTADOS = ['documento', 'vale_caja'];
+
+    function updateOcrButtonVisibility() {
+        const block = document.getElementById('rg-ocr-block');
+        if (!block) return;
+        const enabled = !!OCR_CONFIG.enabled;
+        const tipo    = getRendicionTipo();
+        const hasFile = _adjFiles.length > 0;
+        const visible = enabled && OCR_TIPOS_SOPORTADOS.indexOf(tipo) !== -1 && hasFile;
+        block.hidden = !visible;
+        if (visible) {
+            const status = document.getElementById('rg-ocr-status');
+            if (status) { status.textContent = ''; status.className = 'rg-ocr-status'; }
+        }
+    }
+
+    function setOcrAutofilled(elId, value) {
+        const el = document.getElementById(elId);
+        if (!el || value === null || value === undefined || value === '') return;
+        el.value = value;
+        el.classList.add('is-autofilled');
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        const clear = () => el.classList.remove('is-autofilled');
+        el.addEventListener('focus', clear, { once: true });
+        el.addEventListener('change', clear, { once: true });
+    }
+
+    function applyOcrData(data) {
+        if (!data) return 0;
+        let count = 0;
+        const map = [
+            ['fecha_emision',         'rg-fecha'],
+            ['importe_comprobante',   'rg-importe'],
+            ['ruc',                   'rg-ruc'],
+            ['razon_social',          'rg-razon'],
+            ['nro_comprobante',       'rg-nro-comprobante'],
+            ['descripcion_concepto',  'rg-concepto'],
+        ];
+        map.forEach(([key, elId]) => {
+            const v = data[key];
+            if (v === null || v === undefined || v === '') return;
+            setOcrAutofilled(elId, v);
+            count++;
+        });
+        return count;
+    }
+
+    async function handleOcrAutofill() {
+        const btn    = document.getElementById('btn-rg-ocr');
+        const status = document.getElementById('rg-ocr-status');
+        if (!btn || !_adjFiles.length) return;
+
+        const file = _adjFiles[0];
+        if (file.size > (OCR_CONFIG.max_file_bytes || 10 * 1024 * 1024)) {
+            if (status) { status.textContent = 'Archivo supera 10 MB.'; status.className = 'rg-ocr-status is-error'; }
+            return;
+        }
+
+        const tipo = getRendicionTipo();
+        const fd = new FormData();
+        fd.append('archivo', file, file.name);
+        fd.append('tipo', tipo);
+
+        setButtonLoading(btn, true);
+        if (status) { status.textContent = 'Leyendo documento…'; status.className = 'rg-ocr-status'; }
+
+        const ctrl = new AbortController();
+        const timeoutMs = OCR_CONFIG.timeout_ms || 25000;
+        const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+
+        try {
+            const url = CONFIG.apiBase.replace(/\/$/, '') + '/ocr-extract';
+            const resp = await fetch(url, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'X-WP-Nonce': CONFIG.nonce },
+                body: fd,
+                signal: ctrl.signal,
+            });
+            const json = await resp.json().catch(() => ({}));
+
+            if (!resp.ok || !json.success) {
+                let msg = json.message || `Error ${resp.status}`;
+                if (resp.status === 503) msg = 'OCR no está habilitado en este momento.';
+                if (resp.status === 429) msg = 'Se alcanzó el límite mensual de OCR.';
+                if (resp.status === 502) msg = 'El proveedor OCR rechazó la solicitud. Llena los datos manualmente.';
+                if (status) { status.textContent = msg; status.className = 'rg-ocr-status is-error'; }
+                return;
+            }
+
+            const filled = applyOcrData(json.data || {});
+            if (filled === 0) {
+                if (status) { status.textContent = 'No se pudieron extraer datos. Llénalos manualmente.'; status.className = 'rg-ocr-status is-error'; }
+            } else {
+                const conf = json.data && typeof json.data.confianza === 'number' ? Math.round(json.data.confianza * 100) : null;
+                const sufijo = conf !== null ? ` (confianza ${conf}%)` : '';
+                if (status) { status.textContent = `Listo: ${filled} campo${filled === 1 ? '' : 's'} pre-llenado${filled === 1 ? '' : 's'}${sufijo}. Revísalos.`; status.className = 'rg-ocr-status is-success'; }
+            }
+        } catch (err) {
+            const isAbort = err && err.name === 'AbortError';
+            const msg = isAbort
+                ? 'El OCR tardó demasiado (más de ' + Math.round(timeoutMs / 1000) + 's). Llena los datos manualmente.'
+                : 'No se pudo conectar al OCR. Verifica tu conexión.';
+            if (status) { status.textContent = msg; status.className = 'rg-ocr-status is-error'; }
+        } finally {
+            clearTimeout(timer);
+            setButtonLoading(btn, false);
+        }
     }
 
     function validateStep1() {
@@ -1178,6 +1296,8 @@
 
         // Modal rendir gasto (wizard 2 pasos)
         bindDropzone();
+        const ocrBtn = document.getElementById('btn-rg-ocr');
+        if (ocrBtn) ocrBtn.addEventListener('click', handleOcrAutofill);
         document.getElementById('btn-cerrar-modal-rendir').addEventListener('click',   () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('btn-cancelar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('form-rendir-gasto').addEventListener('submit', handleRendirGastoSubmit);

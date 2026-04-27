@@ -9,7 +9,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * para clientes externos o pruebas.
  */
 function viaticos_get_config() {
+    $ocr_enabled = function_exists( 'viaticos_ocr_is_enabled' ) ? viaticos_ocr_is_enabled() : false;
     return array(
+        'ocr' => array(
+            'enabled'         => (bool) $ocr_enabled,
+            'max_file_bytes'  => defined( 'VIATICOS_OCR_MAX_FILE_BYTES' ) ? (int) VIATICOS_OCR_MAX_FILE_BYTES : 10 * 1024 * 1024,
+            'accept_mime'     => array( 'application/pdf', 'image/jpeg', 'image/png' ),
+            'timeout_ms'      => 25000,
+        ),
         'estados' => array(
             'solicitud' => array(
                 'pendiente'  => 'Anticipo Pendiente',
