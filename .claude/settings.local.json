@@ -8,7 +8,10 @@
       "PowerShell(gh pr *)",
       "Bash(xargs wc *)",
       "Skill(impeccable:impeccable)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git commit *)"
     ]
   }
 }

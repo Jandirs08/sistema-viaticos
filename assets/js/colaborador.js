@@ -941,13 +941,20 @@
     const OCR_CONFIG = (window.ViaticosConfigData && window.ViaticosConfigData.ocr) || { enabled: false, timeout_ms: 25000 };
     const OCR_TIPOS_SOPORTADOS = ['documento', 'vale_caja'];
 
+    console.log('[OCR debug] ViaticosConfigData =', window.ViaticosConfigData);
+    console.log('[OCR debug] OCR_CONFIG =', OCR_CONFIG);
+
     function updateOcrButtonVisibility() {
         const block = document.getElementById('rg-ocr-block');
-        if (!block) return;
+        if (!block) {
+            console.log('[OCR debug] rg-ocr-block element NOT FOUND in DOM');
+            return;
+        }
         const enabled = !!OCR_CONFIG.enabled;
         const tipo    = getRendicionTipo();
         const hasFile = _adjFiles.length > 0;
         const visible = enabled && OCR_TIPOS_SOPORTADOS.indexOf(tipo) !== -1 && hasFile;
+        console.log('[OCR debug] updateOcrButtonVisibility →', { enabled, tipo, hasFile, visible });
         block.hidden = !visible;
         if (visible) {
             const status = document.getElementById('rg-ocr-status');
@@ -987,9 +994,13 @@
     }
 
     async function handleOcrAutofill() {
+        console.log('[OCR debug] handleOcrAutofill INVOKED, files:', _adjFiles);
         const btn    = document.getElementById('btn-rg-ocr');
         const status = document.getElementById('rg-ocr-status');
-        if (!btn || !_adjFiles.length) return;
+        if (!btn || !_adjFiles.length) {
+            console.log('[OCR debug] aborted: btn=', !!btn, 'files=', _adjFiles.length);
+            return;
+        }
 
         const file = _adjFiles[0];
         if (file.size > (OCR_CONFIG.max_file_bytes || 10 * 1024 * 1024)) {
@@ -1019,6 +1030,7 @@
                 signal: ctrl.signal,
             });
             const json = await resp.json().catch(() => ({}));
+            console.log('[OCR debug] response status=', resp.status, 'json=', json);
 
             if (!resp.ok || !json.success) {
                 let msg = json.message || `Error ${resp.status}`;
@@ -1297,6 +1309,7 @@
         // Modal rendir gasto (wizard 2 pasos)
         bindDropzone();
         const ocrBtn = document.getElementById('btn-rg-ocr');
+        console.log('[OCR debug] init binding. btn-rg-ocr found =', !!ocrBtn);
         if (ocrBtn) ocrBtn.addEventListener('click', handleOcrAutofill);
         document.getElementById('btn-cerrar-modal-rendir').addEventListener('click',   () => ModalManager.close('modal-rendir-gasto'));
         document.getElementById('btn-cancelar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
