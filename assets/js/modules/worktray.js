@@ -6,7 +6,12 @@ window.ViaticosWorktray = (function () {
     function gel(id) { return id ? document.getElementById(id) : null; }
 
     function create(config) {
-        var sortState  = null;
+        // sortState: si config.defaultSort = {key, dir, type}, arranca con esos valores.
+        // Cuando el user clickea otro th, se sobrescribe; cuando vuelve a la misma key,
+        // alterna asc/desc respetando el default.
+        var sortState  = config.defaultSort
+            ? { key: config.defaultSort.key, dir: config.defaultSort.dir || 'desc', type: config.defaultSort.type || 'str' }
+            : null;
         var page       = 1;
         var chipFilter = '';
         var search     = '';
@@ -250,6 +255,14 @@ window.ViaticosWorktray = (function () {
 
             var sectionEl = config.sortSectionId ? document.getElementById(config.sortSectionId) : null;
             if (sectionEl) {
+                // Marca visualmente el sort default si existe.
+                if (sortState && sortState.key) {
+                    var defTh = sectionEl.querySelector('thead th[data-sort-key="' + sortState.key + '"]');
+                    if (defTh) {
+                        defTh.classList.add(sortState.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+                        defTh.setAttribute('aria-sort', sortState.dir === 'asc' ? 'ascending' : 'descending');
+                    }
+                }
                 sectionEl.querySelectorAll('thead th[data-sort-key]').forEach(function (th) {
                     th.addEventListener('click', function () {
                         var key  = th.dataset.sortKey;

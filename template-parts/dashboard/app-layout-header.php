@@ -93,12 +93,13 @@ $args = wp_parse_args(
     <script type="application/json" id="viaticos-categorias-data"><?php echo wp_json_encode( $_cats_js ); ?></script>
     <script type="application/json" id="viaticos-config-data"><?php echo wp_json_encode( viaticos_get_config() ); ?></script>
     <script type="application/json" id="viaticos-runtime-config"><?php echo wp_json_encode( $_runtime_config ); ?></script>
+    <!-- Base utilities (ViaticosUtils, ViaticosForms): debe cargar primero porque otros modules dependen de él. -->
+    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/utils.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/bootstrap.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/gasto-ui.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/estado-ui.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/timeline-ui.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/liquidacion.js"></script>
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/utils.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/router.js"></script>
     <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/detalle-ui.js"></script>
 </head>

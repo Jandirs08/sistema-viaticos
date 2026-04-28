@@ -55,6 +55,43 @@ window.ViaticosUtils = (function () {
         showToast('error', title || 'Error', msg);
     }
 
+    /**
+     * Hace filas de tabla clickeables + keyboard-accessible (Enter/Space).
+     * Convenciones del HTML (rendererSolicitudRow / renderAdminRow):
+     *   <tr class="row-clickable" tabindex="0" role="button" data-id="X">
+     *
+     * @param {HTMLElement} tbody       <tbody> que contiene las filas.
+     * @param {Object}      opts
+     *   - onActivate:   function(id:number, row:HTMLElement, event:Event) → void  (requerido)
+     *   - rowSelector:  string (default 'tr.row-clickable')
+     *   - idAttr:       string (default 'data-id'). Su valor se castea a int.
+     *   - actionGuard:  string (default 'button, a'). Si el target del click matchea, NO dispara onActivate.
+     */
+    function bindRowAction(tbody, opts) {
+        if (!tbody || !opts || typeof opts.onActivate !== 'function') return;
+        const rowSelector = opts.rowSelector || 'tr.row-clickable';
+        const idAttr      = opts.idAttr      || 'data-id';
+        const guard       = opts.actionGuard || 'button, a';
+
+        tbody.querySelectorAll(rowSelector).forEach(function (row) {
+            const id = parseInt(row.getAttribute(idAttr), 10);
+            if (!id) return;
+
+            const activate = function (e) {
+                if (e && e.target && e.target.closest(guard)) return;
+                opts.onActivate(id, row, e);
+            };
+
+            row.addEventListener('click', activate);
+            row.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                if (e.target && e.target.closest(guard)) return;
+                e.preventDefault();
+                opts.onActivate(id, row, e);
+            });
+        });
+    }
+
     function setButtonLoading(btn, on) {
         if (on) {
             btn.disabled = true;
@@ -175,7 +212,7 @@ window.ViaticosUtils = (function () {
         }).join('');
     }
 
-    return { escapeHtml, fmtMonto, fmtFecha, showToast, showApiError, setButtonLoading, createApiFetch, createApiFetchForm, ModalManager, renderTableSkeleton };
+    return { escapeHtml, fmtMonto, fmtFecha, showToast, showApiError, setButtonLoading, bindRowAction, createApiFetch, createApiFetchForm, ModalManager, renderTableSkeleton };
 })();
 
 /**

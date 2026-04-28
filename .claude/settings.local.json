@@ -11,7 +11,9 @@
       "Bash(xargs grep *)",
       "Bash(git add *)",
       "Bash(git reset *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(grep -rn '\\\\$_GET\\\\|\\\\$_POST\\\\|\\\\$_REQUEST\\\\|\\\\$_FILES' '--include=*.php' includes)",
+      "Bash(grep -rn \"http://localhost\\\\|127.0.0.1\\\\|wp-content\\\\|JSanchez\\\\|/Users/\\\\|C:\\\\\\\\\\\\\\\\Users\" --include=\"*.php\" --include=\"*.js\" includes assets functions.php)"
     ]
   }
 }

@@ -115,7 +115,7 @@ function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
             'estado'               => get_field( ACF_SOL_ESTADO, $post->ID ) ?: 'pendiente',
             'rendicion_finalizada' => viaticos_es_rendicion_finalizada( $post->ID ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
-            'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
+            'fecha_creacion'       => get_the_date( 'Y-m-d', $post->ID ),
             'tiene_gastos'         => ! empty( $tiene_gastos_map[ $post->ID ] ),
         );
     }
@@ -153,7 +153,7 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
             'ceco'                 => get_field( ACF_SOL_CECO,   $post->ID ) ?: '',
             'estado'               => $estado,
             'rendicion_finalizada' => $rendicion_finalizada,
-            'fecha_creacion'       => get_the_date( 'd/m/Y', $post->ID ),
+            'fecha_creacion'       => get_the_date( 'Y-m-d', $post->ID ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
             'tiene_gastos'         => ! empty( $tiene_gastos_map[ $post->ID ] ),
         );

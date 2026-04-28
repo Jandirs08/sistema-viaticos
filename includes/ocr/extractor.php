@@ -47,6 +47,30 @@ function viaticos_ocr_normalize_input_file( $file_path, $mime ) {
     return array( 'ok' => false, 'error' => 'Tipo de archivo no soportado.' );
 }
 
+/**
+ * Aplica las settings JPEG comunes a un objeto Imagick: format jpeg,
+ * compression quality, thumbnail si excede el ancho máximo. Mutates $im.
+ */
+function viaticos_imagick_apply_jpeg( $im ) {
+    $im->setImageFormat( 'jpeg' );
+    $im->setImageCompressionQuality( VIATICOS_OCR_JPEG_QUALITY );
+    if ( $im->getImageWidth() > VIATICOS_OCR_RASTER_MAX_WIDTH ) {
+        $im->thumbnailImage( VIATICOS_OCR_RASTER_MAX_WIDTH, 0 );
+    }
+}
+
+/**
+ * Escribe el Imagick a un tmp file (wp_tempnam con prefix), libera memoria.
+ * Devuelve el path del nuevo archivo.
+ */
+function viaticos_imagick_write_tmp( $im, $prefix ) {
+    $tmp = wp_tempnam( $prefix );
+    $im->writeImage( $tmp );
+    $im->clear();
+    $im->destroy();
+    return $tmp;
+}
+
 function viaticos_ocr_pdf_to_jpeg( $pdf_path ) {
     try {
         $count_im = new Imagick();
@@ -58,20 +82,11 @@ function viaticos_ocr_pdf_to_jpeg( $pdf_path ) {
         $im = new Imagick();
         $im->setResolution( VIATICOS_OCR_PDF_DPI, VIATICOS_OCR_PDF_DPI );
         $im->readImage( $pdf_path . '[0]' ); // primera página solamente
-        $im->setImageFormat( 'jpeg' );
-        $im->setImageCompressionQuality( VIATICOS_OCR_JPEG_QUALITY );
         $im->setImageBackgroundColor( 'white' );
         $im = $im->flattenImages();
 
-        $w = $im->getImageWidth();
-        if ( $w > VIATICOS_OCR_RASTER_MAX_WIDTH ) {
-            $im->thumbnailImage( VIATICOS_OCR_RASTER_MAX_WIDTH, 0 );
-        }
-
-        $tmp = wp_tempnam( 'viaticos-ocr-pdf' );
-        $im->writeImage( $tmp );
-        $im->clear();
-        $im->destroy();
+        viaticos_imagick_apply_jpeg( $im );
+        $tmp = viaticos_imagick_write_tmp( $im, 'viaticos-ocr-pdf' );
 
         $extra_text = '';
         if ( $pages > 1 ) {
@@ -165,18 +180,8 @@ function viaticos_ocr_has_timeout_binary() {
 function viaticos_ocr_heic_to_jpeg( $heic_path ) {
     try {
         $im = new Imagick( $heic_path );
-        $im->setImageFormat( 'jpeg' );
-        $im->setImageCompressionQuality( VIATICOS_OCR_JPEG_QUALITY );
-
-        $w = $im->getImageWidth();
-        if ( $w > VIATICOS_OCR_RASTER_MAX_WIDTH ) {
-            $im->thumbnailImage( VIATICOS_OCR_RASTER_MAX_WIDTH, 0 );
-        }
-
-        $tmp = wp_tempnam( 'viaticos-ocr-heic' );
-        $im->writeImage( $tmp );
-        $im->clear();
-        $im->destroy();
+        viaticos_imagick_apply_jpeg( $im );
+        $tmp = viaticos_imagick_write_tmp( $im, 'viaticos-ocr-heic' );
         return array( 'ok' => true, 'path' => $tmp, 'mime' => 'image/jpeg', 'cleanup' => true );
     } catch ( Exception $e ) {
         return array( 'ok' => false, 'error' => 'No se pudo procesar el HEIC: ' . $e->getMessage() );

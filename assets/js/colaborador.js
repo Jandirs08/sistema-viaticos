@@ -152,8 +152,9 @@
     function renderSolicitudRow(sol) {
         const gastos   = getGastosBySolicitud(sol.id);
         const acciones = buildAcciones(sol);
-        return `<tr>
+        return `<tr class="row-clickable" data-id="${sol.id}" tabindex="0" role="button" aria-label="Abrir detalle de solicitud ${sol.id}">
             <td class="text-muted">#${sol.id}</td>
+            <td>${formatFecha(sol.fecha_creacion)}</td>
             <td>${formatFecha(sol.fecha)}</td>
             <td class="td-truncate" title="${escHtml(sol.motivo)}">${escHtml(sol.motivo)}</td>
             <td><strong>${formatMonto(sol.monto)}</strong></td>
@@ -175,7 +176,8 @@
         dateToId:        'fecha-hasta-solicitudes',
         clearBtnId:      'clear-solicitudes',
         sortSectionId:   'view-solicitudes',
-        colspan:         7,
+        colspan:         8,
+        defaultSort:     { key: 'fecha_creacion', dir: 'desc', type: 'date' },
         emptyText:       'Aún no tienes solicitudes registradas.',
         emptySearchText: 'No se encontraron resultados.',
         getChipEstado:   getSolicitudEstado,
@@ -359,35 +361,38 @@
 
         if (subEl) subEl.textContent = `${items.length} ${items.length === 1 ? 'solicitud' : 'solicitudes'} esperan una acción tuya.`;
 
-        list.innerHTML = items.map(({ sol, reason }) => {
+        list.innerHTML = items.map(({ sol, reason }, idx) => {
             const ceco = escHtml(sol.ceco || 'Sin CECO');
             const motivo = escHtml(sol.motivo || 'Sin motivo');
             const fecha = formatFecha(sol.fecha);
             const monto = formatMonto(sol.monto);
+            const num   = String(idx + 1).padStart(2, '0');
             return `
                 <li class="inicio-bandeja-item inicio-bandeja-${reason.tone}"
                     tabindex="0" role="button"
                     data-route="solicitud" data-route-id="${sol.id}" data-route-from="inicio"
                     onclick="ViaticosApp.navigate({ name: 'solicitud', id: ${sol.id}, from: 'inicio' })"
                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();ViaticosApp.navigate({ name: 'solicitud', id: ${sol.id}, from: 'inicio' });}">
+                    <span class="inicio-bandeja-num" aria-hidden="true">${num}</span>
                     <div class="inicio-bandeja-body">
                         <div class="inicio-bandeja-row">
-                            <span class="inicio-bandeja-tag"><span class="inicio-bandeja-bullet" aria-hidden="true"></span>${escHtml(reason.label)}</span>
+                            <span class="inicio-bandeja-tag">${escHtml(reason.label)}</span>
                             <span class="inicio-bandeja-sep">·</span>
-                            <span class="inicio-bandeja-id">Solicitud #${sol.id}</span>
+                            <span class="inicio-bandeja-id">Sol. #${sol.id}</span>
                         </div>
                         <p class="inicio-bandeja-motivo">${motivo}</p>
                         <div class="inicio-bandeja-meta">
                             <span>${fecha}</span>
                             <span class="inicio-bandeja-dot"></span>
                             <span>${ceco}</span>
-                            <span class="inicio-bandeja-dot"></span>
-                            <span class="inicio-bandeja-monto">${monto}</span>
                         </div>
                     </div>
-                    <div class="inicio-bandeja-cta" aria-hidden="true">
-                        <span>${reason.tone === 'accent' ? 'Rendir' : 'Revisar'}</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+                    <div class="inicio-bandeja-end">
+                        <span class="inicio-bandeja-monto">${monto}</span>
+                        <span class="inicio-bandeja-cta" aria-hidden="true">
+                            ${reason.tone === 'accent' ? 'Rendir' : 'Revisar'}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+                        </span>
                     </div>
                 </li>`;
         }).join('');
@@ -507,7 +512,7 @@
                 codigoEmpleado:     CONFIG.profile.dni  || '',
                 area:               CONFIG.profile.area || '',
                 cargo:              CONFIG.profile.cargo || '',
-                fechaRendicion:     sol.fecha_creacion || '',
+                fechaRendicion:     formatFecha(sol.fecha_creacion) || '',
                 estadoRendicionKey: getRendicionEstado(sol, { gastos }),
             };
             currentLiqData = window.ViaticosLiquidacion.buildData(sol, gastos, liqOpts);
@@ -756,14 +761,22 @@
     }
 
     function attachActionListeners(tbody, data) {
+        utils.bindRowAction(tbody, {
+            onActivate: (id) => openDetalleSolicitudView(id),
+        });
+
         tbody.querySelectorAll('.action-editar').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const sol = data.find(s => s.id === parseInt(btn.dataset.id, 10));
                 if (sol) openEditarModal(sol);
             });
         });
         tbody.querySelectorAll('.action-ver-rendir').forEach(btn => {
-            btn.addEventListener('click', () => openDetalleSolicitudView(parseInt(btn.dataset.id, 10)));
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openDetalleSolicitudView(parseInt(btn.dataset.id, 10));
+            });
         });
     }
 
@@ -780,7 +793,6 @@
     const gastoUI = window.ViaticosGastoUI;
 
     /* ── Adjuntos helpers ──────────────────────────────────────────── */
-    const escA = utils.escapeHtml;
 
     const apiFetchForm = utils.createApiFetchForm(CONFIG.apiBase, CONFIG.nonce);
 
@@ -959,7 +971,7 @@
         listEl.innerHTML = _adjFiles.map((f, i) => `
             <div class="dropzone-file">
                 <span class="dropzone-file__icon ${_fileExtClass(f.name)}">${_fileExtLabel(f.name)}</span>
-                <span class="dropzone-file__name" title="${escA(f.name)}">${escA(f.name)}</span>
+                <span class="dropzone-file__name" title="${escHtml(f.name)}">${escHtml(f.name)}</span>
                 <span class="dropzone-file__size">${_fileSize(f.size)}</span>
                 <button type="button" class="dropzone-file__remove" data-idx="${i}" aria-label="Quitar archivo">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>

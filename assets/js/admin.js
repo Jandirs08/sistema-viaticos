@@ -156,23 +156,14 @@
     }
 
     function attachAdminRowListeners(tbody, pageRows, allRows) {
-        tbody.querySelectorAll('.worktray-row').forEach(row => {
-            const id     = parseInt(row.dataset.id, 10);
-            const rowView = row.dataset.view;
-            const sol    = allRows.find(item => item.id === id);
-            if (!sol) return;
-            const open = event => {
-                if (event && event.target && event.target.closest('button, a')) return;
-                openRow(sol, rowView);
-            };
-            row.addEventListener('click', open);
-            row.addEventListener('keydown', event => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    openRow(sol, rowView);
-                }
-            });
+        utils.bindRowAction(tbody, {
+            rowSelector: '.worktray-row',
+            onActivate: (id, row) => {
+                const sol = allRows.find(item => item.id === id);
+                if (sol) openRow(sol, row.dataset.view);
+            },
         });
+
         tbody.querySelectorAll('.js-row-action').forEach(btn => {
             btn.addEventListener('click', event => {
                 event.stopPropagation();
