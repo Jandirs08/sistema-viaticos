@@ -27,5 +27,3 @@ $args = wp_parse_args(
 
 require get_template_directory() . '/template-parts/dashboard/view-colab-vistas.php';
 require get_template_directory() . '/template-parts/dashboard/view-colab-modales.php';
-?>
-<script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/colaborador.js"></script>

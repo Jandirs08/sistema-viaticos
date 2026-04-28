@@ -20,6 +20,23 @@ require_once __DIR__ . '/api/ocr.php';
 
 function viaticos_registrar_endpoints() {
 
+    // Guard de dependencia: si ACF no está activo, los callbacks que usan
+    // get_field/update_field generarían fatal. Registra un fallback 503 y
+    // sale antes de declarar las rutas reales.
+    if ( ! function_exists( 'viaticos_acf_active' ) || ! viaticos_acf_active() ) {
+        register_rest_route( VIATICOS_API_NAMESPACE, '/(?P<rest_path>.*)', array(
+            'methods'             => WP_REST_Server::ALLMETHODS,
+            'permission_callback' => '__return_true',
+            'callback'            => static function () {
+                return new WP_REST_Response( array(
+                    'success' => false,
+                    'message' => 'Servicio no disponible: dependencia ACF inactiva.',
+                ), 503 );
+            },
+        ) );
+        return;
+    }
+
     // ── Config (single source of truth: estados, schemas, mapping) ────────────
 
     register_rest_route( VIATICOS_API_NAMESPACE, '/config', array(

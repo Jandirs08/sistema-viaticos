@@ -264,4 +264,3 @@ $args = wp_parse_args(
         </div>
     </div>
 </div>
-<script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/admin.js"></script>

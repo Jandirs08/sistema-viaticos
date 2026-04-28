@@ -133,6 +133,11 @@ function theme_administracion_render_front_app()
         return;
     }
 
+    if (!function_exists('viaticos_acf_active') || !viaticos_acf_active()) {
+        theme_administracion_render_acf_missing_screen();
+        return;
+    }
+
     // The dashboard shell still defines its own <title>, so avoid rendering
     // WordPress' title tag a second time for authenticated app views.
     remove_action('wp_head', '_wp_render_title_tag', 1);
@@ -149,6 +154,49 @@ function theme_administracion_render_front_app()
     }
 
     get_template_part('template-parts/dashboard/app-layout-footer');
+}
+
+/**
+ * Maintenance screen when ACF plugin is missing. Avoids fatal errors
+ * caused by get_field/update_field being undefined across the codebase.
+ *
+ * @return void
+ */
+function theme_administracion_render_acf_missing_screen()
+{
+    $is_admin_user = current_user_can('activate_plugins');
+    ?>
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Servicio no disponible — ERP Viáticos</title>
+    <?php wp_head(); ?>
+    <style>
+        body { font-family: "Segoe UI", Arial, sans-serif; background: #f4f6f8; color: #1f2937; margin: 0; display: grid; place-items: center; min-height: 100vh; padding: 24px; }
+        .maint-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; max-width: 480px; box-shadow: 0 12px 32px rgba(15,23,42,.06); text-align: center; }
+        .maint-card h1 { font-size: 22px; margin: 0 0 12px; }
+        .maint-card p { line-height: 1.55; color: #6b7280; margin: 0 0 14px; }
+        .maint-card .maint-action { display: inline-block; margin-top: 14px; padding: 10px 18px; border-radius: 10px; background: #da5b3e; color: #fff; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="maint-card">
+        <h1>El sistema está fuera de línea</h1>
+        <p>Estamos resolviendo un problema técnico. Vuelve a intentarlo en unos minutos.</p>
+        <?php if ($is_admin_user) : ?>
+            <p style="font-size:13px;color:#9ca3af;">Detalle técnico: el plugin <strong>Advanced Custom Fields</strong> está desactivado. Reactívalo para restaurar el servicio.</p>
+            <a class="maint-action" href="<?php echo esc_url(admin_url('plugins.php')); ?>">Ir a Plugins</a>
+        <?php else : ?>
+            <p style="font-size:13px;color:#9ca3af;">Si el problema persiste, avisa al área de Sistemas.</p>
+        <?php endif; ?>
+    </div>
+    <?php wp_footer(); ?>
+</body>
+</html>
+    <?php
 }
 
 /**

@@ -93,15 +93,6 @@ $args = wp_parse_args(
     <script type="application/json" id="viaticos-categorias-data"><?php echo wp_json_encode( $_cats_js ); ?></script>
     <script type="application/json" id="viaticos-config-data"><?php echo wp_json_encode( viaticos_get_config() ); ?></script>
     <script type="application/json" id="viaticos-runtime-config"><?php echo wp_json_encode( $_runtime_config ); ?></script>
-    <!-- Base utilities (ViaticosUtils, ViaticosForms): debe cargar primero porque otros modules dependen de él. -->
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/utils.js"></script>
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/bootstrap.js"></script>
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/gasto-ui.js"></script>
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/estado-ui.js"></script>
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/timeline-ui.js"></script>
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/liquidacion.js"></script>
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/router.js"></script>
-    <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/detalle-ui.js"></script>
 </head>
 
 <body>
@@ -197,8 +188,6 @@ $args = wp_parse_args(
             </div>
         </aside><!-- /#erp-sidebar -->
         <div id="sidebar-overlay"></div>
-        <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/sidebar.js"></script>
-        <script src="<?php echo esc_url( get_template_directory_uri() ); ?>/assets/js/modules/worktray.js"></script>
 
         <!-- ══ MAIN AREA ════════════════════════════════════════════ -->
         <div id="erp-main">
@@ -214,7 +203,7 @@ $args = wp_parse_args(
                     <span id="topbar-section-name" class="bc-page"><?php echo $args['dashboard_role'] === 'admin' ? 'Anticipos' : 'Inicio'; ?></span>
                 </nav>
                 <div class="topbar-actions">
-                    <a href="<?php echo $args['logout_url']; ?>" class="btn-logout" id="btn-logout" title="Cerrar sesión">
+                    <a href="<?php echo esc_url($args['logout_url']); ?>" class="btn-logout" id="btn-logout" title="Cerrar sesión">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
                         </svg>
