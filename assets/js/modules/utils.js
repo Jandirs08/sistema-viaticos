@@ -27,6 +27,7 @@ window.ViaticosUtils = (function () {
         const icons = {
             success: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`,
             error: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2z"/></svg>`,
+            warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>`,
             info: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 17h2v-6h-2zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>`,
         };
         const toast = document.createElement('div');
@@ -39,6 +40,19 @@ window.ViaticosUtils = (function () {
             toast.style.transition = 'all .3s ease';
             setTimeout(function () { toast.remove(); }, 320);
         }, duration);
+    }
+
+    /**
+     * Helper para errores de API/red. Acepta un Error, string, o {message}.
+     * Muestra toast tipo 'error' con título consistente.
+     * Uso: showApiError(err)  /  showApiError(err, 'Título custom')
+     */
+    function showApiError(err, title) {
+        let msg;
+        if (err && typeof err.message === 'string') msg = err.message;
+        else if (typeof err === 'string')           msg = err;
+        else                                        msg = 'Error inesperado';
+        showToast('error', title || 'Error', msg);
     }
 
     function setButtonLoading(btn, on) {
@@ -161,5 +175,180 @@ window.ViaticosUtils = (function () {
         }).join('');
     }
 
-    return { escapeHtml, fmtMonto, fmtFecha, showToast, setButtonLoading, createApiFetch, createApiFetchForm, ModalManager, renderTableSkeleton };
+    return { escapeHtml, fmtMonto, fmtFecha, showToast, showApiError, setButtonLoading, createApiFetch, createApiFetchForm, ModalManager, renderTableSkeleton };
+})();
+
+/**
+ * ViaticosForms — validación y feedback visual reutilizable para todos los formularios del SPA.
+ * Convenciones:
+ *   - El input tiene .form-control.
+ *   - Cerca del input vive un <span class="form-error"> que se hace visible con la clase 'visible'.
+ *   - Estado inválido: clase 'is-invalid' en el input + 'visible' en el .form-error.
+ *   - Cuando el usuario edita el campo, el estado inválido se borra automáticamente.
+ *
+ * Métodos públicos:
+ *   validateInput(input, errEl, opts)         → bool
+ *   clearInvalid(input, errEl)                → void
+ *   clearFormErrors(formEl)                   → void
+ *   focusFirstInvalid(formEl)                 → HTMLElement|null
+ *   markServerError(formEl, fieldName, msg)   → bool
+ *   parseServerMissingFields(message)         → string[]
+ *   handleServerError(formEl, message)        → { handled:bool, fields:string[] }
+ */
+window.ViaticosForms = (function () {
+    'use strict';
+
+    function findErrorElFor(input) {
+        if (!input) return null;
+        const group = input.closest && input.closest('.form-group');
+        return group ? group.querySelector('.form-error') : null;
+    }
+
+    function setInvalid(input, errEl, message) {
+        if (!input) return;
+        if (!errEl) errEl = findErrorElFor(input);
+        input.classList.add('is-invalid');
+        input.setAttribute('aria-invalid', 'true');
+        if (errEl) {
+            // Cachea el mensaje default del HTML para poder restaurarlo después.
+            if (errEl.dataset.defaultMsg === undefined) {
+                errEl.dataset.defaultMsg = errEl.textContent || '';
+            }
+            errEl.textContent = message || errEl.dataset.defaultMsg || '';
+            errEl.classList.add('visible');
+        }
+        bindAutoClear(input, errEl);
+    }
+
+    function bindAutoClear(input, errEl) {
+        if (input.dataset.invalidBound === '1') return;
+        input.dataset.invalidBound = '1';
+        const handler = function () {
+            input.classList.remove('is-invalid');
+            input.removeAttribute('aria-invalid');
+            if (errEl) errEl.classList.remove('visible');
+        };
+        input.addEventListener('input', handler);
+        input.addEventListener('change', handler);
+    }
+
+    function clearInvalid(input, errEl) {
+        if (!input) return;
+        if (!errEl) errEl = findErrorElFor(input);
+        input.classList.remove('is-invalid');
+        input.removeAttribute('aria-invalid');
+        if (errEl) errEl.classList.remove('visible');
+    }
+
+    /**
+     * Valida un input.
+     * @param {HTMLElement} input
+     * @param {HTMLElement|null} errEl
+     * @param {Object} [opts]
+     *   - required:  bool (default: input.required)
+     *   - validator: function(value) → bool
+     *   - message:   string (override del .form-error)
+     */
+    function validateInput(input, errEl, opts) {
+        if (!input) return false;
+        opts = opts || {};
+        if (!errEl) errEl = findErrorElFor(input);
+        const value = (input.value == null ? '' : String(input.value)).trim();
+        const required = opts.required !== undefined ? opts.required : input.required;
+
+        let valid = true;
+        if (required && '' === value) valid = false;
+        if (valid && typeof opts.validator === 'function') valid = !!opts.validator(value);
+        if (valid && typeof input.checkValidity === 'function' && !input.checkValidity()) valid = false;
+
+        if (valid) clearInvalid(input, errEl);
+        else       setInvalid(input, errEl, opts.message);
+        return valid;
+    }
+
+    function clearFormErrors(formEl) {
+        if (!formEl) return;
+        formEl.querySelectorAll('.form-control.is-invalid').forEach(function (el) { clearInvalid(el); });
+        formEl.querySelectorAll('.form-error.visible').forEach(function (el) { el.classList.remove('visible'); });
+    }
+
+    function focusFirstInvalid(formEl) {
+        if (!formEl) return null;
+        const candidates = formEl.querySelectorAll('.form-control.is-invalid:not([type="hidden"])');
+        let target = null;
+        for (let i = 0; i < candidates.length; i++) {
+            const el = candidates[i];
+            // Salta inputs cuyo contenedor está display:none (offsetParent === null).
+            if (el.offsetParent !== null || el === document.activeElement) {
+                target = el;
+                break;
+            }
+        }
+        if (!target) return null;
+        try { target.focus({ preventScroll: true }); } catch (_) { target.focus(); }
+        if (typeof target.scrollIntoView === 'function') {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return target;
+    }
+
+    /**
+     * Marca un campo como inválido por respuesta del servidor.
+     * Busca por [name="X"] o por id "rg-X".
+     */
+    function markServerError(formEl, fieldName, message) {
+        if (!formEl || !fieldName) return false;
+        let input = formEl.querySelector('[name="' + fieldName + '"]');
+        if (!input) input = formEl.querySelector('#rg-' + fieldName);
+        if (!input) return false;
+        setInvalid(input, findErrorElFor(input), message);
+        return true;
+    }
+
+    /**
+     * Parsea mensajes típicos de WP REST API. Devuelve { kind, fields }.
+     *   "Missing parameter(s): foo, bar" → kind 'missing'
+     *   "Invalid parameter(s): foo, bar" → kind 'invalid'
+     *   sino                              → kind ''
+     */
+    function parseServerFieldErrors(message) {
+        const re = /(Missing|Invalid) parameter\(s\):\s*(.+?)(?:\.|$)/i;
+        const m  = re.exec(message || '');
+        if (!m) return { kind: '', fields: [] };
+        const kind   = m[1].toLowerCase() === 'invalid' ? 'invalid' : 'missing';
+        const fields = m[2].split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        return { kind: kind, fields: fields };
+    }
+
+    /** @deprecated Usa parseServerFieldErrors. */
+    function parseServerMissingFields(message) {
+        return parseServerFieldErrors(message).fields;
+    }
+
+    /**
+     * Si el mensaje del server lista campos con error, los marca en el form.
+     * Devuelve { handled, fields, kind }.
+     */
+    function handleServerError(formEl, message) {
+        const parsed = parseServerFieldErrors(message);
+        if (!parsed.fields.length) return { handled: false, fields: [], kind: '' };
+        const fieldMsg = 'invalid' === parsed.kind ? 'Valor inválido' : 'Campo requerido';
+        let any = false;
+        parsed.fields.forEach(function (f) {
+            if (markServerError(formEl, f, fieldMsg)) any = true;
+        });
+        if (any) focusFirstInvalid(formEl);
+        return { handled: any, fields: parsed.fields, kind: parsed.kind };
+    }
+
+    return {
+        validateInput: validateInput,
+        clearInvalid: clearInvalid,
+        clearFormErrors: clearFormErrors,
+        focusFirstInvalid: focusFirstInvalid,
+        markServerError: markServerError,
+        parseServerFieldErrors: parseServerFieldErrors,
+        parseServerMissingFields: parseServerMissingFields,
+        handleServerError: handleServerError,
+    };
 })();

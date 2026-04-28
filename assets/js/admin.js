@@ -38,6 +38,7 @@
     const renderRendicionBadge = estadoUI.renderRendicionBadge;
 
     const showToast        = utils.showToast.bind(utils);
+    const showApiError     = utils.showApiError.bind(utils);
     const setButtonLoading = utils.setButtonLoading;
 
     function getAnticipoActionConfig(sol) {
@@ -247,7 +248,7 @@
             renderDetalle(detalle);
         } catch (error) {
             container.innerHTML = `<div style="padding:20px;"><div class="table-empty"><p>Error: ${escHtml(error.message)}</p></div></div>`;
-            showToast('error', 'No se pudo abrir el detalle', error.message);
+            showApiError(error, 'No se pudo abrir el detalle');
         }
     }
 
@@ -259,7 +260,7 @@
             LIST_VIEWS.forEach(id => trays[id].render(cache));
         } catch (error) {
             LIST_VIEWS.forEach(id => trays[id].setError(error.message));
-            showToast('error', 'Error al cargar solicitudes', error.message);
+            showApiError(error, 'Error al cargar solicitudes');
         }
     }
 
@@ -662,7 +663,7 @@
             try {
                 await window.ViaticosLiquidacion.exportXlsx(currentLiqData, undefined, CFG.logoUrl);
             } catch (err) {
-                showToast('error', 'Exportación fallida', err.message || 'No se pudo generar el archivo.');
+                showApiError(err.message ? err : 'No se pudo generar el archivo.', 'Exportación fallida');
             } finally {
                 setButtonLoading(btn, false);
             }

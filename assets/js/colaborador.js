@@ -22,6 +22,7 @@
 
     const escHtml          = utils.escapeHtml;
     const showToast        = utils.showToast.bind(utils);
+    const showApiError     = utils.showApiError.bind(utils);
     const setButtonLoading = utils.setButtonLoading;
 
     /* ── Modal Manager ────────────────────────────────────── */
@@ -29,21 +30,31 @@
 
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
-        ['modal-nueva-solicitud','modal-editar-solicitud','modal-rendir-gasto','modal-confirmar-finalizar','modal-historial-solicitud'].forEach(id => ModalManager.close(id));
+        if (_ocrInFlight) return; // bloqueado durante OCR
+        ['modal-nueva-solicitud','modal-editar-solicitud','modal-rendir-gasto','modal-confirmar-finalizar','modal-historial-solicitud','modal-ocr-picker'].forEach(id => ModalManager.close(id));
     });
 
     /* ── Form validation ──────────────────────────────────── */
+    const Forms = window.ViaticosForms;
+
+    /**
+     * Wrapper sobre Forms.validateInput. Forza required:true porque la lista de
+     * campos a validar viene de schemas_gasto.required (config.php).
+     */
     function validateField(inputEl, errorEl, customValidator) {
-        let isValid = inputEl.checkValidity();
-        if (isValid && customValidator) isValid = customValidator(inputEl.value);
-        if (!isValid) { errorEl.classList.add('visible'); inputEl.style.borderColor = '#FC8181'; }
-        else          { errorEl.classList.remove('visible'); inputEl.style.borderColor = ''; }
-        return isValid;
+        return Forms.validateInput(inputEl, errorEl, {
+            required: true,
+            validator: customValidator,
+        });
     }
 
-    function resetFormErrors(formEl) {
-        formEl.querySelectorAll('.form-error').forEach(el => el.classList.remove('visible'));
-        formEl.querySelectorAll('.form-control').forEach(el => (el.style.borderColor = ''));
+    /**
+     * Devuelve el número de step (1, 2) al que pertenece un elemento del wizard, o null.
+     */
+    function getWizardStepOf(el) {
+        if (!el) return null;
+        const section = el.closest && el.closest('.wizard-panel[data-step]');
+        return section ? parseInt(section.dataset.step, 10) : null;
     }
 
     function getRendicionTipo() {
@@ -434,7 +445,7 @@
             renderInicioBandeja(solicitudesCache);
             renderInicioRecent(solicitudesCache);
         } catch (err) {
-            showToast('error', 'Error', err.message);
+            showApiError(err);
         }
     }
 
@@ -446,7 +457,7 @@
             solTray.updateChipCounts(solicitudesCache);
             solTray.render(solicitudesCache);
         } catch (err) {
-            showToast('error', 'Error', err.message);
+            showApiError(err);
         }
     }
 
@@ -471,7 +482,7 @@
             renderDetalleSolicitudContent(sol, getGastosBySolicitud(id));
         } catch (err) {
             if (errorEl) { errorEl.textContent = err.message; errorEl.style.display = 'block'; }
-            showToast('error', 'Error', err.message);
+            showApiError(err);
         }
     }
 
@@ -503,7 +514,7 @@
             container.innerHTML = window.ViaticosLiquidacion.renderDoc(currentLiqData);
         } catch (err) {
             container.innerHTML = `<div class="liq-doc-empty" style="color:#C53030;">${escHtml(err.message)}</div>`;
-            showToast('error', 'Error', err.message);
+            showApiError(err);
         }
     }
 
@@ -532,50 +543,65 @@
 
         const errEl = document.getElementById('editar-solicitud-error');
         if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+        Forms.clearFormErrors(document.getElementById('form-editar-solicitud'));
         ModalManager.open('modal-editar-solicitud');
     }
 
     async function handleNuevaSolicitudSubmit(e) {
         e.preventDefault();
-        const btn = document.getElementById('btn-submit-nueva-solicitud');
+        const form  = document.getElementById('form-nueva-solicitud');
+        const btn   = document.getElementById('btn-submit-nueva-solicitud');
         const errEl = document.getElementById('nueva-solicitud-error');
         if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+        Forms.clearFormErrors(form);
+
+        const fields = [
+            { id: 'ns-monto',  validator: v => parseFloat(v) >= 1 },
+            { id: 'ns-fecha' },
+            { id: 'ns-ceco' },
+            { id: 'ns-motivo' },
+        ];
+        let isValid = true;
+        fields.forEach(f => {
+            const ok = Forms.validateInput(
+                document.getElementById(f.id),
+                document.getElementById('err-' + f.id),
+                { required: true, validator: f.validator }
+            );
+            if (!ok) isValid = false;
+        });
+
+        const aprobador = document.getElementById('ns-aprobador').value.trim();
+        if (!aprobador) {
+            if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'No tienes aprobador asignado en tu perfil. Contacta al administrador.'; }
+            isValid = false;
+        }
+
+        if (!isValid) {
+            const errCount = form.querySelectorAll('.form-control.is-invalid').length;
+            Forms.focusFirstInvalid(form);
+            if (errCount > 0) {
+                showToast('error', 'Faltan datos', errCount > 1
+                    ? `Completa los ${errCount} campos marcados.`
+                    : 'Completa el campo marcado.');
+            }
+            return;
+        }
 
         const payload = {
             dni:       document.getElementById('ns-dni').value.trim(),
             monto:     parseFloat(document.getElementById('ns-monto').value),
             fecha:     document.getElementById('ns-fecha').value,
             ceco:      document.getElementById('ns-ceco').value.trim(),
-            aprobador: document.getElementById('ns-aprobador').value.trim(),
+            aprobador: aprobador,
             motivo:    document.getElementById('ns-motivo').value.trim(),
         };
-
-        if (!payload.monto || payload.monto < 1) {
-            document.getElementById('err-ns-monto').style.display = 'block';
-            return;
-        }
-        if (!payload.fecha) {
-            document.getElementById('err-ns-fecha').style.display = 'block';
-            return;
-        }
-        if (!payload.ceco) {
-            document.getElementById('err-ns-ceco').style.display = 'block';
-            return;
-        }
-        if (!payload.aprobador) {
-            if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'No tienes aprobador asignado en tu perfil. Contacta al administrador.'; }
-            return;
-        }
-        if (!payload.motivo) {
-            document.getElementById('err-ns-motivo').style.display = 'block';
-            return;
-        }
 
         try {
             setButtonLoading(btn, true);
             await apiFetch('/nueva-solicitud', { method: 'POST', body: JSON.stringify(payload) });
             ModalManager.close('modal-nueva-solicitud');
-            document.getElementById('form-nueva-solicitud').reset();
+            form.reset();
             prefillNuevaSolicitudForm();
             await Promise.all([refreshSolicitudesCache(), refreshGastosCache()]);
             renderInicioStats(solicitudesCache);
@@ -585,11 +611,16 @@
             showToast('success', 'Solicitud registrada');
             await navigateTo({ name: 'solicitudes' });
         } catch (err) {
-            if (errEl) {
-                errEl.textContent = err.message;
-                errEl.style.display = 'block';
+            const msg = err && err.message ? String(err.message) : 'Error inesperado';
+            const handled = Forms.handleServerError(form, msg);
+            if (handled.handled) {
+                const tit = 'invalid' === handled.kind ? 'Datos inválidos' : 'Datos incompletos';
+                const verb = 'invalid' === handled.kind ? 'Revisa' : 'Faltan';
+                showToast('error', tit, `${verb} campos: ${handled.fields.join(', ')}.`);
+            } else {
+                if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+                showApiError(msg);
             }
-            showToast('error', 'Error', err.message);
         } finally {
             setButtonLoading(btn, false);
         }
@@ -597,9 +628,41 @@
 
     async function handleEditarSolicitudSubmit(e) {
         e.preventDefault();
-        const btn = document.getElementById('btn-submit-editar-solicitud');
+        const form  = document.getElementById('form-editar-solicitud');
+        const btn   = document.getElementById('btn-submit-editar-solicitud');
+        const errEl = document.getElementById('editar-solicitud-error');
+        if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+        Forms.clearFormErrors(form);
+
         const id_solicitud = parseInt(document.getElementById('ed-post-id').value, 10);
         if (!id_solicitud) return;
+
+        const fields = [
+            { id: 'ed-dni',    validator: v => /^\d{8}$/.test(v) },
+            { id: 'ed-monto',  validator: v => parseFloat(v) >= 1 },
+            { id: 'ed-fecha' },
+            { id: 'ed-ceco' },
+            { id: 'ed-motivo' },
+        ];
+        let isValid = true;
+        fields.forEach(f => {
+            const ok = Forms.validateInput(
+                document.getElementById(f.id),
+                document.getElementById('err-' + f.id),
+                { required: true, validator: f.validator }
+            );
+            if (!ok) isValid = false;
+        });
+
+        if (!isValid) {
+            const errCount = form.querySelectorAll('.form-control.is-invalid').length;
+            Forms.focusFirstInvalid(form);
+            showToast('error', 'Faltan datos', errCount > 1
+                ? `Completa los ${errCount} campos marcados.`
+                : 'Completa el campo marcado.');
+            return;
+        }
+
         setButtonLoading(btn, true);
         try {
             const payload = {
@@ -622,7 +685,16 @@
             }
             showToast('success', 'Solicitud corregida y reenviada a revisión.');
         } catch (err) {
-            showToast('error', 'Error', err.message);
+            const msg = err && err.message ? String(err.message) : 'Error inesperado';
+            const handled = Forms.handleServerError(form, msg);
+            if (handled.handled) {
+                const tit = 'invalid' === handled.kind ? 'Datos inválidos' : 'Datos incompletos';
+                const verb = 'invalid' === handled.kind ? 'Revisa' : 'Faltan';
+                showToast('error', tit, `${verb} campos: ${handled.fields.join(', ')}.`);
+            } else {
+                if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+                showApiError(msg);
+            }
         } finally {
             setButtonLoading(btn, false);
         }
@@ -636,7 +708,7 @@
             if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(solicitudId));
             showToast('success', 'Gasto eliminado.');
         } catch (err) {
-            showToast('error', 'Error', err.message);
+            showApiError(err);
         }
     }
 
@@ -651,7 +723,7 @@
             if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(solicitudId));
             showToast('success', 'Rendición reenviada a revisión.');
         } catch (err) {
-            showToast('error', 'Error', err.message);
+            showApiError(err);
         }
     }
 
@@ -786,7 +858,7 @@
             const sol = getSolicitudById(currentId);
             if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(currentId));
             showToast('success', 'Finalizado', 'Rendición enviada a revisión.');
-        } catch (err) { showToast('error', 'Error', err.message); }
+        } catch (err) { showApiError(err); }
     }
 
     function populateCategoriasSelect() {
@@ -837,12 +909,13 @@
 
     function openRendirModal(solicitudId) {
         const form = document.getElementById('form-rendir-gasto');
-        form.reset(); resetFormErrors(form);
+        form.reset(); Forms.clearFormErrors(form);
         document.getElementById('rg-cat-info').classList.remove('is-visible');
         updateAdjuntosBadge('');
         _adjFiles = []; renderAdjPickList();
         updateRendirTipoUI();
         updateOcrButtonVisibility();
+        hideOcrBanner();
         _forceGoToStep(1);
         const idInput = document.getElementById('rg-id-solicitud');
         const refEl = document.getElementById('rendir-sol-ref');
@@ -905,6 +978,32 @@
         updateOcrButtonVisibility();
     }
 
+    const ADJ_CONFIG = (window.ViaticosConfigData && window.ViaticosConfigData.adjuntos) || { max_file_bytes: 5 * 1024 * 1024, max_count: 10 };
+    const ADJ_ALLOWED_EXT_RE = /\.(pdf|jpg|jpeg|png|heic|heif)$/i;
+
+    function filterAndAddFiles(rawFiles) {
+        const maxBytes = ADJ_CONFIG.max_file_bytes || 5 * 1024 * 1024;
+        const maxCount = ADJ_CONFIG.max_count || 10;
+        const errors   = [];
+        for (const f of rawFiles) {
+            if (!ADJ_ALLOWED_EXT_RE.test(f.name)) {
+                errors.push(`${f.name}: formato no permitido.`);
+                continue;
+            }
+            if (f.size > maxBytes) {
+                const mb = (maxBytes / (1024 * 1024)).toFixed(0);
+                errors.push(`${f.name}: supera ${mb} MB.`);
+                continue;
+            }
+            if (_adjFiles.length >= maxCount) {
+                errors.push(`Máximo ${maxCount} archivos por gasto.`);
+                break;
+            }
+            _adjFiles.push(f);
+        }
+        if (errors.length) showToast('error', 'Archivo no agregado', errors.join(' '));
+    }
+
     function bindDropzone() {
         const dz       = document.getElementById('rg-dropzone');
         const input    = document.getElementById('rg-adj-input');
@@ -914,7 +1013,7 @@
         if (emptyBtn) emptyBtn.addEventListener('click', () => input.click());
         if (addBtn)   addBtn.addEventListener('click',   () => input.click());
         input.addEventListener('change', function () {
-            Array.from(this.files).forEach(f => _adjFiles.push(f));
+            filterAndAddFiles(Array.from(this.files));
             this.value = '';
             renderAdjPickList();
             updateOcrButtonVisibility();
@@ -929,53 +1028,100 @@
         dz.addEventListener('drop', e => {
             e.preventDefault();
             dz.classList.remove('is-dragover');
-            const files = Array.from(e.dataTransfer.files).filter(f =>
-                /\.(pdf|jpg|jpeg|png)$/i.test(f.name));
-            files.forEach(f => _adjFiles.push(f));
+            filterAndAddFiles(Array.from(e.dataTransfer.files));
             renderAdjPickList();
             updateOcrButtonVisibility();
         });
     }
 
     /* ── OCR auto-llenado ────────────────────────────────── */
-    const OCR_CONFIG = (window.ViaticosConfigData && window.ViaticosConfigData.ocr) || { enabled: false, timeout_ms: 25000 };
-    const OCR_TIPOS_SOPORTADOS = ['documento', 'vale_caja'];
+    const OCR_CONFIG = (window.ViaticosConfigData && window.ViaticosConfigData.ocr) || { enabled: false, timeout_ms: 35000 };
+    const OCR_TIPOS_SOPORTADOS = (OCR_CONFIG.tipos_soportados && OCR_CONFIG.tipos_soportados.length)
+        ? OCR_CONFIG.tipos_soportados
+        : ['documento', 'vale_caja'];
+    const OCR_ALLOWED_EXTS     = (OCR_CONFIG.allowed_exts && OCR_CONFIG.allowed_exts.length)
+        ? OCR_CONFIG.allowed_exts
+        : ['pdf', 'jpg', 'jpeg', 'png', 'heic', 'heif'];
+    const OCR_CONFIANZA_BAJA   = 0.5;
+    const OCR_LOADER_STEPS     = [
+        { delay: 0,    text: 'Subiendo archivo' },
+        { delay: 1200, text: 'Procesando con IA' },
+        { delay: 5000, text: 'Extrayendo datos del comprobante' },
+        { delay: 12000, text: 'Casi listo, validando información' },
+    ];
+    let   _ocrInFlight   = false;
+    let   _ocrStepTimers = [];
 
-    console.log('[OCR debug] ViaticosConfigData =', window.ViaticosConfigData);
-    console.log('[OCR debug] OCR_CONFIG =', OCR_CONFIG);
+    function shouldRunOcrOnNext() {
+        if (!OCR_CONFIG.enabled) return false;
+        if (OCR_TIPOS_SOPORTADOS.indexOf(getRendicionTipo()) === -1) return false;
+        return _adjFiles.length > 0;
+    }
 
     function updateOcrButtonVisibility() {
-        const block = document.getElementById('rg-ocr-block');
-        if (!block) {
-            console.log('[OCR debug] rg-ocr-block element NOT FOUND in DOM');
-            return;
-        }
-        const enabled = !!OCR_CONFIG.enabled;
-        const tipo    = getRendicionTipo();
-        const hasFile = _adjFiles.length > 0;
-        const visible = enabled && OCR_TIPOS_SOPORTADOS.indexOf(tipo) !== -1 && hasFile;
-        console.log('[OCR debug] updateOcrButtonVisibility →', { enabled, tipo, hasFile, visible });
-        block.hidden = !visible;
-        if (visible) {
-            const status = document.getElementById('rg-ocr-status');
-            if (status) { status.textContent = ''; status.className = 'rg-ocr-status'; }
-        }
+        const hint = document.getElementById('rg-ocr-hint');
+        if (!hint) return;
+        hint.hidden = !shouldRunOcrOnNext();
+    }
+
+    function showOcrLoader() {
+        const loader = document.getElementById('rg-ocr-loader');
+        const step   = document.getElementById('rg-ocr-loader-step');
+        if (!loader) return;
+        loader.hidden = false;
+        // Oculta el contenido del paso 1 mientras se procesa.
+        document.querySelectorAll('#modal-rendir-gasto .wizard-panel[data-step="1"] > .form-group').forEach(el => el.style.display = 'none');
+        const hint = document.getElementById('rg-ocr-hint');
+        if (hint) hint.hidden = true;
+        _ocrStepTimers.forEach(t => clearTimeout(t));
+        _ocrStepTimers = OCR_LOADER_STEPS.map(s => setTimeout(() => {
+            if (step) step.textContent = s.text + '…';
+        }, s.delay));
+    }
+
+    function hideOcrLoader() {
+        const loader = document.getElementById('rg-ocr-loader');
+        if (loader) loader.hidden = true;
+        document.querySelectorAll('#modal-rendir-gasto .wizard-panel[data-step="1"] > .form-group').forEach(el => el.style.display = '');
+        _ocrStepTimers.forEach(t => clearTimeout(t));
+        _ocrStepTimers = [];
+        updateOcrButtonVisibility();
+    }
+
+    /**
+     * Muestra un banner sutil dentro del paso 2 con el resultado del OCR.
+     * @param {'success'|'warning'|'error'} kind
+     * @param {string} text
+     */
+    function showOcrBanner(kind, text) {
+        const banner = document.getElementById('rg-ocr-banner');
+        const txtEl  = document.getElementById('rg-ocr-banner-text');
+        if (!banner || !txtEl) return;
+        banner.className = 'rg-ocr-banner is-' + kind;
+        txtEl.textContent = text;
+        banner.hidden = false;
+    }
+
+    function hideOcrBanner() {
+        const banner = document.getElementById('rg-ocr-banner');
+        if (banner) banner.hidden = true;
     }
 
     function setOcrAutofilled(elId, value) {
         const el = document.getElementById(elId);
-        if (!el || value === null || value === undefined || value === '') return;
+        if (!el || value === null || value === undefined || value === '') return false;
         el.value = value;
         el.classList.add('is-autofilled');
         el.dispatchEvent(new Event('input', { bubbles: true }));
         const clear = () => el.classList.remove('is-autofilled');
         el.addEventListener('focus', clear, { once: true });
         el.addEventListener('change', clear, { once: true });
+        return true;
     }
 
     function applyOcrData(data) {
-        if (!data) return 0;
-        let count = 0;
+        const result = { filled: 0, skipped: 0, available: 0 };
+        if (!data) return result;
         const map = [
             ['fecha_emision',         'rg-fecha'],
             ['importe_comprobante',   'rg-importe'],
@@ -987,25 +1133,134 @@
         map.forEach(([key, elId]) => {
             const v = data[key];
             if (v === null || v === undefined || v === '') return;
-            setOcrAutofilled(elId, v);
-            count++;
+            result.available++;
+            const el = document.getElementById(elId);
+            if (!el) return;
+            const current = (el.value || '').trim();
+            if (current !== '') { result.skipped++; return; }
+            if (setOcrAutofilled(elId, v)) result.filled++;
         });
-        return count;
+        return result;
     }
 
-    async function handleOcrAutofill() {
-        console.log('[OCR debug] handleOcrAutofill INVOKED, files:', _adjFiles);
-        const btn    = document.getElementById('btn-rg-ocr');
-        const status = document.getElementById('rg-ocr-status');
-        if (!btn || !_adjFiles.length) {
-            console.log('[OCR debug] aborted: btn=', !!btn, 'files=', _adjFiles.length);
-            return;
+    function formatFileSize(bytes) {
+        if (!bytes && bytes !== 0) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function ocrIconForExt(ext) {
+        if (ext === 'pdf') {
+            return '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-2 16H8v-2h4v2zm4-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>';
+        }
+        return '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
+    }
+
+    function openOcrPicker(files, onPick, onCancel) {
+        const list      = document.getElementById('ocr-picker-list');
+        const okBtn     = document.getElementById('btn-confirmar-ocr-picker');
+        const closeBtn  = document.getElementById('btn-cerrar-modal-ocr-picker');
+        const cancelBtn = document.getElementById('btn-cancelar-ocr-picker');
+        if (!list || !okBtn) return;
+
+        let selectedIdx = -1;
+        let resolved    = false;
+
+        list.innerHTML = files.map((f, i) => {
+            const ext = (f.name.split('.').pop() || '').toLowerCase();
+            return `<li class="ocr-picker-item" data-idx="${i}" role="option" tabindex="0" aria-selected="false">
+                <span class="ocr-picker-item__icon">${ocrIconForExt(ext)}</span>
+                <span class="ocr-picker-item__name" title="${escHtml(f.name)}">${escHtml(f.name)}</span>
+                <span class="ocr-picker-item__size">${formatFileSize(f.size)}</span>
+            </li>`;
+        }).join('');
+
+        okBtn.disabled = true;
+
+        const handleSelect = (idx) => {
+            selectedIdx = idx;
+            list.querySelectorAll('.ocr-picker-item').forEach((el, i) => {
+                const sel = i === idx;
+                el.classList.toggle('is-selected', sel);
+                el.setAttribute('aria-selected', sel ? 'true' : 'false');
+            });
+            okBtn.disabled = false;
+        };
+
+        list.querySelectorAll('.ocr-picker-item').forEach(el => {
+            const idx = parseInt(el.dataset.idx, 10);
+            el.addEventListener('click', () => handleSelect(idx));
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(idx); }
+            });
+        });
+
+        const overlay = document.getElementById('modal-ocr-picker');
+        let observer  = null;
+
+        const cleanup = () => {
+            okBtn.removeEventListener('click', onConfirm);
+            if (closeBtn)  closeBtn.removeEventListener('click', onCancelInternal);
+            if (cancelBtn) cancelBtn.removeEventListener('click', onCancelInternal);
+            if (observer)  observer.disconnect();
+        };
+        const onConfirm = () => {
+            if (selectedIdx < 0 || resolved) return;
+            resolved = true;
+            const picked = files[selectedIdx];
+            ModalManager.close('modal-ocr-picker');
+            cleanup();
+            if (typeof onPick === 'function') onPick(picked);
+        };
+        const onCancelInternal = () => {
+            if (resolved) return;
+            resolved = true;
+            cleanup();
+            if (typeof onCancel === 'function') onCancel();
+        };
+        okBtn.addEventListener('click', onConfirm);
+        if (closeBtn)  closeBtn.addEventListener('click', onCancelInternal);
+        if (cancelBtn) cancelBtn.addEventListener('click', onCancelInternal);
+
+        // Cierre por overlay click o ESC: detectamos vía clase 'open'.
+        if (overlay && typeof MutationObserver !== 'undefined') {
+            observer = new MutationObserver(() => {
+                if (!overlay.classList.contains('open') && !resolved) onCancelInternal();
+            });
+            observer.observe(overlay, { attributes: true, attributeFilter: ['class'] });
         }
 
-        const file = _adjFiles[0];
+        ModalManager.open('modal-ocr-picker');
+    }
+
+    /**
+     * Devuelve una promesa que resuelve cuando el usuario pickea (o cancela) un archivo.
+     * Si _adjFiles.length === 1 resuelve directo con ese archivo.
+     */
+    function selectFileForOcr() {
+        return new Promise((resolve) => {
+            if (_adjFiles.length === 0) { resolve(null); return; }
+            if (_adjFiles.length === 1) { resolve(_adjFiles[0]); return; }
+            openOcrPicker(_adjFiles.slice(), (picked) => resolve(picked), () => resolve(null));
+        });
+    }
+
+    /**
+     * Corre OCR sobre el archivo seleccionado mostrando el loader.
+     * Siempre resuelve (success o failure) para que el wizard pueda continuar.
+     */
+    async function runOcrOnFile(file) {
+        if (_ocrInFlight || !file) return { ok: false };
+
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (OCR_ALLOWED_EXTS.indexOf(ext) === -1) {
+            showOcrBanner('error', 'Formato no soportado para OCR. Usa PDF, JPG, PNG o HEIC.');
+            return { ok: false };
+        }
         if (file.size > (OCR_CONFIG.max_file_bytes || 10 * 1024 * 1024)) {
-            if (status) { status.textContent = 'Archivo supera 10 MB.'; status.className = 'rg-ocr-status is-error'; }
-            return;
+            showOcrBanner('error', 'Archivo supera 10 MB. Llena los datos manualmente.');
+            return { ok: false };
         }
 
         const tipo = getRendicionTipo();
@@ -1013,11 +1268,11 @@
         fd.append('archivo', file, file.name);
         fd.append('tipo', tipo);
 
-        setButtonLoading(btn, true);
-        if (status) { status.textContent = 'Leyendo documento…'; status.className = 'rg-ocr-status'; }
+        _ocrInFlight = true;
+        showOcrLoader();
 
         const ctrl = new AbortController();
-        const timeoutMs = OCR_CONFIG.timeout_ms || 25000;
+        const timeoutMs = OCR_CONFIG.timeout_ms || 35000;
         const timer = setTimeout(() => ctrl.abort(), timeoutMs);
 
         try {
@@ -1030,35 +1285,71 @@
                 signal: ctrl.signal,
             });
             const json = await resp.json().catch(() => ({}));
-            console.log('[OCR debug] response status=', resp.status, 'json=', json);
 
             if (!resp.ok || !json.success) {
                 let msg = json.message || `Error ${resp.status}`;
-                if (resp.status === 503) msg = 'OCR no está habilitado en este momento.';
-                if (resp.status === 429) msg = 'Se alcanzó el límite mensual de OCR.';
-                if (resp.status === 502) msg = 'El proveedor OCR rechazó la solicitud. Llena los datos manualmente.';
-                if (status) { status.textContent = msg; status.className = 'rg-ocr-status is-error'; }
-                return;
+                if (resp.status === 503) msg = 'OCR no está habilitado.';
+                if (resp.status === 429) msg = 'Se alcanzó el límite de OCR.';
+                if (resp.status === 502) msg = 'El proveedor OCR rechazó la solicitud.';
+                if (resp.status === 422) msg = msg || 'No se pudo procesar el archivo.';
+                showOcrBanner('error', `${msg} Llena los datos manualmente.`);
+                return { ok: false };
             }
 
-            const filled = applyOcrData(json.data || {});
-            if (filled === 0) {
-                if (status) { status.textContent = 'No se pudieron extraer datos. Llénalos manualmente.'; status.className = 'rg-ocr-status is-error'; }
-            } else {
-                const conf = json.data && typeof json.data.confianza === 'number' ? Math.round(json.data.confianza * 100) : null;
-                const sufijo = conf !== null ? ` (confianza ${conf}%)` : '';
-                if (status) { status.textContent = `Listo: ${filled} campo${filled === 1 ? '' : 's'} pre-llenado${filled === 1 ? '' : 's'}${sufijo}. Revísalos.`; status.className = 'rg-ocr-status is-success'; }
+            const data    = json.data || {};
+            const result  = applyOcrData(data);
+            const conf    = typeof data.confianza === 'number' ? data.confianza : null;
+            const confPct = conf !== null ? Math.round(conf * 100) : null;
+            const isLow   = conf !== null && conf < OCR_CONFIANZA_BAJA;
+
+            if (result.filled === 0 && result.skipped === 0) {
+                showOcrBanner('warning', 'No se pudieron extraer datos del documento. Complétalos manualmente.');
+                return { ok: true, empty: true };
             }
+
+            const partes = [];
+            if (result.filled > 0)  partes.push(`${result.filled} pre-llenado${result.filled === 1 ? '' : 's'}`);
+            if (result.skipped > 0) partes.push(`${result.skipped} respetado${result.skipped === 1 ? '' : 's'}`);
+            const confMsg = confPct !== null ? ` · confianza ${confPct}%` : '';
+
+            if (isLow) {
+                showOcrBanner('warning', `${partes.join(', ')}${confMsg}. Confianza baja, revisa con atención.`);
+            } else {
+                showOcrBanner('success', `${partes.join(', ')}${confMsg}. Revísalos antes de guardar.`);
+            }
+            return { ok: true };
         } catch (err) {
             const isAbort = err && err.name === 'AbortError';
             const msg = isAbort
-                ? 'El OCR tardó demasiado (más de ' + Math.round(timeoutMs / 1000) + 's). Llena los datos manualmente.'
+                ? `El OCR tardó demasiado (más de ${Math.round(timeoutMs / 1000)}s).`
                 : 'No se pudo conectar al OCR. Verifica tu conexión.';
-            if (status) { status.textContent = msg; status.className = 'rg-ocr-status is-error'; }
+            showOcrBanner('error', `${msg} Llena los datos manualmente.`);
+            return { ok: false };
         } finally {
             clearTimeout(timer);
-            setButtonLoading(btn, false);
+            hideOcrLoader();
+            _ocrInFlight = false;
         }
+    }
+
+    /**
+     * Orquesta "Siguiente" del paso 1: valida, corre OCR si aplica, y avanza.
+     */
+    async function handleWizardNext() {
+        if (_ocrInFlight) return;
+        if (!validateStep1()) return;
+        if (shouldRunOcrOnNext()) {
+            const file = await selectFileForOcr();
+            if (!file) return; // user canceló picker
+            const nextBtn = document.getElementById('btn-wizard-next');
+            if (nextBtn) setButtonLoading(nextBtn, true);
+            try {
+                await runOcrOnFile(file);
+            } finally {
+                if (nextBtn) setButtonLoading(nextBtn, false);
+            }
+        }
+        goToStep(2);
     }
 
     function validateStep1() {
@@ -1123,6 +1414,7 @@
 
     async function handleRendirGastoSubmit(e) {
         e.preventDefault();
+        const form   = document.getElementById('form-rendir-gasto');
         const btn    = document.getElementById('btn-submit-rendir-gasto');
         const schema = getActiveSchema();
 
@@ -1131,7 +1423,6 @@
         if (schema) {
             const rucValidator = (v) => /^\d{11}$/.test(v);
             schema.required.forEach(id => {
-                const errId = 'err-' + id.replace('rg-nro-comprobante', 'rg-nro-comprobante').replace('rg-ceco-oi', 'rg-ceco-oi');
                 isValid &= validateField(
                     document.getElementById(id),
                     document.getElementById('err-' + id),
@@ -1140,11 +1431,35 @@
             });
         }
 
-        if (!isValid) return;
+        if (!isValid) {
+            const invalids  = form.querySelectorAll('.form-control.is-invalid');
+            const errCount  = invalids.length;
+            const firstStep = invalids[0] ? getWizardStepOf(invalids[0]) : null;
+
+            if (firstStep && firstStep !== _wizardStep) {
+                goToStep(firstStep);
+                setTimeout(() => Forms.focusFirstInvalid(form), 280);
+            } else {
+                Forms.focusFirstInvalid(form);
+            }
+
+            const msg = errCount > 1
+                ? `Completa los ${errCount} campos marcados antes de guardar.`
+                : 'Completa el campo marcado antes de guardar.';
+            showToast('error', 'Faltan datos', msg);
+            return;
+        }
 
         const tipo = getRendicionTipo();
         const requierePdf = tipo && tipo !== 'movilidad' && tipo !== 'vale_caja';
         if (requierePdf && _adjFiles.length === 0) {
+            if (_wizardStep !== 1) goToStep(1);
+            const dz = document.getElementById('rg-dropzone');
+            if (dz) {
+                dz.classList.add('has-error');
+                setTimeout(() => dz.classList.remove('has-error'), 2200);
+                setTimeout(() => dz.scrollIntoView({ behavior: 'smooth', block: 'center' }), 280);
+            }
             showToast('error', 'Comprobante requerido', 'Adjunta al menos un archivo para este tipo de gasto.');
             return;
         }
@@ -1184,8 +1499,21 @@
             } else {
                 showToast('success', 'Gasto registrado');
             }
-        } catch (err) { showToast('error', 'Error', err.message); }
-        finally { setButtonLoading(btn, false); }
+        } catch (err) {
+            const msg = err && err.message ? String(err.message) : 'Error inesperado';
+            const handled = Forms.handleServerError(form, msg);
+            if (handled.handled) {
+                const firstInvalid = form.querySelector('.form-control.is-invalid');
+                const stepOf = firstInvalid ? getWizardStepOf(firstInvalid) : null;
+                if (stepOf && stepOf !== _wizardStep) {
+                    goToStep(stepOf);
+                    setTimeout(() => Forms.focusFirstInvalid(form), 280);
+                }
+                showToast('error', 'Datos incompletos', `Faltan campos: ${handled.fields.join(', ')}.`);
+            } else {
+                showApiError(msg);
+            }
+        } finally { setButtonLoading(btn, false); }
     }
 
     function renderRendicionesResumen(data) {
@@ -1200,7 +1528,7 @@
 
     async function loadRendicionesView() {
         try { await refreshGastosCache(); renderRendicionesResumen(gastosCache); }
-        catch (err) { showToast('error', 'Error', err.message); }
+        catch (err) { showApiError(err); }
     }
 
     function bindEvents() {
@@ -1215,7 +1543,7 @@
             const form = document.getElementById('form-nueva-solicitud');
             if (form) {
                 form.reset();
-                resetFormErrors(form);
+                Forms.clearFormErrors(form);
             }
             prefillNuevaSolicitudForm();
             ModalManager.open('modal-nueva-solicitud');
@@ -1290,7 +1618,7 @@
             try {
                 await window.ViaticosLiquidacion.exportXlsx(currentLiqData, undefined, CONFIG.logoUrl);
             } catch (err) {
-                showToast('error', 'Exportación fallida', err.message || 'No se pudo generar el archivo.');
+                showApiError(err.message ? err : 'No se pudo generar el archivo.', 'Exportación fallida');
             } finally {
                 setButtonLoading(btn, false);
             }
@@ -1308,13 +1636,22 @@
 
         // Modal rendir gasto (wizard 2 pasos)
         bindDropzone();
-        const ocrBtn = document.getElementById('btn-rg-ocr');
-        console.log('[OCR debug] init binding. btn-rg-ocr found =', !!ocrBtn);
-        if (ocrBtn) ocrBtn.addEventListener('click', handleOcrAutofill);
-        document.getElementById('btn-cerrar-modal-rendir').addEventListener('click',   () => ModalManager.close('modal-rendir-gasto'));
-        document.getElementById('btn-cancelar-modal-rendir').addEventListener('click', () => ModalManager.close('modal-rendir-gasto'));
+
+        // Modal OCR picker (selector de archivo cuando hay >1 adjunto)
+        const ocrPickerCloseBtn = document.getElementById('btn-cerrar-modal-ocr-picker');
+        const ocrPickerCancelBtn = document.getElementById('btn-cancelar-ocr-picker');
+        if (ocrPickerCloseBtn) ocrPickerCloseBtn.addEventListener('click', () => ModalManager.close('modal-ocr-picker'));
+        if (ocrPickerCancelBtn) ocrPickerCancelBtn.addEventListener('click', () => ModalManager.close('modal-ocr-picker'));
+        ModalManager.closeOnOverlayClick('modal-ocr-picker');
+
+        // Banner OCR (paso 2)
+        const ocrBannerCloseBtn = document.getElementById('rg-ocr-banner-close');
+        if (ocrBannerCloseBtn) ocrBannerCloseBtn.addEventListener('click', hideOcrBanner);
+        const closeRendirIfAllowed = () => { if (!_ocrInFlight) ModalManager.close('modal-rendir-gasto'); };
+        document.getElementById('btn-cerrar-modal-rendir').addEventListener('click',   closeRendirIfAllowed);
+        document.getElementById('btn-cancelar-modal-rendir').addEventListener('click', closeRendirIfAllowed);
         document.getElementById('form-rendir-gasto').addEventListener('submit', handleRendirGastoSubmit);
-        document.getElementById('btn-wizard-next').addEventListener('click', () => goToStep(2));
+        document.getElementById('btn-wizard-next').addEventListener('click', handleWizardNext);
         document.getElementById('btn-wizard-back').addEventListener('click', () => goToStep(1));
         document.getElementById('wz-summary-back').addEventListener('click', () => goToStep(1));
         document.querySelectorAll('#modal-rendir-gasto .wizard-step').forEach(el => {

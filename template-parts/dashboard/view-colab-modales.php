@@ -268,13 +268,13 @@
                             <span class="dropzone-badge is-optional" id="rg-adj-badge">Opcional</span>
                         </div>
                         <div class="dropzone" id="rg-dropzone">
-                            <input type="file" id="rg-adj-input" accept=".pdf,.jpg,.jpeg,.png" multiple hidden>
+                            <input type="file" id="rg-adj-input" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif" multiple hidden>
                             <button type="button" class="dropzone-empty" id="dz-empty">
                                 <span class="dropzone-icon" aria-hidden="true">
                                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 </span>
                                 <span class="dropzone-title">Arrastra el archivo aquí</span>
-                                <span class="dropzone-sub">o haz clic para buscar · PDF, JPG, PNG</span>
+                                <span class="dropzone-sub">o haz clic para buscar · PDF, JPG, PNG, HEIC</span>
                             </button>
                             <div class="dropzone-files" id="rg-adj-file-list"></div>
                             <button type="button" class="dropzone-add" id="dz-add-more">
@@ -282,12 +282,21 @@
                                 Agregar otro archivo
                             </button>
                         </div>
-                        <div class="rg-ocr-block" id="rg-ocr-block" hidden>
-                            <button type="button" class="btn btn-secondary btn-sm" id="btn-rg-ocr">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
-                                Auto-llenar desde documento
-                            </button>
-                            <span class="rg-ocr-status" id="rg-ocr-status" aria-live="polite"></span>
+                        <div class="rg-ocr-hint" id="rg-ocr-hint" hidden>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                            Al continuar, se auto-llenarán los campos desde el comprobante.
+                        </div>
+                    </div>
+
+                    <div class="rg-ocr-loader" id="rg-ocr-loader" hidden role="status" aria-live="polite">
+                        <div class="rg-ocr-loader__card">
+                            <div class="rg-ocr-loader__icon" aria-hidden="true">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            </div>
+                            <div class="rg-ocr-loader__title">Analizando comprobante…</div>
+                            <div class="rg-ocr-loader__step" id="rg-ocr-loader-step">Subiendo archivo</div>
+                            <div class="rg-ocr-loader__bar"><span class="rg-ocr-loader__bar-fill"></span></div>
+                            <div class="rg-ocr-loader__hint">Esto suele tomar entre 5 y 20 segundos. No cierres la ventana.</div>
                         </div>
                     </div>
                 </section>
@@ -306,6 +315,14 @@
                         <button type="button" class="wizard-summary__back" id="wz-summary-back">Editar</button>
                     </div>
 
+                    <div class="rg-ocr-banner" id="rg-ocr-banner" hidden role="status" aria-live="polite">
+                        <span class="rg-ocr-banner__icon" aria-hidden="true"></span>
+                        <span class="rg-ocr-banner__text" id="rg-ocr-banner-text"></span>
+                        <button type="button" class="rg-ocr-banner__close" id="rg-ocr-banner-close" aria-label="Cerrar aviso">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                        </button>
+                    </div>
+
                     <div class="form-grid">
                         <div class="form-group" id="rg-group-fecha">
                             <label class="form-label" for="rg-fecha"><span id="lbl-rg-fecha">Fecha de Emisión</span> <span class="required">*</span></label>
@@ -316,7 +333,7 @@
                             <label class="form-label" for="rg-importe"><span id="lbl-rg-importe">Importe</span> <span class="required">*</span></label>
                             <div class="input-prefix-wrap">
                                 <span class="input-prefix">S/.</span>
-                                <input type="number" id="rg-importe" name="importe" class="form-control" min="0.01" step="0.01" placeholder="0.00">
+                                <input type="number" id="rg-importe" name="importe" class="form-control" min="0.01" step="0.01" placeholder="0.00" required>
                             </div>
                             <span class="form-error" aria-live="assertive" id="err-rg-importe">Ingresa un importe mayor a S/. 0.00.</span>
                         </div>
@@ -414,6 +431,29 @@
 <!-- ============================================================
      MODAL: CONFIRMAR FINALIZAR RENDICIÓN
      ============================================================ -->
+<div class="modal-overlay" id="modal-ocr-picker" role="dialog" aria-modal="true" aria-labelledby="modal-ocr-picker-titulo">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <div class="modal-header-info">
+                <h2 id="modal-ocr-picker-titulo">¿Qué archivo quieres procesar?</h2>
+                <p>Selecciona el comprobante que el OCR debe analizar.</p>
+            </div>
+            <button class="modal-close" id="btn-cerrar-modal-ocr-picker" aria-label="Cerrar modal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <ul class="ocr-picker-list" id="ocr-picker-list" role="listbox" aria-label="Lista de archivos disponibles"></ul>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btn-cancelar-ocr-picker">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="btn-confirmar-ocr-picker" disabled>
+                Procesar
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="modal-overlay" id="modal-confirmar-finalizar" role="dialog" aria-modal="true" aria-labelledby="modal-confirmar-titulo">
     <div class="modal modal-sm">
         <div class="modal-header">

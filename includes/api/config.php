@@ -12,10 +12,16 @@ function viaticos_get_config() {
     $ocr_enabled = function_exists( 'viaticos_ocr_is_enabled' ) ? viaticos_ocr_is_enabled() : false;
     return array(
         'ocr' => array(
-            'enabled'         => (bool) $ocr_enabled,
-            'max_file_bytes'  => defined( 'VIATICOS_OCR_MAX_FILE_BYTES' ) ? (int) VIATICOS_OCR_MAX_FILE_BYTES : 10 * 1024 * 1024,
-            'accept_mime'     => array( 'application/pdf', 'image/jpeg', 'image/png' ),
-            'timeout_ms'      => 25000,
+            'enabled'              => (bool) $ocr_enabled,
+            'max_file_bytes'       => defined( 'VIATICOS_OCR_MAX_FILE_BYTES' ) ? (int) VIATICOS_OCR_MAX_FILE_BYTES : 10 * 1024 * 1024,
+            'accept_mime'          => array( 'application/pdf', 'image/jpeg', 'image/png', 'image/heic', 'image/heif' ),
+            'allowed_exts'         => array( 'pdf', 'jpg', 'jpeg', 'png', 'heic', 'heif' ),
+            'timeout_ms'            => 35000,
+            'tipos_soportados'     => array( 'documento', 'vale_caja' ),
+        ),
+        'adjuntos' => array(
+            'max_file_bytes' => 5 * 1024 * 1024, // 5 MB, sincronizado con includes/api/adjuntos.php
+            'max_count'      => 10,
         ),
         'estados' => array(
             'solicitud' => array(

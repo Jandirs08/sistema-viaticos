@@ -105,6 +105,15 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'Se alcanzó el máximo de 10 adjuntos por gasto.' ), 409 );
     }
 
+    // HEIC/HEIF desde iPhone: convertir a JPEG antes de subir para que sea visible en WP Media.
+    $ext_in = strtolower( pathinfo( (string) $_FILES['archivo']['name'], PATHINFO_EXTENSION ) );
+    if ( in_array( $ext_in, array( 'heic', 'heif' ), true ) ) {
+        $heic_result = viaticos_adjunto_convertir_heic( $_FILES['archivo'] );
+        if ( ! $heic_result['ok'] ) {
+            return new WP_REST_Response( array( 'success' => false, 'message' => $heic_result['error'] ), 422 );
+        }
+    }
+
     $uploaded = wp_handle_upload( $_FILES['archivo'], array(
         'test_form' => false,
         'mimes'     => $allowed,
@@ -167,4 +176,34 @@ function viaticos_callback_eliminar_adjunto( WP_REST_Request $request ) {
     wp_delete_attachment( $id_adjunto, true );
 
     return new WP_REST_Response( array( 'success' => true, 'message' => 'Adjunto eliminado correctamente.' ), 200 );
+}
+
+/**
+ * Convierte un HEIC/HEIF (referencia $_FILES) a JPEG en el mismo tmp_name.
+ * Reescribe name/type/size para que wp_handle_upload acepte el JPEG resultante.
+ * Devuelve ['ok'=>true] o ['ok'=>false, 'error'=>...].
+ */
+function viaticos_adjunto_convertir_heic( &$file ) {
+    if ( ! class_exists( 'Imagick' ) ) {
+        return array( 'ok' => false, 'error' => 'El servidor no puede procesar HEIC. Sube la foto como JPG.' );
+    }
+    try {
+        $im = new Imagick( $file['tmp_name'] );
+        $im->setImageFormat( 'jpeg' );
+        $im->setImageCompressionQuality( 85 );
+        if ( $im->getImageWidth() > 2000 ) {
+            $im->thumbnailImage( 2000, 0 );
+        }
+        $im->writeImage( $file['tmp_name'] );
+        $im->clear();
+        $im->destroy();
+
+        $base_name        = pathinfo( (string) $file['name'], PATHINFO_FILENAME );
+        $file['name']     = $base_name . '.jpg';
+        $file['type']     = 'image/jpeg';
+        $file['size']     = (int) filesize( $file['tmp_name'] );
+        return array( 'ok' => true );
+    } catch ( Exception $e ) {
+        return array( 'ok' => false, 'error' => 'No se pudo procesar la imagen HEIC: ' . $e->getMessage() );
+    }
 }

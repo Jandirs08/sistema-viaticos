@@ -3,11 +3,12 @@
  * REST endpoint OCR.
  *  POST /viaticos/v1/ocr-extract
  *  multipart/form-data:
- *    - archivo: file (PDF, JPG, PNG)
+ *    - archivo: file (PDF, JPG, PNG, HEIC, HEIF; max 10 MB)
  *    - tipo:    string opcional ('documento' | 'vale_caja')
  *
  *  Permission: cualquier usuario logueado del SPA. La validación de tamaño,
- *  tipo y cap mensual ocurre acá.
+ *  extensión y cap mensual ocurre acá. La conversión de PDF/HEIC a JPEG
+ *  ocurre en el extractor (requiere Imagick).
  */
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -33,16 +34,33 @@ function viaticos_callback_ocr_extract( WP_REST_Request $request ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'El archivo supera el tamaño máximo permitido (10 MB).' ), 413 );
     }
 
-    $check = wp_check_filetype( $file['name'] );
-    $mime  = $check['type'] ?? '';
-    $allowed = array( 'application/pdf', 'image/jpeg', 'image/png' );
-    if ( ! in_array( $mime, $allowed, true ) ) {
-        return new WP_REST_Response( array( 'success' => false, 'message' => 'Tipo de archivo no permitido. Usa PDF, JPG o PNG.' ), 415 );
+    $ext_to_mime = array(
+        'pdf'  => 'application/pdf',
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png'  => 'image/png',
+        'heic' => 'image/heic',
+        'heif' => 'image/heif',
+    );
+    $ext  = strtolower( pathinfo( (string) $file['name'], PATHINFO_EXTENSION ) );
+    $mime = $ext_to_mime[ $ext ] ?? '';
+    if ( '' === $mime ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'Tipo de archivo no permitido. Usa PDF, JPG, PNG o HEIC.' ), 415 );
     }
 
-    $tipo = sanitize_key( (string) $request->get_param( 'tipo' ) );
-    if ( ! in_array( $tipo, array( 'documento', 'vale_caja' ), true ) ) {
+    $cfg              = viaticos_get_config();
+    $tipos_soportados = $cfg['ocr']['tipos_soportados'] ?? array( 'documento', 'vale_caja' );
+    $tipo             = sanitize_key( (string) $request->get_param( 'tipo' ) );
+    if ( ! in_array( $tipo, $tipos_soportados, true ) ) {
         $tipo = 'documento';
+    }
+
+    $user_cap = viaticos_ocr_check_user_cap( get_current_user_id() );
+    if ( ! $user_cap['allowed'] ) {
+        return new WP_REST_Response( array(
+            'success' => false,
+            'message' => sprintf( 'Llegaste al límite diario de OCR (%d). Intenta de nuevo mañana.', (int) $user_cap['cap'] ),
+        ), 429 );
     }
 
     $cap = viaticos_ocr_check_cap();
@@ -54,11 +72,13 @@ function viaticos_callback_ocr_extract( WP_REST_Request $request ) {
     $settings = viaticos_ocr_get_settings();
 
     $log_entry = array(
-        'provider'    => $settings['provider'],
-        'model'       => $settings['model'],
-        'file_name'   => sanitize_file_name( (string) $file['name'] ),
-        'file_size'   => $size,
-        'duration_ms' => (int) ( $result['duration_ms'] ?? 0 ),
+        'provider'        => $settings['provider'],
+        'model'           => $settings['model'],
+        'file_name'       => sanitize_file_name( (string) $file['name'] ),
+        'file_size'       => $size,
+        'duration_ms'     => (int) ( $result['duration_ms'] ?? 0 ),
+        'pdf_pages'       => (int) ( $result['pdf_pages'] ?? 0 ),
+        'extra_text_used' => (int) ( $result['extra_text_used'] ?? 0 ),
     );
 
     if ( ! empty( $result['ok'] ) ) {
@@ -80,10 +100,17 @@ function viaticos_callback_ocr_extract( WP_REST_Request $request ) {
     $log_entry['error_msg'] = isset( $result['error'] ) ? substr( (string) $result['error'], 0, 500 ) : '';
     viaticos_ocr_log_insert( $log_entry );
 
-    $http = 'cap_reached' === $log_entry['status'] ? 429
-        : ( 'disabled' === $log_entry['status'] ? 503
-        : ( 'no_token' === $log_entry['status'] ? 503
-        : ( 'provider_error' === $log_entry['status'] ? 502 : 500 ) ) );
+    $status_to_http = array(
+        'cap_reached'          => 429,
+        'disabled'             => 503,
+        'no_token'             => 503,
+        'unsupported_provider' => 503,
+        'provider_error'       => 502,
+        'network_error'        => 504,
+        'parse_error'          => 502,
+        'normalize_error'      => 422,
+    );
+    $http = $status_to_http[ $log_entry['status'] ] ?? 500;
 
     return new WP_REST_Response( array(
         'success' => false,
