@@ -196,7 +196,17 @@ window.ViaticosUtils = (function () {
         closeOnOverlayClick: function (id) {
             const self = this;
             const o = document.getElementById(id);
-            if (o) o.addEventListener('click', function (e) { if (e.target === o) self.close(id); });
+            if (!o) return;
+            // Cierre solo si AMBOS mousedown y mouseup ocurrieron en el overlay
+            // (no en el modal). Evita cierre accidental al arrastrar selección de
+            // texto dentro de un input y soltar el mouse fuera del modal.
+            let mdTarget = null;
+            o.addEventListener('mousedown', function (e) { mdTarget = e.target; });
+            o.addEventListener('mouseup', function (e) {
+                const md = mdTarget;
+                mdTarget = null;
+                if (md === o && e.target === o) self.close(id);
+            });
         },
     };
 

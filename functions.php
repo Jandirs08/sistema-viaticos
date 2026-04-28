@@ -88,18 +88,19 @@ function viaticos_enqueue_assets()
     };
 
     wp_enqueue_script('viaticos-utils',       $base . 'modules/utils.js',       array(),                                            $ver('modules/utils.js'),       true);
+    wp_enqueue_script('viaticos-confirm',     $base . 'modules/confirm.js',     array(),                                            $ver('modules/confirm.js'),     true);
     wp_enqueue_script('viaticos-bootstrap',   $base . 'modules/bootstrap.js',   array(),                                            $ver('modules/bootstrap.js'),   true);
     wp_enqueue_script('viaticos-gasto-ui',    $base . 'modules/gasto-ui.js',    array('viaticos-utils'),                            $ver('modules/gasto-ui.js'),    true);
     wp_enqueue_script('viaticos-estado-ui',   $base . 'modules/estado-ui.js',   array('viaticos-bootstrap'),                        $ver('modules/estado-ui.js'),   true);
     wp_enqueue_script('viaticos-timeline-ui', $base . 'modules/timeline-ui.js', array(),                                            $ver('modules/timeline-ui.js'), true);
     wp_enqueue_script('viaticos-liquidacion', $base . 'modules/liquidacion.js', array(),                                            $ver('modules/liquidacion.js'), true);
     wp_enqueue_script('viaticos-router',      $base . 'modules/router.js',      array(),                                            $ver('modules/router.js'),      true);
-    wp_enqueue_script('viaticos-detalle-ui',  $base . 'modules/detalle-ui.js',  array('viaticos-utils', 'viaticos-gasto-ui', 'viaticos-estado-ui', 'viaticos-timeline-ui'), $ver('modules/detalle-ui.js'), true);
+    wp_enqueue_script('viaticos-detalle-ui',  $base . 'modules/detalle-ui.js',  array('viaticos-utils', 'viaticos-confirm', 'viaticos-gasto-ui', 'viaticos-estado-ui', 'viaticos-timeline-ui'), $ver('modules/detalle-ui.js'), true);
     wp_enqueue_script('viaticos-sidebar',     $base . 'modules/sidebar.js',     array(),                                            $ver('modules/sidebar.js'),     true);
     wp_enqueue_script('viaticos-worktray',    $base . 'modules/worktray.js',    array('viaticos-utils', 'viaticos-estado-ui'),      $ver('modules/worktray.js'),    true);
 
     $deps_app = array(
-        'viaticos-utils', 'viaticos-bootstrap', 'viaticos-gasto-ui', 'viaticos-estado-ui',
+        'viaticos-utils', 'viaticos-confirm', 'viaticos-bootstrap', 'viaticos-gasto-ui', 'viaticos-estado-ui',
         'viaticos-timeline-ui', 'viaticos-liquidacion', 'viaticos-router',
         'viaticos-detalle-ui', 'viaticos-sidebar', 'viaticos-worktray',
     );

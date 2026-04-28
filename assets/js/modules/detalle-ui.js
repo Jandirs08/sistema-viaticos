@@ -35,28 +35,58 @@ window.ViaticosDetalleUI = (function () {
         return '';
     }
 
+    function getAutorComentario(historial, eventoFiltro) {
+        if (!Array.isArray(historial)) return '';
+        for (var i = historial.length - 1; i >= 0; i--) {
+            var item = historial[i];
+            if (item && item.comentario && (!eventoFiltro || item.evento === eventoFiltro)) {
+                return String(item.usuario_nombre || '');
+            }
+        }
+        return '';
+    }
+
+    function bannerQuote(historial, evento, rol) {
+        var comentario = getUltimoComentario(historial, evento);
+        if (!comentario) return '';
+        var autor = getAutorComentario(historial, evento);
+        var rolLabel = rol === 'admin' ? 'Admin' : 'Colaborador';
+        var head = autor
+            ? '<span class="solv-banner-quote-author">' + esc(autor) + ' <span class="solv-banner-quote-rol">· ' + esc(rolLabel) + '</span></span>'
+            : '';
+        return '<blockquote class="solv-banner-quote is-' + rol + '">' +
+                    head +
+                    '<span class="solv-banner-quote-text">' + esc(comentario) + '</span>' +
+               '</blockquote>';
+    }
+
     function buildBannerHtml(estadoSolicitud, estadoRend, historial) {
-        var comentario, extra;
         if (estadoRend === 'rechazada') {
-            comentario = getUltimoComentario(historial, 'rendicion_rechazada');
-            extra = comentario ? '<p class="solv-banner-comment">' + esc(comentario) + '</p>' : '';
-            return '<div class="solv-banner is-danger"><strong>Rendición rechazada.</strong> Revisa el historial.' + extra + '</div>';
+            return '<div class="solv-banner is-danger">' +
+                '<p class="solv-banner-msg"><strong>Rendición rechazada.</strong> Revisa el historial.</p>' +
+                bannerQuote(historial, 'rendicion_rechazada', 'admin') +
+            '</div>';
         }
         if (estadoRend === 'observada') {
-            comentario = getUltimoComentario(historial, 'rendicion_observada');
-            extra = comentario ? '<p class="solv-banner-comment">' + esc(comentario) + '</p>' : '';
-            return '<div class="solv-banner is-warn"><strong>Rendición observada.</strong> Corrige y reenvía.' + extra + '</div>';
+            return '<div class="solv-banner is-warn">' +
+                '<p class="solv-banner-msg"><strong>Rendición observada.</strong> Corrige y reenvía.</p>' +
+                bannerQuote(historial, 'rendicion_observada', 'admin') +
+            '</div>';
         }
-        if (estadoRend === 'aprobada') return '<div class="solv-banner is-ok"><strong>Rendición aprobada.</strong></div>';
+        if (estadoRend === 'aprobada') {
+            return '<div class="solv-banner is-ok"><p class="solv-banner-msg"><strong>Rendición aprobada.</strong></p></div>';
+        }
         if (estadoSolicitud === 'rechazada') {
-            comentario = getUltimoComentario(historial, 'solicitud_rechazada');
-            extra = comentario ? '<p class="solv-banner-comment">' + esc(comentario) + '</p>' : '';
-            return '<div class="solv-banner is-danger"><strong>Solicitud rechazada.</strong>' + extra + '</div>';
+            return '<div class="solv-banner is-danger">' +
+                '<p class="solv-banner-msg"><strong>Solicitud rechazada.</strong></p>' +
+                bannerQuote(historial, 'solicitud_rechazada', 'admin') +
+            '</div>';
         }
         if (estadoSolicitud === 'observada') {
-            comentario = getUltimoComentario(historial, 'solicitud_observada');
-            extra = comentario ? '<p class="solv-banner-comment">' + esc(comentario) + '</p>' : '';
-            return '<div class="solv-banner is-warn"><strong>Solicitud observada.</strong> Corrige y reenvía.' + extra + '</div>';
+            return '<div class="solv-banner is-warn">' +
+                '<p class="solv-banner-msg"><strong>Solicitud observada.</strong> Corrige y reenvía.</p>' +
+                bannerQuote(historial, 'solicitud_observada', 'admin') +
+            '</div>';
         }
         return '';
     }
@@ -73,7 +103,10 @@ window.ViaticosDetalleUI = (function () {
         const apiFetch = opts.apiFetch;
         const canDelete = !!opts.canDelete;
         const canDeleteGasto = !!opts.canDeleteGasto;
+        const canEditGasto = !!opts.canEditGasto;
         const onDeleteGasto = typeof opts.onDeleteGasto === 'function' ? opts.onDeleteGasto : null;
+        const onEditGastoDatos = typeof opts.onEditGastoDatos === 'function' ? opts.onEditGastoDatos : null;
+        const onEditGastoAdjuntos = typeof opts.onEditGastoAdjuntos === 'function' ? opts.onEditGastoAdjuntos : null;
         const accionesHtml = opts.accionesHtml || '';
 
         const totalSolicitado = parseFloat(sol.monto) || 0;
@@ -100,11 +133,29 @@ window.ViaticosDetalleUI = (function () {
                     var summary = gastoUI.summaryText(g);
                     var fields = gastoUI.buildFields(g);
                     var gastoIdAttr = g.id ? String(g.id) : '';
+                    var editDatosBtn = (canEditGasto && gastoIdAttr)
+                        ? '<button type="button" class="btn btn-secondary btn-sm" data-edit-gasto-datos="' + gastoIdAttr + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>Editar datos</button>'
+                        : '';
+                    var editAdjBtn = (canEditGasto && gastoIdAttr)
+                        ? '<button type="button" class="btn btn-secondary btn-sm" data-edit-gasto-adj="' + gastoIdAttr + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .28-.22.5-.5.5s-.5-.22-.5-.5V6H11v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S8 2.79 8 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-2.5z"/></svg>Adjuntos</button>'
+                        : '';
                     var deleteBtn = (canDeleteGasto && gastoIdAttr)
-                        ? '<button type="button" class="btn-gasto-eliminar" data-delete-gasto-id="' + gastoIdAttr + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>Eliminar gasto</button>'
+                        ? '<button type="button" class="btn btn-danger btn-sm" data-delete-gasto-id="' + gastoIdAttr + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>Eliminar</button>'
+                        : '';
+                    var hasActions = !!(editDatosBtn || editAdjBtn || deleteBtn);
+                    var dividerHtml = ((editDatosBtn || editAdjBtn) && deleteBtn) ? '<span class="solv-gtbl-toolbar__divider" aria-hidden="true"></span>' : '';
+                    var toolbarHtml = hasActions
+                        ? '<div class="solv-gtbl-toolbar">' +
+                              '<span class="solv-gtbl-toolbar__eyebrow">Gasto #' + (i + 1) + '</span>' +
+                              '<span class="solv-gtbl-toolbar__spacer"></span>' +
+                              '<div class="solv-gtbl-toolbar__actions">' + editDatosBtn + editAdjBtn + dividerHtml + deleteBtn + '</div>' +
+                          '</div>'
                         : '';
                     var adjuntosHtml = gastoIdAttr
-                        ? '<div class="gasto-adj-panel" data-adj-gasto-id="' + gastoIdAttr + '"><div class="gasto-adj-title"><span style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#4A5568;"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .28-.22.5-.5.5s-.5-.22-.5-.5V6H11v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S8 2.79 8 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-2.5z"/></svg>Adjuntos</span></div><div class="gasto-adj-list"><span class="gasto-adj-loading">Cargando adjuntos…</span></div></div>'
+                        ? '<div class="gasto-adj-panel gasto-adj-panel--flat" data-adj-gasto-id="' + gastoIdAttr + '">' +
+                              '<div class="gasto-adj-title">Comprobantes</div>' +
+                              '<div class="gasto-adj-list"><span class="gasto-adj-loading">Cargando adjuntos…</span></div>' +
+                          '</div>'
                         : '';
                     return (
                         '<tr class="solv-gtbl-row" data-acc-id="' + itemId + '" data-gasto-id="' + gastoIdAttr + '" tabindex="0" role="button" aria-expanded="false">' +
@@ -116,9 +167,9 @@ window.ViaticosDetalleUI = (function () {
                         '</tr>' +
                         '<tr class="solv-gtbl-detail" data-detail-for="' + itemId + '" hidden>' +
                         '<td colspan="5">' +
+                        toolbarHtml +
                         '<div class="solv-gtbl-fields">' + fields + '</div>' +
                         adjuntosHtml +
-                        deleteBtn +
                         '</td>' +
                         '</tr>'
                     );
@@ -181,11 +232,33 @@ window.ViaticosDetalleUI = (function () {
         const tableEl = containerEl.querySelector('#' + accId);
         if (tableEl && apiFetch) {
             tableEl.addEventListener('click', function (e) {
-                var delBtn = e.target.closest('.btn-gasto-eliminar');
+                var editDatosTrg = e.target.closest('[data-edit-gasto-datos]');
+                if (editDatosTrg && onEditGastoDatos) {
+                    e.stopPropagation();
+                    onEditGastoDatos(parseInt(editDatosTrg.dataset.editGastoDatos, 10));
+                    return;
+                }
+                var editAdjTrg = e.target.closest('[data-edit-gasto-adj]');
+                if (editAdjTrg && onEditGastoAdjuntos) {
+                    e.stopPropagation();
+                    onEditGastoAdjuntos(parseInt(editAdjTrg.dataset.editGastoAdj, 10));
+                    return;
+                }
+                var delBtn = e.target.closest('[data-delete-gasto-id]');
                 if (delBtn && onDeleteGasto) {
                     e.stopPropagation();
-                    if (confirm('¿Eliminar este gasto? Esta acción no se puede deshacer.')) {
-                        onDeleteGasto(parseInt(delBtn.dataset.deleteGastoId, 10));
+                    var gastoId = parseInt(delBtn.dataset.deleteGastoId, 10);
+                    var confirmApi = (typeof window !== 'undefined') ? window.ViaticosConfirm : null;
+                    if (confirmApi && typeof confirmApi.show === 'function') {
+                        confirmApi.show({
+                            title: 'Eliminar gasto',
+                            message: 'Se borrará el gasto y sus comprobantes. Esta acción no se puede deshacer.',
+                            variant: 'danger',
+                            confirmText: 'Sí, eliminar',
+                            cancelText: 'Cancelar',
+                        }).then(function (ok) { if (ok) onDeleteGasto(gastoId); });
+                    } else if (confirm('¿Eliminar este gasto? Esta acción no se puede deshacer.')) {
+                        onDeleteGasto(gastoId);
                     }
                     return;
                 }

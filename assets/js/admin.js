@@ -140,6 +140,23 @@
                 </tr>`;
     }
 
+    function renderSaldoCell(sol) {
+        const saldo = Number(sol.saldo);
+        if (!Number.isFinite(saldo) || Number(sol.gastos_count) === 0) {
+            return '<span class="cell-saldo is-neutral">—</span>';
+        }
+        const tone = saldo < 0 ? 'is-negative' : (saldo > 0 ? 'is-positive' : 'is-zero');
+        const sign = saldo > 0 ? '+' : (saldo < 0 ? '−' : '');
+        const abs  = Math.abs(saldo);
+        return `<span class="cell-saldo ${tone}">${sign}${fmt(abs)}</span>`;
+    }
+
+    function renderGastosCell(sol) {
+        const count = Number(sol.gastos_count) || 0;
+        if (count === 0) return '<span class="cell-gastos is-empty">0</span>';
+        return `<span class="cell-gastos">${count}</span>`;
+    }
+
     function renderRendicionRow(sol) {
         const action  = getRendicionActionConfig(sol);
         const classes = ['worktray-row'];
@@ -149,7 +166,9 @@
                     <td class="muted">#${sol.id}</td>
                     <td class="worktray-person-cell" data-fecha="${fmtFecha(sol.fecha)}"><div class="worktray-person"><strong>${escHtml(sol.colaborador || 'Sin nombre')}</strong><span>${escHtml(sol.ceco || 'Sin CECO')}</span></div></td>
                     <td>${fmtFecha(sol.fecha)}</td>
-                    <td><strong>${fmt(sol.monto)}</strong></td>
+                    <td class="num"><strong>${fmt(sol.monto)}</strong></td>
+                    <td class="num">${renderSaldoCell(sol)}</td>
+                    <td class="num">${renderGastosCell(sol)}</td>
                     <td>${renderRendicionBadge(sol)}</td>
                     <td>${renderActionCell(sol, 'view-rendiciones')}</td>
                 </tr>`;
@@ -215,7 +234,7 @@
             dateToId:       'fecha-hasta-rendiciones',
             clearBtnId:     'clear-rendiciones',
             sortSectionId:  'view-rendiciones',
-            colspan:         6,
+            colspan:         8,
             emptyText:       'No hay rendiciones registradas.',
             emptySearchText: 'No se encontraron resultados.',
             filter:          sol => getSolicitudEstado(sol) === 'aprobada',

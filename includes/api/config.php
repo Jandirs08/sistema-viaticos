@@ -14,8 +14,8 @@ function viaticos_get_config() {
         'ocr' => array(
             'enabled'              => (bool) $ocr_enabled,
             'max_file_bytes'       => defined( 'VIATICOS_OCR_MAX_FILE_BYTES' ) ? (int) VIATICOS_OCR_MAX_FILE_BYTES : 10 * 1024 * 1024,
-            'accept_mime'          => array( 'application/pdf', 'image/jpeg', 'image/png', 'image/heic', 'image/heif' ),
-            'allowed_exts'         => array( 'pdf', 'jpg', 'jpeg', 'png', 'heic', 'heif' ),
+            'accept_mime'          => array( 'application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif' ),
+            'allowed_exts'         => array( 'pdf', 'jpg', 'jpeg', 'png', 'webp', 'heic', 'heif' ),
             'timeout_ms'            => 35000,
             'tipos_soportados'     => array( 'documento', 'vale_caja' ),
         ),

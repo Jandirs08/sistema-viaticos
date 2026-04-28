@@ -77,8 +77,8 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
     $gasto = $result;
 
     $id_solicitud = (int) get_field( ACF_GAS_SOLICITUD, $id_gasto );
-    if ( $id_solicitud && viaticos_es_rendicion_finalizada( $id_solicitud ) && 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
-        return new WP_REST_Response( array( 'success' => false, 'message' => 'La rendición ya fue finalizada; no se pueden agregar adjuntos.' ), 409 );
+    if ( $id_solicitud && ! viaticos_puede_modificar_rendicion( $id_solicitud ) ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'La rendición ya fue enviada a revisión; no se pueden agregar adjuntos.' ), 409 );
     }
 
     if ( empty( $_FILES['archivo'] ) || empty( $_FILES['archivo']['name'] ) ) {
@@ -90,15 +90,11 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
         'jpg'  => 'image/jpeg',
         'jpeg' => 'image/jpeg',
         'png'  => 'image/png',
+        'webp' => 'image/webp',
     );
 
-    $max_bytes  = 5 * 1024 * 1024;
-    $max_count  = 10;
-    $size_bytes = isset( $_FILES['archivo']['size'] ) ? (int) $_FILES['archivo']['size'] : 0;
-
-    if ( $size_bytes <= 0 || $size_bytes > $max_bytes ) {
-        return new WP_REST_Response( array( 'success' => false, 'message' => 'El archivo supera el tamaño máximo permitido (5 MB).' ), 413 );
-    }
+    $max_bytes = 5 * 1024 * 1024;
+    $max_count = 10;
 
     $existentes = array_filter( array_map( 'absint', get_post_meta( $id_gasto, 'adjunto_id', false ) ) );
     if ( count( $existentes ) >= $max_count ) {
@@ -106,12 +102,19 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
     }
 
     // HEIC/HEIF desde iPhone: convertir a JPEG antes de subir para que sea visible en WP Media.
+    // Conversión va antes del check de tamaño porque el JPG resultante suele pesar mucho menos
+    // que el HEIC original — rechazar antes descartaría fotos válidas tras conversión.
     $ext_in = strtolower( pathinfo( (string) $_FILES['archivo']['name'], PATHINFO_EXTENSION ) );
     if ( in_array( $ext_in, array( 'heic', 'heif' ), true ) ) {
         $heic_result = viaticos_adjunto_convertir_heic( $_FILES['archivo'] );
         if ( ! $heic_result['ok'] ) {
             return new WP_REST_Response( array( 'success' => false, 'message' => $heic_result['error'] ), 422 );
         }
+    }
+
+    $size_bytes = isset( $_FILES['archivo']['size'] ) ? (int) $_FILES['archivo']['size'] : 0;
+    if ( $size_bytes <= 0 || $size_bytes > $max_bytes ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'El archivo supera el tamaño máximo permitido (5 MB).' ), 413 );
     }
 
     $uploaded = wp_handle_upload( $_FILES['archivo'], array(
@@ -123,16 +126,23 @@ function viaticos_callback_subir_adjunto( WP_REST_Request $request ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => $uploaded['error'] ), 400 );
     }
 
-    $att_id = wp_insert_attachment( array(
-        'post_mime_type' => $uploaded['type'],
-        'post_title'     => sanitize_file_name( pathinfo( $uploaded['file'], PATHINFO_FILENAME ) ),
-        'post_content'   => '',
-        'post_status'    => 'inherit',
-        'post_parent'    => $id_gasto,
-    ), $uploaded['file'], $id_gasto );
+    $att_id = wp_insert_attachment(
+        array(
+            'post_mime_type' => $uploaded['type'],
+            'post_title'     => sanitize_file_name( pathinfo( $uploaded['file'], PATHINFO_FILENAME ) ),
+            'post_content'   => '',
+            'post_status'    => 'inherit',
+            'post_parent'    => $id_gasto,
+        ),
+        $uploaded['file'],
+        $id_gasto,
+        true
+    );
 
-    if ( is_wp_error( $att_id ) ) {
-        return new WP_REST_Response( array( 'success' => false, 'message' => $att_id->get_error_message() ), 500 );
+    if ( is_wp_error( $att_id ) || ! $att_id ) {
+        $msg = is_wp_error( $att_id ) ? $att_id->get_error_message() : 'No se pudo registrar el adjunto.';
+        @unlink( $uploaded['file'] );
+        return new WP_REST_Response( array( 'success' => false, 'message' => $msg ), 500 );
     }
 
     wp_update_attachment_metadata( $att_id, wp_generate_attachment_metadata( $att_id, $uploaded['file'] ) );
@@ -167,8 +177,8 @@ function viaticos_callback_eliminar_adjunto( WP_REST_Request $request ) {
     if ( $result instanceof WP_REST_Response ) return $result;
 
     $id_solicitud = (int) get_field( ACF_GAS_SOLICITUD, $id_gasto );
-    if ( $id_solicitud && viaticos_es_rendicion_finalizada( $id_solicitud ) && 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
-        return new WP_REST_Response( array( 'success' => false, 'message' => 'La rendición ya fue finalizada.' ), 409 );
+    if ( $id_solicitud && ! viaticos_puede_modificar_rendicion( $id_solicitud ) ) {
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'La rendición ya fue enviada a revisión.' ), 409 );
     }
 
     delete_post_meta( $id_gasto, 'adjunto_id', $id_adjunto );

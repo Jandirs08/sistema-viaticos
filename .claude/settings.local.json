@@ -13,7 +13,30 @@
       "Bash(git reset *)",
       "Bash(git commit *)",
       "Bash(grep -rn '\\\\$_GET\\\\|\\\\$_POST\\\\|\\\\$_REQUEST\\\\|\\\\$_FILES' '--include=*.php' includes)",
-      "Bash(grep -rn \"http://localhost\\\\|127.0.0.1\\\\|wp-content\\\\|JSanchez\\\\|/Users/\\\\|C:\\\\\\\\\\\\\\\\Users\" --include=\"*.php\" --include=\"*.js\" includes assets functions.php)"
+      "Bash(grep -rn \"http://localhost\\\\|127.0.0.1\\\\|wp-content\\\\|JSanchez\\\\|/Users/\\\\|C:\\\\\\\\\\\\\\\\Users\" --include=\"*.php\" --include=\"*.js\" includes assets functions.php)",
+      "Bash(git push *)",
+      "Bash(curl -sk -o /dev/null -w \"%{http_code}\" \"https://administracionwp.local/\")",
+      "Bash(netstat -ano)",
+      "Bash(C:/Users/JSanchezT/AppData/Local/Programs/Local/resources/extraResources/lightning-services/php-8.2.29+0/bin/win64/php.exe -v)",
+      "Bash($PHP *)",
+      "Bash(C:/Users/JSanchezT/AppData/Local/Programs/Local/resources/extraResources/lightning-services/php-8.2.29+0/bin/win64/php.exe -l 'C:/Users/JSanchezT/Local Sites/administracionwp/app/public/wp-content/themes/theme-administracion/includes/api/adjuntos.php')",
+      "Bash(C:/Users/JSanchezT/AppData/Local/Programs/Local/resources/extraResources/lightning-services/php-8.2.29+0/bin/win64/php.exe -l 'C:/Users/JSanchezT/Local Sites/administracionwp/app/public/wp-content/themes/theme-administracion/includes/api/ocr.php')",
+      "Bash(C:/Users/JSanchezT/AppData/Local/Programs/Local/resources/extraResources/lightning-services/php-8.2.29+0/bin/win64/php.exe -l 'C:/Users/JSanchezT/Local Sites/administracionwp/app/public/wp-content/themes/theme-administracion/includes/ocr/extractor.php')",
+      "Bash(C:/Users/JSanchezT/AppData/Local/Programs/Local/resources/extraResources/lightning-services/php-8.2.29+0/bin/win64/php.exe -l 'C:/Users/JSanchezT/Local Sites/administracionwp/app/public/wp-content/themes/theme-administracion/includes/api/config.php')",
+      "Bash(echo \"exit:$?\")",
+      "PowerShell(Test-Path *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell($php=\"C:\\\\Users\\\\JSanchezT\\\\AppData\\\\Roaming\\\\Local\\\\lightning-services\\\\php-8.2.29+0\\\\bin\\\\win64\\\\php.exe\"; $base=\"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\"; & $php -l \"$base\\\\includes\\\\api\\\\rendiciones.php\"; & $php -l \"$base\\\\includes\\\\api\\\\helpers.php\"; & $php -l \"$base\\\\includes\\\\api\\\\adjuntos.php\"; & $php -l \"$base\\\\includes\\\\api-endpoints.php\")",
+      "PowerShell($base=\"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\"; node --check \"$base\\\\assets\\\\js\\\\colaborador.js\"; node --check \"$base\\\\assets\\\\js\\\\modules\\\\detalle-ui.js\")",
+      "PowerShell($base=\"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\"; node --check \"$base\\\\assets\\\\js\\\\modules\\\\confirm.js\"; node --check \"$base\\\\assets\\\\js\\\\modules\\\\detalle-ui.js\"; node --check \"$base\\\\assets\\\\js\\\\colaborador.js\")",
+      "PowerShell($php=\"C:\\\\Users\\\\JSanchezT\\\\AppData\\\\Roaming\\\\Local\\\\lightning-services\\\\php-8.2.29+0\\\\bin\\\\win64\\\\php.exe\"; & $php -l \"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\\\\functions.php\")",
+      "PowerShell(node --check \"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\\\\assets\\\\js\\\\modules\\\\confirm.js\")",
+      "PowerShell(node --check \"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\\\\assets\\\\js\\\\modules\\\\utils.js\")",
+      "PowerShell($php=\"C:\\\\Users\\\\JSanchezT\\\\AppData\\\\Roaming\\\\Local\\\\lightning-services\\\\php-8.2.29+0\\\\bin\\\\win64\\\\php.exe\"; & $php -l \"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\\\\includes\\\\api\\\\solicitudes.php\")",
+      "PowerShell(node --check \"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\\\\assets\\\\js\\\\modules\\\\detalle-ui.js\")",
+      "PowerShell(node --check \"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\\\\assets\\\\js\\\\colaborador.js\")",
+      "PowerShell($base=\"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\"; node --check \"$base\\\\assets\\\\js\\\\colaborador.js\"; $php=\"C:\\\\Users\\\\JSanchezT\\\\AppData\\\\Roaming\\\\Local\\\\lightning-services\\\\php-8.2.29+0\\\\bin\\\\win64\\\\php.exe\"; & $php -l \"$base\\\\includes\\\\api\\\\rendiciones.php\")",
+      "PowerShell($php=\"C:\\\\Users\\\\JSanchezT\\\\AppData\\\\Roaming\\\\Local\\\\lightning-services\\\\php-8.2.29+0\\\\bin\\\\win64\\\\php.exe\"; & $php -l \"C:\\\\Users\\\\JSanchezT\\\\Local Sites\\\\administracionwp\\\\app\\\\public\\\\wp-content\\\\themes\\\\theme-administracion\\\\includes\\\\api\\\\rendiciones.php\")"
     ]
   }
 }

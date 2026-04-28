@@ -73,6 +73,13 @@ function viaticos_registrar_endpoints() {
         'args'                => viaticos_args_gasto(),
     ) );
 
+    register_rest_route( VIATICOS_API_NAMESPACE, '/editar-gasto', array(
+        'methods'             => WP_REST_Server::CREATABLE,
+        'callback'            => 'viaticos_callback_editar_gasto',
+        'permission_callback' => 'viaticos_permission_logueado',
+        'args'                => viaticos_args_editar_gasto(),
+    ) );
+
     register_rest_route( VIATICOS_API_NAMESPACE, '/finalizar-rendicion', array(
         'methods'             => WP_REST_Server::CREATABLE,
         'callback'            => 'viaticos_callback_finalizar_rendicion',

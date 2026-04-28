@@ -718,7 +718,14 @@
     }
 
     async function handleReenviarRendicion(solicitudId) {
-        if (!confirm('¿Reenviar la rendición a revisión? El administrador podrá revisarla nuevamente.')) return;
+        const ok = await window.ViaticosConfirm.show({
+            title: 'Reenviar rendición a revisión',
+            message: 'El administrador podrá revisarla nuevamente. Confirma cuando hayas corregido las observaciones.',
+            variant: 'default',
+            confirmText: 'Sí, reenviar',
+            cancelText: 'Cancelar',
+        });
+        if (!ok) return;
         try {
             await apiFetch('/reenviar-rendicion', { method: 'POST', body: JSON.stringify({ id_solicitud: solicitudId }) });
             await refreshSolicitudesCache();
@@ -805,6 +812,7 @@
         const canLiquidacion  = !!sol.rendicion_finalizada;
         const canEditSolicitud = estadoSolicitud === 'observada';
         const canReenviar     = estadoRend === 'observada';
+        const canModificarGastos = canAdd;
 
         const editIcon     = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02.0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41.0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>';
         const checkIcon    = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
@@ -824,8 +832,11 @@
             apiFetch,
             canDelete: true,
             accionesHtml,
-            canDeleteGasto: canReenviar,
+            canDeleteGasto: canModificarGastos,
+            canEditGasto: canModificarGastos,
             onDeleteGasto: (gastoId) => handleDeleteGasto(sol.id, gastoId),
+            onEditGastoDatos: (gastoId) => openEditarGastoModal(sol.id, gastoId, 2),
+            onEditGastoAdjuntos: (gastoId) => openEditarGastoModal(sol.id, gastoId, 1),
         });
 
         const historial           = Array.isArray(sol.historial) ? sol.historial : [];
@@ -919,25 +930,95 @@
         document.getElementById('rg-categoria').addEventListener('change', onCategoriaChange);
     });
 
-    function openRendirModal(solicitudId) {
+    function _resetWizardForm() {
         const form = document.getElementById('form-rendir-gasto');
         form.reset(); Forms.clearFormErrors(form);
         document.getElementById('rg-cat-info').classList.remove('is-visible');
         updateAdjuntosBadge('');
-        _adjFiles = []; renderAdjPickList();
+        _adjFiles = []; _existingAdjuntos = [];
+        renderAdjPickList();
         updateRendirTipoUI();
         updateOcrButtonVisibility();
         hideOcrBanner();
+    }
+
+    function _setWizardChrome(mode, solicitudId) {
+        const submitBtn = document.getElementById('btn-submit-rendir-gasto');
+        const refEl = document.getElementById('rendir-sol-ref');
+        if (submitBtn) {
+            const labelText = mode === 'edit' ? 'Guardar cambios' : 'Registrar Gasto';
+            const svgKept = submitBtn.querySelector('svg');
+            submitBtn.innerHTML = (svgKept ? svgKept.outerHTML : '') + ' ' + labelText;
+        }
+        if (refEl) {
+            refEl.textContent = mode === 'edit'
+                ? `Editando gasto · #${solicitudId}`
+                : `#${solicitudId}`;
+        }
+    }
+
+    function openRendirModal(solicitudId) {
+        _editingGastoId = null;
+        _resetWizardForm();
         _forceGoToStep(1);
         const idInput = document.getElementById('rg-id-solicitud');
-        const refEl = document.getElementById('rendir-sol-ref');
         if (idInput) idInput.value = solicitudId;
-        if (refEl) refEl.textContent = `#${solicitudId}`;
+        _setWizardChrome('create', solicitudId);
         ModalManager.open('modal-rendir-gasto');
+    }
+
+    async function openEditarGastoModal(solicitudId, gastoId, startStep) {
+        const targetGastoId = parseInt(gastoId, 10);
+        const gasto = (gastosCache || []).find(g => parseInt(g.id, 10) === targetGastoId);
+        if (!gasto) { showToast('error', 'No se pudo cargar el gasto.'); return; }
+
+        _editingGastoId = targetGastoId;
+        _resetWizardForm();
+
+        const idInput = document.getElementById('rg-id-solicitud');
+        if (idInput) idInput.value = solicitudId;
+
+        const catSel = document.getElementById('rg-categoria');
+        if (catSel) {
+            catSel.value = String(gasto.categoria_id || '');
+            catSel.dispatchEvent(new Event('change'));
+        }
+
+        const setVal = (id, v) => {
+            const el = document.getElementById(id);
+            if (el) el.value = v == null ? '' : String(v);
+        };
+        setVal('rg-fecha',           gasto.fecha);
+        setVal('rg-importe',         gasto.importe);
+        setVal('rg-ruc',             gasto.ruc);
+        setVal('rg-razon',           gasto.razon);
+        setVal('rg-nro-comprobante', gasto.nro);
+        setVal('rg-concepto',        gasto.concepto);
+        setVal('rg-motivo',          gasto.motivo_movilidad);
+        setVal('rg-destino',         gasto.destino_movilidad);
+        setVal('rg-ceco-oi',         gasto.ceco_oi);
+
+        _setWizardChrome('edit', solicitudId);
+        _forceGoToStep(startStep === 2 ? 2 : 1);
+        ModalManager.open('modal-rendir-gasto');
+
+        // Race-guard: si abren otra edición antes que el fetch termine, descartar
+        // la respuesta que ya no corresponde al gasto activo.
+        try {
+            const res = await apiFetch('/gasto-adjuntos/' + targetGastoId);
+            if (_editingGastoId !== targetGastoId) return;
+            _existingAdjuntos = (res && Array.isArray(res.adjuntos)) ? res.adjuntos.slice() : [];
+        } catch (_) {
+            if (_editingGastoId !== targetGastoId) return;
+            _existingAdjuntos = [];
+        }
+        renderAdjPickList();
     }
 
     let _adjFiles = [];
     let _wizardStep = 1;
+    let _editingGastoId = null;
+    let _existingAdjuntos = [];
 
     function _fileExtClass(name) {
         const ext = (name.split('.').pop() || '').toLowerCase();
@@ -961,14 +1042,27 @@
         const addEl   = document.getElementById('dz-add-more');
         const dz      = document.getElementById('rg-dropzone');
         if (!listEl) return;
-        if (!_adjFiles.length) {
+
+        const totalFiles = _existingAdjuntos.length + _adjFiles.length;
+        if (!totalFiles) {
             listEl.innerHTML = '';
             if (emptyEl) emptyEl.style.display = '';
             if (addEl) addEl.style.display = 'none';
             if (dz) dz.classList.remove('has-files');
             return;
         }
-        listEl.innerHTML = _adjFiles.map((f, i) => `
+
+        const existingHtml = _existingAdjuntos.map((a, i) => `
+            <div class="dropzone-file is-saved">
+                <span class="dropzone-file__icon ${_fileExtClass(a.name || '')}">${_fileExtLabel(a.name || '')}</span>
+                <span class="dropzone-file__name" title="${escHtml(a.name || '')}">${escHtml(a.name || 'Adjunto')}</span>
+                <span class="dropzone-file__size">Guardado</span>
+                <button type="button" class="dropzone-file__remove" data-existing-idx="${i}" aria-label="Eliminar adjunto guardado">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>`).join('');
+
+        const newHtml = _adjFiles.map((f, i) => `
             <div class="dropzone-file">
                 <span class="dropzone-file__icon ${_fileExtClass(f.name)}">${_fileExtLabel(f.name)}</span>
                 <span class="dropzone-file__name" title="${escHtml(f.name)}">${escHtml(f.name)}</span>
@@ -977,13 +1071,42 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                 </button>
             </div>`).join('');
-        listEl.querySelectorAll('.dropzone-file__remove').forEach(btn => {
+
+        listEl.innerHTML = existingHtml + newHtml;
+
+        listEl.querySelectorAll('.dropzone-file__remove[data-idx]').forEach(btn => {
             btn.addEventListener('click', () => {
                 _adjFiles.splice(parseInt(btn.dataset.idx, 10), 1);
                 renderAdjPickList();
                 updateOcrButtonVisibility();
             });
         });
+        listEl.querySelectorAll('.dropzone-file__remove[data-existing-idx]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const idx = parseInt(btn.dataset.existingIdx, 10);
+                const adj = _existingAdjuntos[idx];
+                if (!adj) return;
+                const ok = await window.ViaticosConfirm.show({
+                    title: 'Eliminar adjunto',
+                    message: (adj.name ? `"${adj.name}" se borrará permanentemente.` : 'El adjunto se borrará permanentemente.') + ' Esta acción no se puede deshacer.',
+                    variant: 'danger',
+                    confirmText: 'Sí, eliminar',
+                    cancelText: 'Cancelar',
+                });
+                if (!ok) return;
+                btn.disabled = true;
+                try {
+                    await apiFetch('/gasto-adjunto/' + adj.id, { method: 'DELETE' });
+                    _existingAdjuntos.splice(idx, 1);
+                    renderAdjPickList();
+                    showToast('success', 'Adjunto eliminado.');
+                } catch (err) {
+                    btn.disabled = false;
+                    showApiError(err);
+                }
+            });
+        });
+
         if (emptyEl) emptyEl.style.display = 'none';
         if (addEl) addEl.style.display = '';
         if (dz) dz.classList.add('has-files');
@@ -991,7 +1114,7 @@
     }
 
     const ADJ_CONFIG = (window.ViaticosConfigData && window.ViaticosConfigData.adjuntos) || { max_file_bytes: 5 * 1024 * 1024, max_count: 10 };
-    const ADJ_ALLOWED_EXT_RE = /\.(pdf|jpg|jpeg|png|heic|heif)$/i;
+    const ADJ_ALLOWED_EXT_RE = /\.(pdf|jpg|jpeg|png|webp|heic|heif)$/i;
 
     function filterAndAddFiles(rawFiles) {
         const maxBytes = ADJ_CONFIG.max_file_bytes || 5 * 1024 * 1024;
@@ -1066,6 +1189,7 @@
 
     function shouldRunOcrOnNext() {
         if (!OCR_CONFIG.enabled) return false;
+        if (_editingGastoId) return false;
         if (OCR_TIPOS_SOPORTADOS.indexOf(getRendicionTipo()) === -1) return false;
         return _adjFiles.length > 0;
     }
@@ -1364,13 +1488,23 @@
         goToStep(2);
     }
 
+    /**
+     * Cuenta total de comprobantes asociados al gasto en el estado actual del
+     * wizard. En modo edit suma adjuntos ya persistidos en el server más los
+     * que el usuario acaba de soltar en el dropzone. Single source para todas
+     * las validaciones y para el summary del paso 2.
+     */
+    function getAdjuntosTotal() {
+        return _existingAdjuntos.length + _adjFiles.length;
+    }
+
     function validateStep1() {
         const catEl  = document.getElementById('rg-categoria');
         const catErr = document.getElementById('err-rg-categoria');
         if (!validateField(catEl, catErr)) return false;
         const tipo = getRendicionTipo();
         const needsPdf = tipo && tipo !== 'movilidad' && tipo !== 'vale_caja';
-        if (needsPdf && _adjFiles.length === 0) {
+        if (needsPdf && getAdjuntosTotal() === 0) {
             showToast('error', 'Comprobante requerido', 'Este tipo de gasto necesita al menos un archivo adjunto.');
             const dz = document.getElementById('rg-dropzone');
             if (dz) {
@@ -1385,7 +1519,7 @@
     function renderWizardSummary() {
         const catId = parseInt(document.getElementById('rg-categoria').value, 10);
         const cat   = (window.ViaticosCategoriasGasto || []).find(c => c.id === catId);
-        const n     = _adjFiles.length;
+        const n     = getAdjuntosTotal();
         document.getElementById('wz-summary-cat').textContent   = cat ? cat.nombre : '—';
         document.getElementById('wz-summary-clase').textContent = cat ? (cat.clase_doc || '—') : '—';
         document.getElementById('wz-summary-files').textContent = n === 0 ? '' : ` · ${n} archivo${n === 1 ? '' : 's'}`;
@@ -1464,7 +1598,7 @@
 
         const tipo = getRendicionTipo();
         const requierePdf = tipo && tipo !== 'movilidad' && tipo !== 'vale_caja';
-        if (requierePdf && _adjFiles.length === 0) {
+        if (requierePdf && getAdjuntosTotal() === 0) {
             if (_wizardStep !== 1) goToStep(1);
             const dz = document.getElementById('rg-dropzone');
             if (dz) {
@@ -1485,17 +1619,29 @@
             };
             const payload = schema ? schema.buildPayload(base) : base;
 
-            const res = await apiFetch('/nuevo-gasto', { method:'POST', body: JSON.stringify(payload) });
-            const newGastoId = res && res.id ? parseInt(res.id, 10) : 0;
+            const isEdit = !!_editingGastoId;
+            let targetGastoId;
+            if (isEdit) {
+                payload.id_gasto = _editingGastoId;
+                await apiFetch('/editar-gasto', { method:'POST', body: JSON.stringify(payload) });
+                targetGastoId = _editingGastoId;
+            } else {
+                const res = await apiFetch('/nuevo-gasto', { method:'POST', body: JSON.stringify(payload) });
+                targetGastoId = res && res.id ? parseInt(res.id, 10) : 0;
+            }
 
             let fallidos = 0;
-            if (newGastoId && _adjFiles.length > 0) {
+            let primerError = '';
+            if (targetGastoId && _adjFiles.length > 0) {
                 for (const file of _adjFiles) {
                     const fd = new FormData();
-                    fd.append('id_gasto', String(newGastoId));
+                    fd.append('id_gasto', String(targetGastoId));
                     fd.append('archivo',  file);
                     try { await apiFetchForm('/gasto-adjunto', fd); }
-                    catch (e) { fallidos++; }
+                    catch (e) {
+                        fallidos++;
+                        if (!primerError) primerError = (e && e.message) ? String(e.message) : 'Error desconocido';
+                    }
                 }
             }
 
@@ -1506,10 +1652,12 @@
             const sol = getSolicitudById(payload.id_solicitud);
             if (sol) renderDetalleSolicitudContent(sol, getGastosBySolicitud(payload.id_solicitud));
 
+            const okMsg = isEdit ? 'Gasto actualizado' : 'Gasto registrado';
             if (fallidos > 0) {
-                showToast('warning', 'Gasto registrado', `${fallidos} adjunto(s) fallaron al subir.`);
+                const detalle = primerError ? ` Motivo: ${primerError}` : '';
+                showToast('warning', okMsg, `${fallidos} adjunto(s) fallaron al subir.${detalle}`, 8000);
             } else {
-                showToast('success', 'Gasto registrado');
+                showToast('success', okMsg);
             }
         } catch (err) {
             const msg = err && err.message ? String(err.message) : 'Error inesperado';

@@ -25,16 +25,27 @@ const VIATICOS_OCR_MAX_EXTRA_TEXT   = 8000; // chars del texto pág 2..N
 
 /**
  * Normaliza el archivo de entrada: PDF y HEIC se rasterizan a JPEG.
+ * Imágenes (JPG/PNG/WEBP) que excedan el ancho máximo se redimensionan
+ * para reducir tokens consumidos por el provider; si Imagick no está,
+ * passthrough silencioso.
  * Devuelve ['ok'=>true, 'path'=>..., 'mime'=>..., 'cleanup'=>bool]
  *      o  ['ok'=>false, 'error'=>...].
  */
 function viaticos_ocr_normalize_input_file( $file_path, $mime ) {
-    if ( 'image/jpeg' === $mime || 'image/png' === $mime ) {
+    $passthrough_mimes = array( 'image/jpeg', 'image/png', 'image/webp' );
+
+    if ( in_array( $mime, $passthrough_mimes, true ) ) {
+        if ( class_exists( 'Imagick' ) ) {
+            $resized = viaticos_ocr_resize_image_if_large( $file_path );
+            if ( null !== $resized ) {
+                return $resized;
+            }
+        }
         return array( 'ok' => true, 'path' => $file_path, 'mime' => $mime, 'cleanup' => false );
     }
 
     if ( ! class_exists( 'Imagick' ) ) {
-        return array( 'ok' => false, 'error' => 'Conversión no disponible en el servidor (falta Imagick). Sube JPG o PNG.' );
+        return array( 'ok' => false, 'error' => 'Conversión no disponible en el servidor (falta Imagick). Sube JPG, PNG o WEBP.' );
     }
 
     if ( 'application/pdf' === $mime ) {
@@ -45,6 +56,27 @@ function viaticos_ocr_normalize_input_file( $file_path, $mime ) {
     }
 
     return array( 'ok' => false, 'error' => 'Tipo de archivo no soportado.' );
+}
+
+/**
+ * Si la imagen excede el ancho máximo, la convierte a JPEG redimensionado.
+ * Devuelve normalize-shape array si hizo trabajo, o null si la imagen es chica
+ * (señal para que el caller haga passthrough sin tocar disk).
+ */
+function viaticos_ocr_resize_image_if_large( $file_path ) {
+    try {
+        $im = new Imagick( $file_path );
+        if ( $im->getImageWidth() <= VIATICOS_OCR_RASTER_MAX_WIDTH ) {
+            $im->clear();
+            $im->destroy();
+            return null;
+        }
+        viaticos_imagick_apply_jpeg( $im );
+        $tmp = viaticos_imagick_write_tmp( $im, 'viaticos-ocr-img' );
+        return array( 'ok' => true, 'path' => $tmp, 'mime' => 'image/jpeg', 'cleanup' => true );
+    } catch ( Exception $e ) {
+        return null; // fallback silencioso a passthrough
+    }
 }
 
 /**

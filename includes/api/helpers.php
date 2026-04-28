@@ -12,6 +12,13 @@ function viaticos_get_estado_rendicion( $solicitud_id ) {
     return $valor ?: '';
 }
 
+function viaticos_puede_modificar_rendicion( $solicitud_id ) {
+    if ( ! viaticos_es_rendicion_finalizada( $solicitud_id ) ) {
+        return true;
+    }
+    return 'observada' === viaticos_get_estado_rendicion( $solicitud_id );
+}
+
 function viaticos_solicitud_tiene_gastos( $solicitud_id ) {
     $gastos = get_posts( array(
         'post_type'      => 'gasto_rendicion',
@@ -162,6 +169,48 @@ function viaticos_calcular_total_rendido_solicitud( $solicitud_id ) {
     }
 
     return $total;
+}
+
+/**
+ * Bulk: total rendido y conteo de gastos por solicitud, en una sola query.
+ * Evita N+1 al construir listados (bandeja admin / colab).
+ *
+ * @param int[] $solicitud_ids
+ * @return array<int,array{total:float,count:int}>
+ */
+function viaticos_mapa_totales_rendidos( $solicitud_ids = array() ) {
+    global $wpdb;
+
+    $ids = array_filter( array_map( 'absint', (array) $solicitud_ids ) );
+    if ( empty( $ids ) ) {
+        return array();
+    }
+
+    $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+
+    $sql = $wpdb->prepare(
+        "SELECT pm_sol.meta_value AS sol_id,
+                COALESCE(SUM(CAST(pm_imp.meta_value AS DECIMAL(15,2))), 0) AS total,
+                COUNT(p.ID) AS gastos
+         FROM {$wpdb->posts} p
+         INNER JOIN {$wpdb->postmeta} pm_sol ON pm_sol.post_id = p.ID AND pm_sol.meta_key = 'id_solicitud_padre'
+         LEFT JOIN  {$wpdb->postmeta} pm_imp ON pm_imp.post_id = p.ID AND pm_imp.meta_key = 'importe_comprobante'
+         WHERE p.post_type = 'gasto_rendicion'
+           AND p.post_status = 'publish'
+           AND CAST(pm_sol.meta_value AS UNSIGNED) IN ($placeholders)
+         GROUP BY pm_sol.meta_value",
+        $ids
+    );
+
+    $rows = $wpdb->get_results( $sql, ARRAY_A );
+    $map  = array();
+    foreach ( (array) $rows as $row ) {
+        $map[ (int) $row['sol_id'] ] = array(
+            'total' => (float) $row['total'],
+            'count' => (int) $row['gastos'],
+        );
+    }
+    return $map;
 }
 
 function viaticos_get_historial_meta_key() {

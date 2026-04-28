@@ -210,7 +210,8 @@ window.ViaticosGastoUI = (function () {
                 }, { once: true });
             }
         } catch (err) {
-            listEl.innerHTML = '<span class="gasto-adj-empty" style="color:#C53030;">Error al cargar adjuntos.</span>';
+            panel.dataset.adjLoaded = '0';
+            listEl.innerHTML = '<span class="gasto-adj-empty" style="color:#C53030;">Error al cargar adjuntos. Cierra y vuelve a abrir para reintentar.</span>';
         }
     }
 

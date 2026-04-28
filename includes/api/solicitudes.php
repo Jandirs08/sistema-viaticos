@@ -117,6 +117,7 @@ function viaticos_callback_mis_solicitudes( WP_REST_Request $request ) {
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
             'fecha_creacion'       => get_the_date( 'Y-m-d', $post->ID ),
             'tiene_gastos'         => ! empty( $tiene_gastos_map[ $post->ID ] ),
+            'historial'            => viaticos_preparar_historial_solicitud( $post->ID ),
         );
     }
 
@@ -136,18 +137,24 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
 
     $ids              = wp_list_pluck( $posts, 'ID' );
     $tiene_gastos_map = viaticos_mapa_solicitudes_con_gastos( $ids );
+    $totales_map      = viaticos_mapa_totales_rendidos( $ids );
 
     $data = array();
 
     foreach ( $posts as $post ) {
         $estado               = get_field( ACF_SOL_ESTADO, $post->ID ) ?: 'pendiente';
         $rendicion_finalizada = viaticos_es_rendicion_finalizada( $post->ID );
+        $monto                = (float) get_field( ACF_SOL_MONTO, $post->ID );
+        $totales              = $totales_map[ $post->ID ] ?? array( 'total' => 0.0, 'count' => 0 );
 
         $data[] = array(
             'id'                   => $post->ID,
             'colaborador'          => get_the_author_meta( 'display_name', $post->post_author ),
             'dni'                  => get_field( ACF_SOL_DNI,    $post->ID ) ?: '',
-            'monto'                => (float) get_field( ACF_SOL_MONTO, $post->ID ),
+            'monto'                => $monto,
+            'total_rendido'        => (float) $totales['total'],
+            'saldo'                => $monto - (float) $totales['total'],
+            'gastos_count'         => (int) $totales['count'],
             'fecha'                => get_field( ACF_SOL_FECHA,  $post->ID ) ?: '',
             'motivo'               => wp_strip_all_tags( get_field( ACF_SOL_MOTIVO, $post->ID ) ?: '' ),
             'ceco'                 => get_field( ACF_SOL_CECO,   $post->ID ) ?: '',
@@ -156,6 +163,7 @@ function viaticos_callback_todas_solicitudes( WP_REST_Request $request ) {
             'fecha_creacion'       => get_the_date( 'Y-m-d', $post->ID ),
             'estado_rendicion'     => viaticos_get_estado_rendicion( $post->ID ),
             'tiene_gastos'         => ! empty( $tiene_gastos_map[ $post->ID ] ),
+            'historial'            => viaticos_preparar_historial_solicitud( $post->ID ),
         );
     }
 

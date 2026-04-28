@@ -15,6 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 function viaticos_callback_ocr_extract( WP_REST_Request $request ) {
+    // El extractor usa wp_tempnam(), que vive en wp-admin/includes/file.php
+    // y no se carga automáticamente en contexto REST.
+    if ( ! function_exists( 'wp_tempnam' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
+
     if ( ! viaticos_ocr_is_enabled() ) {
         return new WP_REST_Response( array( 'success' => false, 'message' => 'OCR no está habilitado.' ), 503 );
     }
@@ -39,13 +45,14 @@ function viaticos_callback_ocr_extract( WP_REST_Request $request ) {
         'jpg'  => 'image/jpeg',
         'jpeg' => 'image/jpeg',
         'png'  => 'image/png',
+        'webp' => 'image/webp',
         'heic' => 'image/heic',
         'heif' => 'image/heif',
     );
     $ext  = strtolower( pathinfo( (string) $file['name'], PATHINFO_EXTENSION ) );
     $mime = $ext_to_mime[ $ext ] ?? '';
     if ( '' === $mime ) {
-        return new WP_REST_Response( array( 'success' => false, 'message' => 'Tipo de archivo no permitido. Usa PDF, JPG, PNG o HEIC.' ), 415 );
+        return new WP_REST_Response( array( 'success' => false, 'message' => 'Tipo de archivo no permitido. Usa PDF, JPG, PNG, WEBP o HEIC.' ), 415 );
     }
 
     $cfg              = viaticos_get_config();

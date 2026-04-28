@@ -75,6 +75,23 @@ function viaticos_args_gasto() {
     );
 }
 
+function viaticos_args_editar_gasto() {
+    return array_merge(
+        viaticos_args_gasto(),
+        array(
+            'id_gasto' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'minimum'           => 1,
+                'sanitize_callback' => static function( $value ) { return absint( $value ); },
+                'validate_callback' => static function( $value ) {
+                    return 'gasto_rendicion' === get_post_type( absint( $value ) );
+                },
+            ),
+        )
+    );
+}
+
 function viaticos_args_finalizar_rendicion() {
     return array(
         'id_solicitud' => array(
@@ -105,7 +122,7 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
         );
     }
 
-    if ( (int) $solicitud->post_author !== get_current_user_id() && ! current_user_can( 'manage_viaticos' ) ) {
+    if ( (int) $solicitud->post_author !== get_current_user_id() ) {
         return new WP_REST_Response(
             array(
                 'success' => false,
@@ -127,7 +144,7 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
         );
     }
 
-    if ( viaticos_es_rendicion_finalizada( $id_solicitud ) && 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
+    if ( ! viaticos_puede_modificar_rendicion( $id_solicitud ) ) {
         return new WP_REST_Response(
             array(
                 'success' => false,
@@ -259,6 +276,150 @@ function viaticos_callback_nuevo_gasto( WP_REST_Request $request ) {
             'id'      => $post_id,
         ),
         201
+    );
+}
+
+function viaticos_callback_editar_gasto( WP_REST_Request $request ) {
+    $id_gasto = absint( $request->get_param( 'id_gasto' ) );
+    $gasto    = get_post( $id_gasto );
+
+    if ( ! $gasto || 'gasto_rendicion' !== $gasto->post_type ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Gasto no encontrado.' ),
+            404
+        );
+    }
+
+    if ( (int) $gasto->post_author !== get_current_user_id() ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'No tienes permisos para editar este gasto.' ),
+            403
+        );
+    }
+
+    $id_solicitud_param = absint( $request->get_param( 'id_solicitud' ) );
+    $id_solicitud_real  = (int) get_field( ACF_GAS_SOLICITUD, $id_gasto );
+
+    if ( $id_solicitud_param && $id_solicitud_param !== $id_solicitud_real ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'No se permite cambiar la solicitud asociada al gasto.' ),
+            400
+        );
+    }
+
+    $id_solicitud = $id_solicitud_real;
+    $solicitud    = get_post( $id_solicitud );
+
+    if ( ! $solicitud || 'solicitud_viatico' !== $solicitud->post_type ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'La solicitud asociada no existe.' ),
+            400
+        );
+    }
+
+    if ( 'aprobada' !== get_field( ACF_SOL_ESTADO, $id_solicitud ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Solo puedes editar gastos sobre solicitudes aprobadas.' ),
+            400
+        );
+    }
+
+    if ( ! viaticos_puede_modificar_rendicion( $id_solicitud ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'No puedes editar gastos: la rendición ya fue enviada a revisión.' ),
+            409
+        );
+    }
+
+    $id_categoria = absint( $request->get_param( 'id_categoria' ) );
+    $cat_term     = $id_categoria ? get_term( $id_categoria, 'categoria_gasto' ) : null;
+
+    if ( ! $cat_term || is_wp_error( $cat_term ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'Debes seleccionar una categoría de gasto válida.' ),
+            400
+        );
+    }
+
+    $clase_doc = get_field( ACF_CAT_CLASE_DOC, 'categoria_gasto_' . $id_categoria ) ?: '';
+
+    if ( '' === trim( (string) $clase_doc ) ) {
+        return new WP_REST_Response(
+            array( 'success' => false, 'message' => 'La categoría seleccionada no tiene Clase de Documento configurada.' ),
+            400
+        );
+    }
+
+    $tipo = viaticos_clase_doc_to_tipo( $clase_doc );
+
+    if ( 'movilidad' === $tipo ) {
+        $required_movilidad = array(
+            'motivo_movilidad'  => 'El motivo de movilidad es obligatorio.',
+            'destino_movilidad' => 'El destino de movilidad es obligatorio.',
+            'ceco_oi'           => 'El CECO / OI es obligatorio.',
+        );
+
+        foreach ( $required_movilidad as $field_name => $message ) {
+            if ( '' === trim( (string) $request->get_param( $field_name ) ) ) {
+                return new WP_REST_Response(
+                    array( 'success' => false, 'message' => $message ),
+                    400
+                );
+            }
+        }
+    } else {
+        $required_documento = array(
+            'ruc'             => 'El RUC del proveedor es obligatorio.',
+            'razon_social'    => 'La razón social es obligatoria.',
+            'nro_comprobante' => 'El número de comprobante es obligatorio.',
+        );
+
+        foreach ( $required_documento as $field_name => $message ) {
+            if ( '' === trim( (string) $request->get_param( $field_name ) ) ) {
+                return new WP_REST_Response(
+                    array( 'success' => false, 'message' => $message ),
+                    400
+                );
+            }
+        }
+
+        if ( ! preg_match( '/^\d{11}$/', (string) $request->get_param( 'ruc' ) ) ) {
+            return new WP_REST_Response(
+                array( 'success' => false, 'message' => 'El RUC del proveedor debe tener 11 dígitos.' ),
+                400
+            );
+        }
+    }
+
+    update_field( ACF_GAS_FECHA,   $request->get_param( 'fecha' ),   $id_gasto );
+    update_field( ACF_GAS_IMPORTE, $request->get_param( 'importe' ), $id_gasto );
+    wp_set_object_terms( $id_gasto, $id_categoria, 'categoria_gasto' );
+
+    if ( 'movilidad' === $tipo ) {
+        update_field( ACF_GAS_MOTIVO_MOV, $request->get_param( 'motivo_movilidad' ),  $id_gasto );
+        update_field( ACF_GAS_DESTINO,    $request->get_param( 'destino_movilidad' ), $id_gasto );
+        update_field( ACF_GAS_CECO,       $request->get_param( 'ceco_oi' ),           $id_gasto );
+        update_field( ACF_GAS_RUC,        '', $id_gasto );
+        update_field( ACF_GAS_RAZON,      '', $id_gasto );
+        update_field( ACF_GAS_NRO,        '', $id_gasto );
+        update_field( ACF_GAS_CONCEPTO,   '', $id_gasto );
+    } else {
+        update_field( ACF_GAS_RUC,      $request->get_param( 'ruc' ),                  $id_gasto );
+        update_field( ACF_GAS_RAZON,    $request->get_param( 'razon_social' ),         $id_gasto );
+        update_field( ACF_GAS_NRO,      $request->get_param( 'nro_comprobante' ),      $id_gasto );
+        update_field( ACF_GAS_CONCEPTO, $request->get_param( 'descripcion_concepto' ), $id_gasto );
+        update_field( ACF_GAS_MOTIVO_MOV, '', $id_gasto );
+        update_field( ACF_GAS_DESTINO,    '', $id_gasto );
+        update_field( ACF_GAS_CECO,       '', $id_gasto );
+    }
+
+    return new WP_REST_Response(
+        array(
+            'success' => true,
+            'message' => 'Gasto actualizado correctamente.',
+            'id'      => $id_gasto,
+        ),
+        200
     );
 }
 
@@ -496,9 +657,9 @@ function viaticos_callback_eliminar_gasto( WP_REST_Request $request ) {
 
     $id_solicitud = (int) get_field( ACF_GAS_SOLICITUD, $id_gasto );
 
-    if ( 'observada' !== viaticos_get_estado_rendicion( $id_solicitud ) ) {
+    if ( ! viaticos_puede_modificar_rendicion( $id_solicitud ) ) {
         return new WP_REST_Response(
-            array( 'success' => false, 'message' => 'Solo puedes eliminar gastos cuando la rendición está observada.' ),
+            array( 'success' => false, 'message' => 'No puedes eliminar gastos: la rendición ya fue enviada a revisión.' ),
             409
         );
     }
